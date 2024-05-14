@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Geoapify</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Geoapify</shortDescription>
+        <value>https://api.geoapify.com/v1/geocode/search?</value>
+    </labels>
+    <labels>
+        <fullName>GeoapifyKey</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>GeoapifyKey</shortDescription>
+        <value>44c14816d0e64f3aa5b6468793c588b8</value>
+    </labels>
+    <labels>
+        <fullName>OpenMeteo</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>OpenMeteo</shortDescription>
+        <value>https://api.open-meteo.com/v1/forecast</value>
+    </labels>
+</CustomLabels>
