@@ -2,13 +2,13 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 05-14-2024
+ * @last modified on  : 05-15-2024
  * @last modified by  : Mayank Singh
 **/
 public with sharing class WeatherSummaryHandler {
-
+    
+    @AuraEnabled(cacheable=true)
     public static String PlacesAndWeatherSummary(Id leadId) {
-
         // Call fetchLeadAddressByCoordinates to get the coordinates
         Map<String, Double> coordinates = fetchLeadAddressByCoordinates(leadId);
         
@@ -16,35 +16,31 @@ public with sharing class WeatherSummaryHandler {
         if (!coordinates.isEmpty() && coordinates.containsKey('longitude') && coordinates.containsKey('longitude')) {
             Double latitude = coordinates.get('latitude');
             Double longitude = coordinates.get('longitude');
-            
+
             // Call fetchNearByPlaces to get nearby places
             List<String> nearbyPlaces = fetchNearByPlaces('5000', new List<String>{'commercial'}, String.valueOf(longitude), String.valueOf(latitude));
             
             // Call fetchWeatherData to get weather data
-            OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude ); 
+            OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude); 
             
-            // Call processResponse  to process the weather data response
+            // Call processResponse to process the weather data response
             if (weatherData != null) {
                 String processedResponse = processResponse(weatherData);
+                // Construct the prompt
+                String prompt = 'Nearby places: ' + String.join(nearbyPlaces, ', ') + '.\n\nWeather Summary:\n' + processedResponse + '\n\nBased on the analysis, considering the weather conditions and nearby venues, what do you think would be the best place and time to meet? Additionally, to kick-start our conversation, how about we discuss our favorite outdoor activities or recent local events?';
 
-            // Construct the prompt
-            // String prompt = 'Nearby places: ' + String.join(nearbyPlaces, ', ') + '.\n\nWeather Summary:\n' + processedResponse + '\n\nBased on the analysis, the best place and time to meet might be at? Also give a conversation starter Or ice breaker';
-
-            String prompt = 'Nearby places: ' + String.join(nearbyPlaces, ', ') + '.\n\nWeather Summary:\n' + processedResponse + '\n\nBased on the analysis, considering the weather conditions and nearby venues, what do you think would be the best place and time to meet? Additionally, to kick-start our conversation, how about we discuss our favorite outdoor activities or recent local events?';
-
-            // Get OpenAI response
-            String openAiResponse = getOpenAiResponse(prompt);
-            System.debug('OpenAI Response: ' + openAiResponse); 
-            return openAiResponse;
+                // Get OpenAI response
+                String openAiResponse = getOpenAiResponse(prompt);
+                //System.debug('openAiResponse'+openAiResponse);
+                return openAiResponse;
             } else {
-                System.debug('Failed to retrieve weather data.');
-                return null;
+                return 'Failed to retrieve weather data.';
             }
         } else {
-            System.debug('Failed to retrieve coordinates for Lead with Id: ' + leadId);
-            return null;
+            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
         }
     }
+
     
 
     private static Map<String, Double> fetchLeadAddressByCoordinates(Id leadId) {
@@ -118,9 +114,9 @@ public with sharing class WeatherSummaryHandler {
     private static List<String> fetchNearByPlaces(String radius, List<String> categories, String longitude, String latitude) {
         List<String> nearbyPlaces = new List<String>();
         String errorMessage = '';
-    
+        String geoapifyAPIKey = getGeoapifyAPIKey();
         // Construct the API endpoint for nearby places
-        String endPoint = 'https://api.geoapify.com/v2/places?categories=' + String.join(categories, ',') + '&limit=10&filter=circle:' + longitude + ',' + latitude  + ',' + radius + '&apiKey=44c14816d0e64f3aa5b6468793c588b8';
+        String endPoint = 'https://api.geoapify.com/v2/places?categories=' + String.join(categories, ',') + '&limit=10&filter=circle:' + longitude + ',' + latitude  + ',' + radius + '&apiKey=' + geoapifyAPIKey;
 
         //System.debug('endpoint'+ endpoint);
     
@@ -219,7 +215,6 @@ public with sharing class WeatherSummaryHandler {
     
         return null;
     }
-     
 
     private static String processResponse(OpenMeteoWrapper wrapper) {
         OpenMeteoWrapper.Hourly hourlyData = wrapper.hourly;
@@ -268,15 +263,16 @@ public with sharing class WeatherSummaryHandler {
         }
     }
 
-    private static final String OPENAI_API_KEY = 'sk-proj-6D7NG9DAmPp5HsIz7jlIT3BlbkFJ1ODWBlrFNdshmvopLQk6';
+    private static final String OPENAI_API_KEY = getOpenAIKey();
     private static String getOpenAiResponse(String prompt) {
+        
         //System.debug('Prompt: ' + prompt);
         HttpRequest req = new HttpRequest();
         req.setEndpoint('https://api.openai.com/v1/chat/completions');
         req.setMethod('POST');
         req.setHeader('Content-Type', 'application/json');
         req.setHeader('Authorization', 'Bearer ' + OPENAI_API_KEY);
-        req.setTimeout(3000);
+        //req.setTimeout(3000);
         Map<String, Object> requestMap = new Map<String, Object>{
         'messages' => new List<Object>{
             new Map<String, String>{                
@@ -298,11 +294,21 @@ public with sharing class WeatherSummaryHandler {
             Map<String, Object> choice = (Map<String, Object>) choices[0];
             Map<String, Object> message = (Map<String, Object>) choice.get('message');
             String summary = (String) message.get('content');
-            System.debug('Summary'+summary);
+            System.debug(summary);
             return summary;
         } else {
             System.debug('Error response: ' + JSON.deserializeUntyped(res.getBody()));
             return null;
         }
-    } 
+    }
+    
+    private static String getGeoapifyAPIKey() {
+        ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify'); 
+        return geoKeySettings != null ? geoKeySettings.Value__c : null;
+    }
+    
+    private static String getOpenAIKey() {
+        ApiKeys__c openKeySettings = ApiKeys__c.getInstance('OpenAi'); 
+        return openKeySettings != null ? openKeySettings.Value__c : null;
+    }
 }
