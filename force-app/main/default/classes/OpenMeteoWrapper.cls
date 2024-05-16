@@ -1,7 +1,7 @@
 /**
  * @description       : Wrapper class for OpenMeteo API response
  * @author            : Mayank Singh
- * @last modified on  : 05-14-2024
+ * @last modified on  : 05-16-2024
  * @last modified by  : Mayank Singh
 **/
 public class OpenMeteoWrapper {
@@ -14,5 +14,5 @@ public class OpenMeteoWrapper {
         public List<Double> rain; 
         public List<Double> showers; 
         public List<Double> snowfall; 
-    }
+    }        
 }

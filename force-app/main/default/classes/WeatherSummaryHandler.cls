@@ -1,38 +1,34 @@
 /**
- * @description       : 
+ * @description       : Handles fetching weather and nearby places summary for a lead
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 05-15-2024
+ * @last modified on  : 05-16-2024
  * @last modified by  : Mayank Singh
 **/
 public with sharing class WeatherSummaryHandler {
     
     @AuraEnabled(cacheable=true)
-    public static String PlacesAndWeatherSummary(Id leadId) {
-        // Call fetchLeadAddressByCoordinates to get the coordinates
-        Map<String, Double> coordinates = fetchLeadAddressByCoordinates(leadId);
+    public static String placesAndWeatherSummary(Id leadId) {
+        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
         
-        // Check if coordinates are available
-        if (!coordinates.isEmpty() && coordinates.containsKey('longitude') && coordinates.containsKey('longitude')) {
-            Double latitude = coordinates.get('latitude');
-            Double longitude = coordinates.get('longitude');
-
-            // Call fetchNearByPlaces to get nearby places
-            List<String> nearbyPlaces = fetchNearByPlaces('5000', new List<String>{'commercial'}, String.valueOf(longitude), String.valueOf(latitude));
+        if (coordinates != null) {
+            String latitude = coordinates.latitude;
+            String longitude = coordinates.longitude;
             
-            // Call fetchWeatherData to get weather data
+            List<String> nearbyPlaces = fetchNearByPlaces('5000', new List<String>{'commercial'}, longitude, latitude);
             OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude); 
             
-            // Call processResponse to process the weather data response
             if (weatherData != null) {
                 String processedResponse = processResponse(weatherData);
-                // Construct the prompt
-                String prompt = 'Nearby places: ' + String.join(nearbyPlaces, ', ') + '.\n\nWeather Summary:\n' + processedResponse + '\n\nBased on the analysis, considering the weather conditions and nearby venues, what do you think would be the best place and time to meet? Additionally, to kick-start our conversation, how about we discuss our favorite outdoor activities or recent local events?';
-
-                // Get OpenAI response
-                String openAiResponse = getOpenAiResponse(prompt);
-                //System.debug('openAiResponse'+openAiResponse);
-                return openAiResponse;
+                String openAiResponse = getOpenAiResponse(processedResponse);
+                
+                if (openAiResponse != null) {
+                    storeResponseSummary(leadId, openAiResponse);
+                    
+                    return openAiResponse;
+                } else {
+                    return 'Failed to get OpenAI response.';
+                }
             } else {
                 return 'Failed to retrieve weather data.';
             }
@@ -41,15 +37,12 @@ public with sharing class WeatherSummaryHandler {
         }
     }
 
-    
-
-    private static Map<String, Double> fetchLeadAddressByCoordinates(Id leadId) {
-        Map<String, Double> coordinates = new Map<String, Double>();
+    private static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
+        CoordinatesWrapper coordinates = null;
         String errorMessage = '';
     
         Lead lead = [SELECT Street, City, State, PostalCode, Country FROM Lead WHERE Id = :leadId WITH SECURITY_ENFORCED];
     
-        // Check if record exists
         if (lead != null) {
             // Construct the address string
             String address = '';
@@ -63,18 +56,13 @@ public with sharing class WeatherSummaryHandler {
             address = address.endsWith(',') ? address.removeEnd(',') : address;
     
             // Construct the API endpoint with the address
-            String endPoint = 'https://api.geoapify.com/v1/geocode/search?text=' + EncodingUtil.urlEncode(address, 'UTF-8') + '&apiKey=44c14816d0e64f3aa5b6468793c588b8';
-    
-            Http http = new Http();
-            HttpRequest httpReq = new HttpRequest();
-            httpReq.setMethod('GET');
-            httpReq.setEndpoint(endPoint);
-            httpReq.setHeader('content-type', 'application/json');
+            String geoapifyAPIKey = getGeoapifyAPIKey();
+            String endPoint = 'https://api.geoapify.com/v1/geocode/search?text=' + EncodingUtil.urlEncode(address, 'UTF-8') + '&apiKey=' + geoapifyAPIKey;
     
             try {
-                HttpResponse response = http.send(httpReq);
+                HttpResponse response = HttpHelper.sendGetRequest(endPoint);
     
-                if (response.getStatusCode() == 200) {
+                if (response != null && response.getStatusCode() == 200) {
                     // Parse JSON response
                     Map<String, Object> parsedResponse = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
                     List<Object> features = (List<Object>) parsedResponse.get('features');
@@ -87,15 +75,14 @@ public with sharing class WeatherSummaryHandler {
                             List<Object> coordinatesList = (List<Object>) geometry.get('coordinates');
     
                             if (coordinatesList != null && coordinatesList.size() >= 2) {
-                                coordinates.put('latitude', (Double) coordinatesList[1]);
-                                coordinates.put('longitude', (Double) coordinatesList[0]);
-                                System.debug('coordinatesList'+coordinatesList);
-
+                                String latitude = String.valueOf(coordinatesList[1]);
+                                String longitude = String.valueOf(coordinatesList[0]);
+                                coordinates = new CoordinatesWrapper(latitude, longitude);
                             }
                         }
                     }
                 } else {
-                    errorMessage = 'Unauthorized Error while communicating with Geoapify Data API. Status: ' + response.getStatus() + ' Status code: ' + response.getStatusCode();
+                    errorMessage = 'Error while communicating with Geoapify Data API. Status: ' + response.getStatus() + ' Status code: ' + response.getStatusCode();
                 }
             } catch (System.CalloutException e) {
                 errorMessage = 'Error while communicating with Geoapify Data API: ' + e.getMessage();
@@ -116,22 +103,13 @@ public with sharing class WeatherSummaryHandler {
         String errorMessage = '';
         String geoapifyAPIKey = getGeoapifyAPIKey();
         // Construct the API endpoint for nearby places
-        String endPoint = 'https://api.geoapify.com/v2/places?categories=' + String.join(categories, ',') + '&limit=10&filter=circle:' + longitude + ',' + latitude  + ',' + radius + '&apiKey=' + geoapifyAPIKey;
+        String endPoint = 'https://api.geoapify.com/v2/places?categories=' + String.join(categories, ',') + '&limit=10&filter=circle:' + longitude + ',' + latitude + ',' + radius + '&apiKey=' + geoapifyAPIKey;
 
-        //System.debug('endpoint'+ endpoint);
-    
-        Http http = new Http();
-        HttpRequest httpReq = new HttpRequest();
-        httpReq.setMethod('GET');
-        httpReq.setEndpoint(endPoint);
-        httpReq.setHeader('content-type', 'application/json');
-    
         try {
-            HttpResponse response = http.send(httpReq);
+            HttpResponse response = HttpHelper.sendGetRequest(endPoint);
     
-            if (response.getStatusCode() == 200) {
+            if (response != null && response.getStatusCode() == 200) {
                 String responseBody = response.getBody();
-                //System.debug('Response Body: ' + responseBody);
                 
                 // Parse JSON response to extract nearby places
                 Map<String, Object> parsedResponse = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
@@ -143,10 +121,9 @@ public with sharing class WeatherSummaryHandler {
                     Map<String, Object> properties = (Map<String, Object>) placeMap.get('properties');
                     String placeName = (String) properties.get('name');
                     nearbyPlaces.add(placeName);
-                    System.debug('Place Name: ' + placeName);
                 }
             } else {
-                errorMessage = 'Unauthorized Error while communicating with Geoapify Data API. Status: ' + response.getStatus() + ' Status code: ' + response.getStatusCode();
+                errorMessage = 'Error while communicating with Geoapify Data API. Status: ' + response.getStatus() + ' Status code: ' + response.getStatusCode();
                 System.debug('Error: ' + errorMessage);
             }
         } catch (System.Exception e) {
@@ -165,15 +142,15 @@ public with sharing class WeatherSummaryHandler {
         return nearbyPlaces;
     }
 
-    private static OpenMeteoWrapper fetchWeatherData(Double longitude, Double latitude) {
+    private static OpenMeteoWrapper fetchWeatherData(String longitude, String latitude) {
         String endPoint = System.Label.OpenMeteo;
         String errorMessage = '';
         OpenMeteoWrapper obj = new OpenMeteoWrapper(); 
     
         // Parameters for the API request
         Map<String, String> params = new Map<String, String>{
-            'longitude' => String.valueOf(longitude),
-            'latitude' => String.valueOf(latitude),
+            'longitude' => longitude,
+            'latitude' => latitude,
             'hourly' => 'temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,rain,showers,snowfall,wind_speed_10m,wind_direction_10m',
             'forecast_days' => '16'
         };
@@ -187,22 +164,13 @@ public with sharing class WeatherSummaryHandler {
     
         String finalEndPoint = endPoint + '?' + queryString;
     
-        Http http = new Http();
-        HttpRequest httpReq = new HttpRequest();
-        httpReq.setMethod('GET');
-        httpReq.setEndpoint(finalEndPoint);
-        httpReq.setHeader('content-type', 'application/json');
-    
         try {
-            HttpResponse response = http.send(httpReq);
+            HttpResponse response = HttpHelper.sendGetRequest(finalEndPoint);
     
-            if(response.getStatusCode() == 200) {
+            if(response != null && response.getStatusCode() == 200) {
                 String body = response.getBody();
-                //System.debug('Response Body: ' + body);
                 // Deserialize the JSON response into OpenMeteoWrapper object
                 obj = (OpenMeteoWrapper) JSON.deserialize(body.replace('"time":', '"timestamps":'), OpenMeteoWrapper.class);
-                System.debug('OpenMeteoWrapper.hourly: ' + obj.hourly);    
-                // Return the deserialized object
                 return obj;
             } else {
                 errorMessage = 'Error while communicating with OpenMeteo API. Status: ' + response.getStatus() + ' Status code: ' + response.getStatusCode();
@@ -256,49 +224,61 @@ public with sharing class WeatherSummaryHandler {
             }
     
             String csvContent = String.join(lines, '\n');
-            System.debug('CSV Content:\n' + csvContent);
             return csvContent;
         } else {
             return null;
         }
     }
 
-    private static final String OPENAI_API_KEY = getOpenAIKey();
+    //private static final String OPENAI_API_KEY = getOpenAIKey();
     private static String getOpenAiResponse(String prompt) {
-        
-        //System.debug('Prompt: ' + prompt);
-        HttpRequest req = new HttpRequest();
-        req.setEndpoint('https://api.openai.com/v1/chat/completions');
-        req.setMethod('POST');
-        req.setHeader('Content-Type', 'application/json');
-        req.setHeader('Authorization', 'Bearer ' + OPENAI_API_KEY);
-        //req.setTimeout(3000);
+        String openAiKey = getOpenAIKey();
+
+        String endPoint = 'https://api.openai.com/v1/chat/completions';
         Map<String, Object> requestMap = new Map<String, Object>{
-        'messages' => new List<Object>{
-            new Map<String, String>{                
-                'content' => prompt,
-                'role' => 'user'
-            }
-        },
-        'model' => 'gpt-3.5-turbo'
+            'messages' => new List<Object>{
+                new Map<String, String>{                
+                    'content' => prompt,
+                    'role' => 'user'
+                }
+            },
+            'model' => 'gpt-3.5-turbo'
         };
         String requestJson = JSON.serialize(requestMap);
-        req.setBody(requestJson);
-        //System.debug('Request: ' + req.getBody());
-        Http http = new Http();
-        HttpResponse res = http.send(req);
-       // System.debug('Response: ' + res.getBody());
-        if (res.getStatusCode() == 200) {
+        
+        HttpResponse res = HttpHelper.sendPostRequest(endPoint, requestJson, openAiKey);
+        
+        if (res != null && res.getStatusCode() == 200) {
             Map<String, Object> responseMap = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
             List<Object> choices = (List<Object>) responseMap.get('choices');
             Map<String, Object> choice = (Map<String, Object>) choices[0];
             Map<String, Object> message = (Map<String, Object>) choice.get('message');
             String summary = (String) message.get('content');
-            System.debug(summary);
             return summary;
         } else {
             System.debug('Error response: ' + JSON.deserializeUntyped(res.getBody()));
             return null;
+        }
+    }
+
+    private static void storeResponseSummary(Id leadId, String summaryText) {
+        // Create a new ResponseSummary__c record
+        ResponseSummary__c summary = new ResponseSummary__c();
+        summary.Lead__c = leadId;
+        summary.Summary__c = summaryText;
+        
+        try {
+            // Insert the new record using Database.insert
+            Database.SaveResult[] srList = Database.insert(new List<ResponseSummary__c>{summary}, false);
+            if (srList[0].isSuccess()) {
+                System.debug('Summary record inserted successfully.');
+            } else {
+                for(Database.Error err : srList[0].getErrors()) {
+                    System.debug('Error message: ' + err.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Error while storing response summary: ' + e.getMessage());
         }
     }
     
