@@ -1,10 +1,3 @@
-/**
- * @description       : Handles fetching weather and nearby places summary for a lead
- * @author            : Mayank Singh
- * @group             : 
- * @last modified on  : 05-16-2024
- * @last modified by  : Mayank Singh
-**/
 public with sharing class WeatherSummaryHandler {
     
     @AuraEnabled(cacheable=true)
@@ -36,6 +29,36 @@ public with sharing class WeatherSummaryHandler {
             return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
         }
     }
+
+    @RemoteAction
+    public static String getWeatherDataJSON(Id leadId) {
+        // Call methods to fetch and process weather data
+        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+        System.debug('coordinates'+coordinates);
+        // Check if coordinates are available
+        if (coordinates != null) {
+            String latitude = coordinates.latitude;
+            String longitude = coordinates.longitude;
+
+
+            // Call method to fetch weather data
+            OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude); 
+            System.debug('weatherData'+weatherData);
+
+            // Process the response and convert to JSON
+            if (weatherData != null) {
+                String processedResponse = processResponse(weatherData);
+                System.debug('processedResponse'+processedResponse);
+
+                return processedResponse;
+            } else {
+                return 'Failed to retrieve weather data.';
+            }
+        } else {
+            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        }
+    }
+
 
     private static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
         CoordinatesWrapper coordinates = null;
@@ -261,7 +284,7 @@ public with sharing class WeatherSummaryHandler {
         }
     }
 
-    private static void storeResponseSummary(Id leadId, String summaryText) {
+   private static void storeResponseSummary(Id leadId, String summaryText) {
         // Create a new ResponseSummary__c record
         ResponseSummary__c summary = new ResponseSummary__c();
         summary.Lead__c = leadId;
@@ -281,6 +304,7 @@ public with sharing class WeatherSummaryHandler {
             System.debug('Error while storing response summary: ' + e.getMessage());
         }
     }
+ 
     
     private static String getGeoapifyAPIKey() {
         ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify'); 
