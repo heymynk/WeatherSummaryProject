@@ -2,31 +2,36 @@
     <apex:includeScript value="{!$Resource.chartJs}"/>
 
     <style>
-              /* Styles for the chart container */
-              .chart-container {
+        /* Enhance the overall look of the chart container */
+
+        .chart-container {
             position: relative;
-            width: 100%; /* Make the container take up the full width */
-            max-width: 800px; /* Adjust max-width according to your layout */
-            background-color: #f3f3f3; /* Background color for the chart */
+            width: 90%; /* Adjust width for better responsiveness */
+            max-width: 1200px; /* Increase max-width */
+            margin: 20px auto; /* Centering the chart container and adding margin */
+            padding: 20px; /* Adding padding for better spacing */
+            background-color: #f3f3f3; /* Background color */
             border-radius: 8px; /* Rounded corners */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow for depth */
         }
 
-        /* Styles for the canvas */
+        /* Adjusting the canvas inside the container to be inherently responsive */
+
+     
         canvas {
             display: block;
             width: 100%;
-            height: 100%; /* Make the canvas fill the container */
-            border-radius: 8px; 
+            
         }
 
-
+        /* Style adjustments for the chart legend */
         .chart-legend {
             position: absolute;
             bottom: 10px;
             left: 10px;
             color: #333;
-            font-size: 8px;
+            font-size: 12px; /* Font size for better readability */
+            padding: 10px; /* Padding for better spacing */
         }
     </style>
 
@@ -35,42 +40,53 @@
     </div>
 
     <script>
-        // Utility function to decode HTML entities
         function decodeHtml(html) {
             var txt = document.createElement("textarea");
             txt.innerHTML = html;
             return txt.value;
         }
 
+        function parseCSV(csv) {
+            const lines = csv.split("\n");
+            const headers = lines[0].split(", ");
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const obj = {};
+                const currentline = lines[i].split(",");
+                if (currentline.length === headers.length) {
+                    for (let j = 0; j < headers.length; j++) {
+                        obj[headers[j].trim()] = currentline[j].trim();
+                    }
+                    data.push(obj);
+                }
+            }
+            return data;
+        }
+
         window.onload = function() {
             var leadId = '{!$CurrentPage.parameters.Id}';
-
             console.log('leadId', leadId);
             WeatherSummaryHandler.getWeatherDataJSON(leadId, function(result, event) {
                 if (event.status && result) {
-                    console.log('result', result);
-
                     var decodedResult = decodeHtml(result);
-                    console.log('decodedResult', decodedResult);
-
-                    var weatherData = JSON.parse(decodedResult);
-                    console.log('weatherData', weatherData);
+                    var weatherData = parseCSV(decodedResult);
 
                     if (weatherData && weatherData.length > 0) {
                         var timestamps = [];
                         var temperatures = [];
                         var rain = [];
-                        var showers = [];
                         var snowfall = [];
+                        var showers = [];
                         var relative_humidity_2m = [];
 
                         for (var i = 0; i < weatherData.length; i++) {
-                            timestamps.push(weatherData[i].timestamp.substring(11, 13));
-                            temperatures.push(weatherData[i].temperature_2m);
-                            rain.push(weatherData[i].rain);
-                            snowfall.push(weatherData[i].snowfall);
-                            showers.push(weatherData[i].showers);
-                            relative_humidity_2m.push(weatherData[i].relative_humidity_2m);
+                            timestamps.push(weatherData[i]["Time"].substring(11, 13));
+                            temperatures.push(parseFloat(weatherData[i]["Temperature (°C)"]));
+                            rain.push(parseFloat(weatherData[i]["Rain (mm)"]));
+                            snowfall.push(parseFloat(weatherData[i]["Snowfall (cm)"]));
+                            showers.push(parseFloat(weatherData[i]["Showers (mm)"]));
+                            relative_humidity_2m.push(parseFloat(weatherData[i]["Relative Humidity (%)"]));
                         }
 
                         var ctx = document.getElementById('myChart').getContext('2d');
@@ -127,7 +143,8 @@
                                 ]
                             },
                             options: {
-                                responsive: true, // Enable responsiveness
+                                responsive: true,
+                                maintainAspectRatio: false, // Important for responsive height
                                 devicePixelRatio: window.devicePixelRatio,
                                 animation: {
                                     duration: 1000
@@ -136,7 +153,8 @@
                                     display: true,
                                     labels: {
                                         fontColor: 'black',
-                                        fontSize: 8
+                                        fontSize: 12,
+                                        padding: 10
                                     }
                                 },
                                 tooltips: {
