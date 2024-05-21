@@ -46,5 +46,5 @@ public class HttpHelper {
             System.debug('Error: ' + e.getMessage());
         }
         return null;
-    }
+    }   
 }

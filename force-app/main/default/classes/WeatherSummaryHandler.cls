@@ -7,27 +7,38 @@
 **/
 public with sharing class WeatherSummaryHandler {
     
+
     @AuraEnabled(cacheable=true)
     public static String placesAndWeatherSummary(Id leadId) {
+        // Call fetchLeadAddressByCoordinates to get the coordinates
         CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
         
+        // Check if coordinates are available
         if (coordinates != null) {
             String latitude = coordinates.latitude;
             String longitude = coordinates.longitude;
-            
+
+            // Call fetchNearByPlaces to get nearby places
             List<String> nearbyPlaces = fetchNearByPlaces('5000', new List<String>{'commercial'}, longitude, latitude);
+            
+            // Call fetchWeatherData to get weather data
             OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude); 
             
+            // Call processResponse to process the weather data response
             if (weatherData != null) {
                 String processedResponse = processResponse(weatherData);
-                String openAiResponse = getOpenAiResponse(processedResponse);
-                
-                if (openAiResponse != null) {
+                // Construct the prompt
+                String prompt = 'Nearby Places: ' + String.join(nearbyPlaces, ', ') + '.\n\nWeather Summary:\n' + processedResponse + '\n\nGiven the current weather conditions and the nearby venues listed, what would be the ideal place and time to meet the Lead customer?\n\nTo start our conversation, could you suggest some favorite outdoor activities or recent local events we could discuss?';
+
+                // Get OpenAI response
+                String openAiResponse = getOpenAiResponse(prompt);
+                if(openAiResponse != null) {
+                    // Store the response summary
                     storeResponseSummary(leadId, openAiResponse);
-                    
+                    // Return the response summary
                     return openAiResponse;
                 } else {
-                    return 'Failed to get OpenAI response.';
+                    return 'Failed to retrieve OpenAI response.';
                 }
             } else {
                 return 'Failed to retrieve weather data.';
@@ -261,6 +272,7 @@ public with sharing class WeatherSummaryHandler {
         }
     }
 
+    @future
     private static void storeResponseSummary(Id leadId, String summaryText) {
         // Create a new ResponseSummary__c record
         ResponseSummary__c summary = new ResponseSummary__c();
