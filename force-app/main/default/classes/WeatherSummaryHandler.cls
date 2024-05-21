@@ -295,6 +295,7 @@ public with sharing class WeatherSummaryHandler {
         }
     }
 
+    @future
     private static void storeResponseSummary(Id leadId, String summaryText) {
         // Create a new ResponseSummary__c record
         ResponseSummary__c summary = new ResponseSummary__c();
