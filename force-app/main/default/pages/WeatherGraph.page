@@ -2,50 +2,40 @@
     <apex:includeScript value="{!$Resource.chartJs}"/>
 
     <style>
-        /* Enhance the overall look of the chart container */
-
-        .chart-container {
-            position: relative;
-            width: 90%; /* Adjust width for better responsiveness */
-            max-width: 1200px; /* Increase max-width */
-            margin: 20px auto; /* Centering the chart container and adding margin */
-            padding: 20px; /* Adding padding for better spacing */
-            background-color: #f3f3f3; /* Background color */
-            border-radius: 8px; /* Rounded corners */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow for depth */
-        }
-
-        /* Adjusting the canvas inside the container to be inherently responsive */
-
-     
         canvas {
-            display: block;
+            background-color: #f3f3f3; 
+            display: flex;
             width: 100%;
-            
+            height: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            border-radius: 8px;
         }
 
-        /* Style adjustments for the chart legend */
         .chart-legend {
             position: absolute;
             bottom: 10px;
             left: 10px;
             color: #333;
-            font-size: 12px; /* Font size for better readability */
-            padding: 10px; /* Padding for better spacing */
+            font-size: 8px;
+        }
+
+        /* Styles for the error message */
+        .error-message {
+            color: red;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 
     <div class="chart-container">
         <canvas id="myChart"></canvas>
     </div>
+    <div id="errorMessage" class="error-message" style="display: none;">
+        No weather data found.
+    </div>
 
     <script>
-        function decodeHtml(html) {
-            var txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
-        }
-
         function parseCSV(csv) {
             const lines = csv.split("\n");
             const headers = lines[0].split(", ");
@@ -66,18 +56,19 @@
 
         window.onload = function() {
             var leadId = '{!$CurrentPage.parameters.Id}';
-            console.log('leadId', leadId);
+
             WeatherSummaryHandler.getWeatherDataJSON(leadId, function(result, event) {
                 if (event.status && result) {
-                    var decodedResult = decodeHtml(result);
-                    var weatherData = parseCSV(decodedResult);
+                    console.log('result',result);
+                    var weatherData = parseCSV(result);
+                    console.log('weatherData',weatherData)
 
                     if (weatherData && weatherData.length > 0) {
                         var timestamps = [];
                         var temperatures = [];
                         var rain = [];
-                        var snowfall = [];
                         var showers = [];
+                        var snowfall = [];
                         var relative_humidity_2m = [];
 
                         for (var i = 0; i < weatherData.length; i++) {
@@ -143,8 +134,7 @@
                                 ]
                             },
                             options: {
-                                responsive: true,
-                                maintainAspectRatio: false, // Important for responsive height
+                                responsive: true, // Enable responsiveness
                                 devicePixelRatio: window.devicePixelRatio,
                                 animation: {
                                     duration: 1000
@@ -153,8 +143,7 @@
                                     display: true,
                                     labels: {
                                         fontColor: 'black',
-                                        fontSize: 12,
-                                        padding: 10
+                                        fontSize: 11
                                     }
                                 },
                                 tooltips: {
@@ -184,7 +173,7 @@
                                             display: true,
                                             labelString: 'Value',
                                             fontColor: 'black',
-                                            fontSize: 16
+                                            fontSize: 14
                                         },
                                         ticks: {
                                             fontColor: 'black'
@@ -194,9 +183,10 @@
                             }
                         });
                     } else {
-                        console.error('No weather data found.');
+                        document.getElementById('errorMessage').style.display = 'block';
                     }
                 } else {
+                    document.getElementById('errorMessage').style.display = 'block';
                     console.error('Error:', event.message);
                 }
             });
