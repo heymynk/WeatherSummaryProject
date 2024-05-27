@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 05-27-2024
+ * @last modified by  : Mayank Singh
+**/
 public class Twitter {
     private String clientId = 'U2dGWmZZTnV2dzdlWUQ3QnVpdFQ6MTpjaQ';
     private String clientSecret = 'EzxJ5ukZNt0OaqtUNQi4xjqo0OhuG-NWrrut32cLMFz1fEI1DW';

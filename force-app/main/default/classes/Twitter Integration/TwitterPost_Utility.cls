@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 05-27-2024
+ * @last modified by  : Mayank Singh
+**/
 public class TwitterPost_Utility {
     public static void twitterPost(String ApiKey, String ApiSecret, String AccessToken, String AccessTokenSecret, String message) {
         if (String.isNotBlank(ApiKey) && String.isNotBlank(ApiSecret) && String.isNotBlank(AccessToken) && String.isNotBlank(AccessTokenSecret) && String.isNotBlank(message)) {
@@ -20,7 +27,7 @@ public class TwitterPost_Utility {
                                  'oauth_token='+othToken+'&'+
                                  'oauth_version=1.0&'+
                                  'status='+message;
-            String baseString = 'POST&'+EncodingUtil.urlEncode('https://api.twitter.com/1.1/statuses/update.json', 'UTF-8')+'&'+        
+            String baseString = 'POST&'+EncodingUtil.urlEncode('https://api.twitter.com/1.0/statuses/update.json', 'UTF-8')+'&'+        
                   EncodingUtil.urlEncode(paramString, 'UTF-8');
             System.debug('### baseString :'+baseString);
             String signString = consumSecret+'&'+othSecret;
