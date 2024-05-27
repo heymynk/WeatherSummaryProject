@@ -1,4 +1,4 @@
-public with sharing class TwitterPost_UtilityOAuth1 {
+public with sharing class TwitterPost_UtilityOAuth2 {
     public static void twitterPost(String ApiKey, String ApiSecret, String AccessToken, String AccessTokenSecret, String message)
     {
         if(String.isNotBlank(ApiKey) && String.isNotBlank(ApiSecret) && String.isNotBlank(AccessToken) && String.isNotBlank(AccessTokenSecret) && String.isNotBlank(message))
@@ -37,8 +37,8 @@ public with sharing class TwitterPost_UtilityOAuth1 {
             {
                   signature = Encodingutil.urlEncode(signature, 'UTF-8');
                   HttpRequest req = new HttpRequest();
-                  //req.setEndpoint('https://api.twitter.com/1.1/statuses/update.json?include_entities=true');
-                  req.setEndpoint('https://api.twitter.com/2/tweets');
+                  req.setEndpoint('https://api.twitter.com/1.1/statuses/update.json?include_entities=true');
+                  //req.setEndpoint('https://api.twitter.com/2/tweets');
 
                   req.setMethod('POST');
                   string reqstring = 'OAuth oauth_consumer_key="'+consumKey+'",'+
