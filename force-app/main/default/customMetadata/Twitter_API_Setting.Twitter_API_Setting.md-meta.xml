@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Twitter</label>
+    <protected>false</protected>
+    <values>
+        <field>API_Key__c</field>
+        <value xsi:type="xsd:string">WkE8tCi8jhOWMkSPnme3X7pz7</value>
+    </values>
+    <values>
+        <field>APP_ID__c</field>
+        <value xsi:type="xsd:string">28814088</value>
+    </values>
+    <values>
+        <field>Access_Token_Secret__c</field>
+        <value xsi:type="xsd:string">9GmiyAiFlUFWTY8Re9TjVDn5rH0sjurfZeoELRDigYI5e</value>
+    </values>
+    <values>
+        <field>Access_Token__c</field>
+        <value xsi:type="xsd:string">1793159002483765248-EW5Yj600EPgcUAJeQxZMzb3PCC0ZLe</value>
+    </values>
+    <values>
+        <field>App_Name__c</field>
+        <value xsi:type="xsd:string">SFDXTwitter</value>
+    </values>
+    <values>
+        <field>Bearer_Token__c</field>
+        <value xsi:type="xsd:string">AAAAAAAAAAAAAAAAAAAAAAirtwEAAAAAVz9%2BV%2FJe5xGVPbA3T%2FJLNfaPkXs%3DSiRauwWTMALvNbTOF2IjQGFOOqhhW8S3H9iwhOgNNZZS7MTAcw</value>
+    </values>
+    <values>
+        <field>Consumer_Key__c</field>
+        <value xsi:type="xsd:string">3MVG9gl7ph1Px3YavzZhOl2rzmEaiOGgXJtIO3vBROHv8RCgKkf7YajWYJqhSjfZkCtz2JUcfZxnJbtWoJQa3</value>
+    </values>
+    <values>
+        <field>Consumer_Secret__c</field>
+        <value xsi:type="xsd:string">5AC3837ED7FDCC30D79CA8AC29A2BEC15760CE52BE525625645428AD9B8C7EC7</value>
+    </values>
+    <values>
+        <field>Key_Secret__c</field>
+        <value xsi:type="xsd:string">jclvxMqSQqBFVRud3NMw79y1ntFKQQ1TySE2rfXOQPhtnIMmLM</value>
+    </values>
+    <values>
+        <field>OAuth_2_0_Client_Secret__c</field>
+        <value xsi:type="xsd:string">EzxJ5ukZNt0OaqtUNQi4xjqo0OhuG-NWrrut32cLMFz1fEI1DW</value>
+    </values>
+    <values>
+        <field>OAuth_2_0_client_Id__c</field>
+        <value xsi:type="xsd:string">U2dGWmZZTnV2dzdlWUQ3QnVpdFQ6MTpjaQ</value>
+    </values>
+    <values>
+        <field>Twitter_Post_URL_Endpoint__c</field>
+        <value xsi:type="xsd:string">https://api.twitter.com/2/tweets</value>
+    </values>
+</CustomMetadata>
