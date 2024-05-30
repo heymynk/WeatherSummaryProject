@@ -6,7 +6,7 @@
  * @last modified by  : Mayank Singh
 **/
 import { LightningElement, wire, api } from 'lwc';
-import PlacesAndWeatherSummary from '@salesforce/apex/WeatherSummaryHandler.PlacesAndWeatherSummary';
+import placesAndWeatherSummary from '@salesforce/apex/WeatherSummaryHandler.placesAndWeatherSummary';
 
 export default class LeadWeatherSummary extends LightningElement {
     @api recordId;  
@@ -14,7 +14,7 @@ export default class LeadWeatherSummary extends LightningElement {
     isLoading = true; // Property to track loading state
 
     // Wire method to fetch OpenAI response
-    @wire(PlacesAndWeatherSummary, { leadId: '$recordId' }) 
+    @wire(placesAndWeatherSummary, { leadId: '$recordId' }) 
     wiredOpenAiResponse({ error, data }) {
         if (data) {
             console.log('OpenAI Response:', data); 

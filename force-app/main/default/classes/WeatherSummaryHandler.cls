@@ -2,15 +2,17 @@ public with sharing class WeatherSummaryHandler {
     
 
     @AuraEnabled(cacheable=true)
-    public static String PlacesAndWeatherSummary(Id leadId) {
+    public static String placesAndWeatherSummary(Id leadId) {
         // Call fetchLeadAddressByCoordinates to get the coordinates
         CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
         
-
         // Check if coordinates are available
         if (coordinates != null) {
             String latitude = coordinates.latitude;
             String longitude = coordinates.longitude;
+
+            System.debug('latitude' + latitude);
+            System.debug('longitude' + longitude);
 
             // Call fetchNearByPlaces to get nearby places
             List<String> nearbyPlaces = fetchNearByPlaces('5000', new List<String>{'commercial'}, longitude, latitude);
@@ -18,23 +20,30 @@ public with sharing class WeatherSummaryHandler {
             // Call fetchWeatherData to get weather data
             OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude);
 
-            CompanyInfoWrapper companyData = CompanyInformationHandler.getCompanyData(leadId);
-            System.debug('companyData'+companyData);
-            
-            // Call processResponse to process the weather data response
-            if (weatherData != null && companyData!=null) {
+            // Call getCompanyData to get company information
+            CompanyInfoWrapper companyData = getCompanyData(leadId);
+            String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
 
+            System.debug('companyInfoString' + companyInfoString);
+            
+            // Process the weather data response
+            if (weatherData != null && companyData != null) {
                 String processedResponse = processResponse(weatherData);
-                String companyInfoString = JSON.serialize(companyData);
 
-            
                 // Construct the prompt
-                // String prompt = 'Nearby Places: ' + String.join(nearbyPlaces, ', ') + '.\n\nWeather Summary:\n' + processedResponse + '\n\nGiven the current weather conditions and the nearby venues listed, what would be the ideal place and time to meet the Lead customer?\n\nTo start our conversation, could you suggest some favorite outdoor activities or recent local events we could discuss?';
-                String prompt = 'Nearby Places: ' + String.join(nearbyPlaces, ', ') + '.\n\nWeather Summary:\n' + processedResponse + '\n\nCompany Information:\n' + companyInfoString + '\n\nGiven the current weather conditions, nearby venues, and company information, what would be the ideal place and time to meet the Lead customer?\n\nTo start our conversation, could you suggest some favorite outdoor activities or recent local events we could discuss?';
+                String prompt = 'Nearby Places: ' + String.join(nearbyPlaces, ', ') + 
+                                '.\n\nWeather Summary:\n' + processedResponse + 
+                                '\n\nCompany Information:\n' + companyInfoString + 
+                                '\n\nGiven the current weather conditions, nearby venues, and company information, ' +
+                                'please suggest the ideal place and time to meet the Lead customer. ' +
+                                'Additionally, recommend some favorite outdoor activities or recent local events we could discuss, ' +
+                                'considering the company profile and industry, Speciality, revenue and related figures (Describe this only in 5 lines).';
+
+                System.debug('prompt' + prompt);
 
                 // Get OpenAI response
                 String openAiResponse = getOpenAiResponse(prompt);
-                if(openAiResponse != null) {
+                if (openAiResponse != null) {
                     // Store the response summary
                     storeResponseSummary(leadId, openAiResponse);
                     // Return the response summary
@@ -43,19 +52,16 @@ public with sharing class WeatherSummaryHandler {
                     return 'Failed to retrieve OpenAI response.';
                 }
             } else {
-                return 'Failed to retrieve weather data.';
+                return 'Failed to retrieve weather data or company information.';
             }
         } else {
             return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
         }
     }
 
-
     @AuraEnabled(cacheable=true)
     public static CompanyInfoWrapper getCompanyData(Id leadId) {
-
         String companyInfoApiKey = getcompanyInfoAPIKey();
-        System.debug('companyInfoApiKey' +companyInfoApiKey);
 
         Lead lead = [SELECT Company FROM Lead WHERE Id = :leadId LIMIT 1];
         String companyName = lead.Company;
@@ -81,21 +87,17 @@ public with sharing class WeatherSummaryHandler {
 
             if (response.getStatusCode() == 200) {
                 String responseBody = response.getBody();
-                // Process the response body as needed
                 System.debug('Response: ' + responseBody);
 
-                // Parse the JSON response to extract display_name and summary
                 Map<String, Object> responseMap = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
                 String displayName = (String) responseMap.get('display_name');
                 String summary = (String) responseMap.get('summary');
 
                 companyData = new CompanyInfoWrapper(displayName, summary);
                 
-            return companyData;
-
+                return companyData;
             } else {
                 System.debug('Failed with status code: ' + response.getStatusCode());
-                System.debug('Response: ' + response.getBody());
                 return null;
             }
         } catch (Exception e) {
@@ -103,6 +105,7 @@ public with sharing class WeatherSummaryHandler {
             return null;
         }
     }
+
 
     private static String getcompanyInfoAPIKey() {
         ApiKeys__c companyInfoKeySettings = ApiKeys__c.getInstance('companyInfo'); 
