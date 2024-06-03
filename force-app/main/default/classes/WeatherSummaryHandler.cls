@@ -14,23 +14,23 @@ public with sharing class WeatherSummaryHandler {
             System.debug('longitude' + longitude);
 
             // Call fetchNearByPlaces to get nearby places
-            // List<String> nearbyPlaces = fetchNearByPlaces(
-            //     '5000',
-            //     new List<String>{ 'commercial' },
-            //     longitude,
-            //     latitude
-            // );
+            List<String> nearbyPlaces = fetchNearByPlaces(
+                '5000',
+                new List<String>{ 'commercial' },
+                longitude,
+                latitude
+            );
 
             // Call fetchWeatherData to get weather data
-            //OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude);
+            OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude);
 
-            // Call getCompanyData to get company information
-            CompanyInfoWrapper companyData = getCompanyData(leadId);
-            String companyInfoString = companyData != null
-                ? companyData.summary
-                : 'No company information available';
+            // // Call getCompanyData to get company information
+            // CompanyInfoWrapper companyData = getCompanyData(leadId);
+            // String companyInfoString = companyData != null
+            //     ? companyData.summary
+            //     : 'No company information available';
 
-            System.debug('companyInfoString' + companyInfoString);
+            // System.debug('companyInfoString' + companyInfoString);
 
             // Call SolarForecastService to get forecast data and calculate averages
             HttpResponse forecastResponse = SolarForecastService.getForecast(
@@ -43,17 +43,17 @@ public with sharing class WeatherSummaryHandler {
             );
 
             // Process the weather data response
-            if (weatherAverages != null && companyData != null) {
-                // String processedResponse = processResponse(weatherData);
+            if (weatherData != null) {
+                String processedResponse = processResponse(weatherData);
 
                 // Construct the prompt
                 String prompt =
-                    // 'Nearby Places: ' +
-                    // String.join(nearbyPlaces, ', ') +
-                    // '.\n\nWeather Summary:\n' +
-                    // processedResponse +
+                    'Nearby Places: ' +
+                    String.join(nearbyPlaces, ', ') +
+                    '.\n\nWeather Summary:\n' +
+                    processedResponse +
                     // '\n\nCompany Information:\n' +
-                    companyInfoString +
+                    // companyInfoString +
                     '\n\nWeather Averages:\n' +
                     formatAverages(weatherAverages) +
                     '\n\nGiven the current weather conditions, nearby venues, and company information, ' +
@@ -166,33 +166,33 @@ public with sharing class WeatherSummaryHandler {
             : null;
     }
 
-    //@RemoteAction
-    // public static String getWeatherDataJSON(Id leadId) {
-    //     // Call methods to fetch and process weather data
-    //     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-    //     System.debug('coordinates' + coordinates);
-    //     // Check if coordinates are available
-    //     if (coordinates != null) {
-    //         String latitude = coordinates.latitude;
-    //         String longitude = coordinates.longitude;
+    @RemoteAction
+    public static String getWeatherDataJSON(Id leadId) {
+        // Call methods to fetch and process weather data
+        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+        System.debug('coordinates' + coordinates);
+        // Check if coordinates are available
+        if (coordinates != null) {
+            String latitude = coordinates.latitude;
+            String longitude = coordinates.longitude;
 
-    //         // Call method to fetch weather data
-    //         OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude);
-    //         System.debug('weatherData' + weatherData);
+            // Call method to fetch weather data
+            OpenMeteoWrapper weatherData = fetchWeatherData(longitude, latitude);
+            System.debug('weatherData' + weatherData);
 
-    //         // Process the response and convert to JSON
-    //         if (weatherData != null) {
-    //             String processedResponse = processResponse(weatherData);
-    //             System.debug('processedResponse' + processedResponse);
+            // Process the response and convert to JSON
+            if (weatherData != null) {
+                String processedResponse = processResponse(weatherData);
+                System.debug('processedResponse' + processedResponse);
 
-    //             return processedResponse;
-    //         } else {
-    //             return 'Failed to retrieve weather data.';
-    //         }
-    //     } else {
-    //         return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
-    //     }
-    // }
+                return processedResponse;
+            } else {
+                return 'Failed to retrieve weather data.';
+            }
+        } else {
+            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        }
+    }
 
     private static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
         CoordinatesWrapper coordinates = null;
@@ -275,204 +275,204 @@ public with sharing class WeatherSummaryHandler {
         return coordinates;
     }
 
-    // private static List<String> fetchNearByPlaces(
-    //     String radius,
-    //     List<String> categories,
-    //     String longitude,
-    //     String latitude
-    // ) {
-    //     List<String> nearbyPlaces = new List<String>();
-    //     String errorMessage = '';
-    //     String geoapifyAPIKey = getGeoapifyAPIKey();
-    //     // Construct the API endpoint for nearby places
-    //     String endPoint =
-    //         'https://api.geoapify.com/v2/places?categories=' +
-    //         String.join(categories, ',') +
-    //         '&limit=10&filter=circle:' +
-    //         longitude +
-    //         ',' +
-    //         latitude +
-    //         ',' +
-    //         radius +
-    //         '&apiKey=' +
-    //         geoapifyAPIKey;
+    private static List<String> fetchNearByPlaces(
+        String radius,
+        List<String> categories,
+        String longitude,
+        String latitude
+    ) {
+        List<String> nearbyPlaces = new List<String>();
+        String errorMessage = '';
+        String geoapifyAPIKey = getGeoapifyAPIKey();
+        // Construct the API endpoint for nearby places
+        String endPoint =
+            'https://api.geoapify.com/v2/places?categories=' +
+            String.join(categories, ',') +
+            '&limit=10&filter=circle:' +
+            longitude +
+            ',' +
+            latitude +
+            ',' +
+            radius +
+            '&apiKey=' +
+            geoapifyAPIKey;
 
-    //     try {
-    //         HttpResponse response = HttpHelper.sendGetRequest(endPoint);
+        try {
+            HttpResponse response = HttpHelper.sendGetRequest(endPoint);
 
-    //         if (response != null && response.getStatusCode() == 200) {
-    //             String responseBody = response.getBody();
+            if (response != null && response.getStatusCode() == 200) {
+                String responseBody = response.getBody();
 
-    //             // Parse JSON response to extract nearby places
-    //             Map<String, Object> parsedResponse = (Map<String, Object>) JSON.deserializeUntyped(
-    //                 responseBody
-    //             );
-    //             List<Object> places = (List<Object>) parsedResponse.get('features');
+                // Parse JSON response to extract nearby places
+                Map<String, Object> parsedResponse = (Map<String, Object>) JSON.deserializeUntyped(
+                    responseBody
+                );
+                List<Object> places = (List<Object>) parsedResponse.get('features');
 
-    //             // Extract place names
-    //             for (Object place : places) {
-    //                 Map<String, Object> placeMap = (Map<String, Object>) place;
-    //                 Map<String, Object> properties = (Map<String, Object>) placeMap.get(
-    //                     'properties'
-    //                 );
-    //                 String placeName = (String) properties.get('name');
-    //                 nearbyPlaces.add(placeName);
-    //             }
-    //         } else {
-    //             errorMessage =
-    //                 'Error while communicating with Geoapify Data API. Status: ' +
-    //                 response.getStatus() +
-    //                 ' Status code: ' +
-    //                 response.getStatusCode();
-    //             System.debug('Error: ' + errorMessage);
-    //         }
-    //     } catch (System.Exception e) {
-    //         if (String.valueOf(e.getMessage()).startsWith('Unauthorized endpoint')) {
-    //             errorMessage =
-    //                 'Unauthorized endpoint: An administrator must go to Setup -> Administrator -> Security Control -> Remote Site Settings and add ' +
-    //                 endPoint +
-    //                 ' as an endpoint';
-    //         } else {
-    //             errorMessage =
-    //                 'Error while communicating with Geoapify Data API: ' + e.getMessage();
-    //         }
-    //         System.debug('Exception Executed: ' + errorMessage);
-    //     }
+                // Extract place names
+                for (Object place : places) {
+                    Map<String, Object> placeMap = (Map<String, Object>) place;
+                    Map<String, Object> properties = (Map<String, Object>) placeMap.get(
+                        'properties'
+                    );
+                    String placeName = (String) properties.get('name');
+                    nearbyPlaces.add(placeName);
+                }
+            } else {
+                errorMessage =
+                    'Error while communicating with Geoapify Data API. Status: ' +
+                    response.getStatus() +
+                    ' Status code: ' +
+                    response.getStatusCode();
+                System.debug('Error: ' + errorMessage);
+            }
+        } catch (System.Exception e) {
+            if (String.valueOf(e.getMessage()).startsWith('Unauthorized endpoint')) {
+                errorMessage =
+                    'Unauthorized endpoint: An administrator must go to Setup -> Administrator -> Security Control -> Remote Site Settings and add ' +
+                    endPoint +
+                    ' as an endpoint';
+            } else {
+                errorMessage =
+                    'Error while communicating with Geoapify Data API: ' + e.getMessage();
+            }
+            System.debug('Exception Executed: ' + errorMessage);
+        }
 
-    //     if (!String.isEmpty(errorMessage)) {
-    //         System.debug(errorMessage);
-    //     }
+        if (!String.isEmpty(errorMessage)) {
+            System.debug(errorMessage);
+        }
 
-    //     return nearbyPlaces;
-    // }
+        return nearbyPlaces;
+    }
 
-    // private static OpenMeteoWrapper fetchWeatherData(
-    //     String longitude,
-    //     String latitude
-    // ) {
-    //     String endPoint = System.Label.OpenMeteo;
-    //     String errorMessage = '';
-    //     OpenMeteoWrapper obj = new OpenMeteoWrapper();
+    private static OpenMeteoWrapper fetchWeatherData(
+        String longitude,
+        String latitude
+    ) {
+        String endPoint = System.Label.OpenMeteo;
+        String errorMessage = '';
+        OpenMeteoWrapper obj = new OpenMeteoWrapper();
 
-    //     // Parameters for the API request
-    //     Map<String, String> params = new Map<String, String>{
-    //         'longitude' => longitude,
-    //         'latitude' => latitude,
-    //         'hourly' => 'temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,rain,showers,snowfall,wind_speed_10m,wind_direction_10m',
-    //         'forecast_days' => '16'
-    //     };
+        // Parameters for the API request
+        Map<String, String> params = new Map<String, String>{
+            'longitude' => longitude,
+            'latitude' => latitude,
+            'hourly' => 'temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,rain,showers,snowfall,wind_speed_10m,wind_direction_10m',
+            'forecast_days' => '16'
+        };
 
-    //     // Build the query string
-    //     String queryString = '';
-    //     for (String key : params.keySet()) {
-    //         queryString +=
-    //             key +
-    //             '=' +
-    //             EncodingUtil.urlEncode(params.get(key), 'UTF-8') +
-    //             '&';
-    //     }
-    //     queryString = queryString.subString(0, queryString.length() - 1);
+        // Build the query string
+        String queryString = '';
+        for (String key : params.keySet()) {
+            queryString +=
+                key +
+                '=' +
+                EncodingUtil.urlEncode(params.get(key), 'UTF-8') +
+                '&';
+        }
+        queryString = queryString.subString(0, queryString.length() - 1);
 
-    //     String finalEndPoint = endPoint + '?' + queryString;
+        String finalEndPoint = endPoint + '?' + queryString;
 
-    //     try {
-    //         HttpResponse response = HttpHelper.sendGetRequest(finalEndPoint);
+        try {
+            HttpResponse response = HttpHelper.sendGetRequest(finalEndPoint);
 
-    //         if (response != null && response.getStatusCode() == 200) {
-    //             String body = response.getBody();
-    //             // Deserialize the JSON response into OpenMeteoWrapper object
-    //             obj = (OpenMeteoWrapper) JSON.deserialize(
-    //                 body.replace('"time":', '"timestamps":'),
-    //                 OpenMeteoWrapper.class
-    //             );
-    //             return obj;
-    //         } else {
-    //             errorMessage =
-    //                 'Error while communicating with OpenMeteo API. Status: ' +
-    //                 response.getStatus() +
-    //                 ' Status code: ' +
-    //                 response.getStatusCode();
-    //             System.debug(errorMessage);
-    //         }
-    //     } catch (System.Exception e) {
-    //         errorMessage = 'Exception occurred: ' + e.getMessage();
-    //         System.debug('Exception Executed: ' + errorMessage);
-    //     }
+            if (response != null && response.getStatusCode() == 200) {
+                String body = response.getBody();
+                // Deserialize the JSON response into OpenMeteoWrapper object
+                obj = (OpenMeteoWrapper) JSON.deserialize(
+                    body.replace('"time":', '"timestamps":'),
+                    OpenMeteoWrapper.class
+                );
+                return obj;
+            } else {
+                errorMessage =
+                    'Error while communicating with OpenMeteo API. Status: ' +
+                    response.getStatus() +
+                    ' Status code: ' +
+                    response.getStatusCode();
+                System.debug(errorMessage);
+            }
+        } catch (System.Exception e) {
+            errorMessage = 'Exception occurred: ' + e.getMessage();
+            System.debug('Exception Executed: ' + errorMessage);
+        }
 
-    //     return null;
-    // }
+        return null;
+    }
 
-    // private static String processResponse(OpenMeteoWrapper wrapper) {
-    //     OpenMeteoWrapper.Hourly hourlyData = wrapper.hourly;
-    //     if (hourlyData != null) {
-    //         List<String> lines = new List<String>();
-    //         lines.add(
-    //             'Time, Temperature (°C), Relative Humidity (%), Rain (mm), Showers (mm), Snowfall (cm)'
-    //         );
+    private static String processResponse(OpenMeteoWrapper wrapper) {
+        OpenMeteoWrapper.Hourly hourlyData = wrapper.hourly;
+        if (hourlyData != null) {
+            List<String> lines = new List<String>();
+            lines.add(
+                'Time, Temperature (°C), Relative Humidity (%), Rain (mm), Showers (mm), Snowfall (cm)'
+            );
 
-    //         Date currentDate = Date.today();
+            Date currentDate = Date.today();
 
-    //         if (
-    //             hourlyData.timestamps != null &&
-    //             hourlyData.temperature_2m != null &&
-    //             hourlyData.relative_humidity_2m != null &&
-    //             hourlyData.rain != null &&
-    //             hourlyData.showers != null &&
-    //             hourlyData.snowfall != null
-    //         ) {
-    //             for (Integer i = 0; i < hourlyData.timestamps.size(); i++) {
-    //                 String timestampStr = hourlyData.timestamps[i];
-    //                 List<String> timestampComponents = timestampStr.split('T');
-    //                 if (timestampComponents.size() != 2) {
-    //                     continue;
-    //                 }
+            if (
+                hourlyData.timestamps != null &&
+                hourlyData.temperature_2m != null &&
+                hourlyData.relative_humidity_2m != null &&
+                hourlyData.rain != null &&
+                hourlyData.showers != null &&
+                hourlyData.snowfall != null
+            ) {
+                for (Integer i = 0; i < hourlyData.timestamps.size(); i++) {
+                    String timestampStr = hourlyData.timestamps[i];
+                    List<String> timestampComponents = timestampStr.split('T');
+                    if (timestampComponents.size() != 2) {
+                        continue;
+                    }
 
-    //                 DateTime timestamp;
-    //                 try {
-    //                     String dateStr = timestampComponents[0];
-    //                     String timeStr = timestampComponents[1];
-    //                     Integer year = Integer.valueOf(dateStr.substring(0, 4));
-    //                     Integer month = Integer.valueOf(dateStr.substring(5, 7));
-    //                     Integer day = Integer.valueOf(dateStr.substring(8, 10));
-    //                     Integer hour = Integer.valueOf(timeStr.substring(0, 2));
-    //                     Integer minute = Integer.valueOf(timeStr.substring(3, 5));
-    //                     timestamp = DateTime.newInstance(year, month, day, hour, minute, 0);
-    //                 } catch (Exception e) {
-    //                     continue;
-    //                 }
+                    DateTime timestamp;
+                    try {
+                        String dateStr = timestampComponents[0];
+                        String timeStr = timestampComponents[1];
+                        Integer year = Integer.valueOf(dateStr.substring(0, 4));
+                        Integer month = Integer.valueOf(dateStr.substring(5, 7));
+                        Integer day = Integer.valueOf(dateStr.substring(8, 10));
+                        Integer hour = Integer.valueOf(timeStr.substring(0, 2));
+                        Integer minute = Integer.valueOf(timeStr.substring(3, 5));
+                        timestamp = DateTime.newInstance(year, month, day, hour, minute, 0);
+                    } catch (Exception e) {
+                        continue;
+                    }
 
-    //                 if (timestamp.date() == currentDate) {
-    //                     if (
-    //                         i < hourlyData.temperature_2m.size() &&
-    //                         i < hourlyData.relative_humidity_2m.size() &&
-    //                         i < hourlyData.rain.size() &&
-    //                         i < hourlyData.showers.size() &&
-    //                         i < hourlyData.snowfall.size()
-    //                     ) {
-    //                         String line =
-    //                             timestampStr +
-    //                             ',' +
-    //                             hourlyData.temperature_2m[i] +
-    //                             ',' +
-    //                             hourlyData.relative_humidity_2m[i] +
-    //                             ',' +
-    //                             hourlyData.rain[i] +
-    //                             ',' +
-    //                             hourlyData.showers[i] +
-    //                             ',' +
-    //                             hourlyData.snowfall[i];
-    //                         lines.add(line);
-    //                     }
-    //                 }
-    //             }
-    //         }
+                    if (timestamp.date() == currentDate) {
+                        if (
+                            i < hourlyData.temperature_2m.size() &&
+                            i < hourlyData.relative_humidity_2m.size() &&
+                            i < hourlyData.rain.size() &&
+                            i < hourlyData.showers.size() &&
+                            i < hourlyData.snowfall.size()
+                        ) {
+                            String line =
+                                timestampStr +
+                                ',' +
+                                hourlyData.temperature_2m[i] +
+                                ',' +
+                                hourlyData.relative_humidity_2m[i] +
+                                ',' +
+                                hourlyData.rain[i] +
+                                ',' +
+                                hourlyData.showers[i] +
+                                ',' +
+                                hourlyData.snowfall[i];
+                            lines.add(line);
+                        }
+                    }
+                }
+            }
 
-    //         String csvContent = String.join(lines, '\n');
-    //         return csvContent;
-    //     } else {
-    //         return null;
-    //     }
-    // }
+            String csvContent = String.join(lines, '\n');
+            return csvContent;
+        } else {
+            return null;
+        }
+    }
 
     //private static final String OPENAI_API_KEY = getOpenAIKey();
     private static String getOpenAiResponse(String prompt) {
