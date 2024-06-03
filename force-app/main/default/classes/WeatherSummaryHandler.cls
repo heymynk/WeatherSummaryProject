@@ -106,12 +106,6 @@ public with sharing class WeatherSummaryHandler {
         }
     }
 
-
-    private static String getcompanyInfoAPIKey() {
-        ApiKeys__c companyInfoKeySettings = ApiKeys__c.getInstance('companyInfo'); 
-        return companyInfoKeySettings != null ? companyInfoKeySettings.Value__c : null;
-    }
-
     @RemoteAction
     public static String getWeatherDataJSON(Id leadId) {
         // Call methods to fetch and process weather data
@@ -389,7 +383,11 @@ public with sharing class WeatherSummaryHandler {
         }
     }
  
-    
+    private static String getcompanyInfoAPIKey() {
+        ApiKeys__c companyInfoKeySettings = ApiKeys__c.getInstance('companyInfo'); 
+        return companyInfoKeySettings != null ? companyInfoKeySettings.Value__c : null;
+    }
+
     private static String getGeoapifyAPIKey() {
         ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify'); 
         return geoKeySettings != null ? geoKeySettings.Value__c : null;
