@@ -1,0 +1,39 @@
+{
+    "records": [
+        {
+            "attributes": {
+                "type": "Solar_Panel__c",
+                "referenceId": "Solar_Panel__cRef1"
+            },
+            "Name": "Tesla Solar Roof (Textured Glass)"
+        },
+        {
+            "attributes": {
+                "type": "Solar_Panel__c",
+                "referenceId": "Solar_Panel__cRef2"
+            },
+            "Name": "SunTegra Shingles"
+        },
+        {
+            "attributes": {
+                "type": "Solar_Panel__c",
+                "referenceId": "Solar_Panel__cRef3"
+            },
+            "Name": "Passivated Emitter and Rear Contact (PERC)"
+        },
+        {
+            "attributes": {
+                "type": "Solar_Panel__c",
+                "referenceId": "Solar_Panel__cRef4"
+            },
+            "Name": "Monocrystalline Solar Panels"
+        },
+        {
+            "attributes": {
+                "type": "Solar_Panel__c",
+                "referenceId": "Solar_Panel__cRef5"
+            },
+            "Name": "Polycrystalline Solar Panels"
+        }
+    ]
+}
