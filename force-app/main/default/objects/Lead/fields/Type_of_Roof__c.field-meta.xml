@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Type_of_Roof__c</fullName>
+    <externalId>false</externalId>
+    <label>Type of Roof</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Asphalt Shingles</fullName>
+                <default>false</default>
+                <label>Asphalt Shingles</label>
+            </value>
+            <value>
+                <fullName>Metal</fullName>
+                <default>false</default>
+                <label>Metal</label>
+            </value>
+            <value>
+                <fullName>Tile</fullName>
+                <default>false</default>
+                <label>Tile</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Shading_Information__c</fullName>
+    <externalId>false</externalId>
+    <label>Shading Information</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Trees</fullName>
+                <default>false</default>
+                <label>Trees</label>
+            </value>
+            <value>
+                <fullName>Chimneys</fullName>
+                <default>false</default>
+                <label>Chimneys</label>
+            </value>
+            <value>
+                <fullName>Nearby Buildings</fullName>
+                <default>false</default>
+                <label>Nearby Buildings</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>3</visibleLines>
+</CustomField>

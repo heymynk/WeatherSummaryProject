@@ -54,6 +54,27 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>height</name>
+                    <value>490</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>label</name>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>pageName</name>
+                    <value>WeatherGraph</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>showLabel</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:visualforcePage</componentName>
+                <identifier>flexipage_visualforcePage</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
                     <name>showLegacyActivityComposer</name>
                     <value>false</value>
                 </componentInstanceProperties>
