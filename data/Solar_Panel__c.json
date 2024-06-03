@@ -5,35 +5,80 @@
                 "type": "Solar_Panel__c",
                 "referenceId": "Solar_Panel__cRef1"
             },
-            "Name": "Tesla Solar Roof (Textured Glass)"
+            "Name": "Tesla Solar Roof (Textured Glass)",
+            "Aesthetic_Options__c": null,
+            "Description__c": "Tesla's Solar Roof with Textured Glass tiles offers a visually appealing and efficient solar solution. Each tile delivers a power output of 58.5 watts with an efficiency of 18.6%. The textured glass design mimics traditional roofing materials while integrating solar capabilities. Tesla Solar Roof tiles are rated for wind resistance up to 166 mph and certified under UL 1703 and IEC 61215 standards. The cost per watt ranges from $6.40 to $8.00, and the product comes with a comprehensive 25-year warranty covering power output, product quality, and weatherization.",
+            "Efficiency__c": 18.6,
+            "Installation_Type__c": "Integrated into the roof structure",
+            "Manufacturer__c": "Tesla",
+            "Power_Output_Wattage__c": 58.5,
+            "Warranty_Period_Years__c": 25,
+            "Product_Type__c": "Tile",
+            "Product_Code__c": "TSR-TG"
         },
         {
             "attributes": {
                 "type": "Solar_Panel__c",
                 "referenceId": "Solar_Panel__cRef2"
             },
-            "Name": "SunTegra Shingles"
+            "Name": "SunTegra Shingles",
+            "Aesthetic_Options__c": null,
+            "Description__c": "SunTegra Shingles provide a seamless solar roofing solution by integrating directly with the roof. These shingles deliver a power output of 100 watts each, with an efficiency of 15.9%. The sleek design enhances the roof's appearance while providing reliable solar energy. They are certified for wind resistance up to 130 mph and meet UL 1703 and IEC 61215 standards. Additionally, they offer a UL 790 Class A Fire Rating, ensuring high safety standards. The cost per watt ranges from $3.80 to $4.26, making them a cost-effective choice for residential solar installations. The 25-year warranty covers power output and product quality.",
+            "Efficiency__c": 15.9,
+            "Installation_Type__c": "Integrated into the roof structure",
+            "Manufacturer__c": "SunTegra",
+            "Power_Output_Wattage__c": 100,
+            "Warranty_Period_Years__c": 35,
+            "Product_Type__c": "Shingle",
+            "Product_Code__c": "ST-S"
         },
         {
             "attributes": {
                 "type": "Solar_Panel__c",
                 "referenceId": "Solar_Panel__cRef3"
             },
-            "Name": "Passivated Emitter and Rear Contact (PERC)"
+            "Name": "Passivated Emitter and Rear Contact (PERC)",
+            "Aesthetic_Options__c": null,
+            "Description__c": "Technical Details:\r\n                -Efficiency: 17%-20%\r\n                -Power Output: 300W-400W per panel\r\n                -Materials: Monocrystalline silicon with a reflective rear layer\r\n                -Temperature Coefficient: -0.3% to -0.4% per °C\r\n                -Lifespan: 25-30 years\r\n                -Design: Similar to monocrystalline panels with additional backside passivation\r\n                -Advantages: Higher efficiency, better high-temperature performance\r\n                -Roof Suitability: Suitable for residential and commercial roofs where higher efficiency is desired without significant increase in cost.\r\n                -Product Type: Standard panels, enhanced-efficiency panels.\r\n                -Installation Type: Roof-mounted, ground-mounted​",
+            "Efficiency__c": 19,
+            "Installation_Type__c": "Ground-Mounted",
+            "Manufacturer__c": null,
+            "Power_Output_Wattage__c": 350,
+            "Warranty_Period_Years__c": 30,
+            "Product_Type__c": "Panel",
+            "Product_Code__c": "PERC-001"
         },
         {
             "attributes": {
                 "type": "Solar_Panel__c",
                 "referenceId": "Solar_Panel__cRef4"
             },
-            "Name": "Monocrystalline Solar Panels"
+            "Name": "Monocrystalline Solar Panels",
+            "Aesthetic_Options__c": null,
+            "Description__c": "Product Name: Monocrystalline Solar Panels\r\nTechnical Details:\r\n       - Efficiency: 15%-24%\r\n       - Power Output: 300W-450W per panel\r\n       - Materials: Single silicon crystal using the \r\n Czochralski process\r\n        -Temperature Coefficient: -0.3% to -0.5% per °C\r\n        -Lifespan: 25-30 years\r\n        -Design: Solid black, uniform appearance\r\n        -Roof Suitability: Suitable for most types of roofs, particularly those with limited space, such as residential rooftops and commercial buildings.\r\n        -Product Type: Standard panels, bifacial panels.\r\n        -Installation Type: Roof-mounted, ground-mounted, carports​.",
+            "Efficiency__c": 15,
+            "Installation_Type__c": "Roof-Mounted (Standard)",
+            "Manufacturer__c": null,
+            "Power_Output_Wattage__c": 300,
+            "Warranty_Period_Years__c": 25,
+            "Product_Type__c": "Panel",
+            "Product_Code__c": "MSP-01"
         },
         {
             "attributes": {
                 "type": "Solar_Panel__c",
                 "referenceId": "Solar_Panel__cRef5"
             },
-            "Name": "Polycrystalline Solar Panels"
+            "Name": "Polycrystalline Solar Panels",
+            "Aesthetic_Options__c": null,
+            "Description__c": "Product Name: Polycrystalline Solar Panels\r\nTechnical Details\r\n                -Efficiency: 13%-17%\r\n                -Power Output: 250W-350W per panel\r\n                -Materials: Silicon fragments melted together\r\n                -Temperature Coefficient: -0.4% to -0.5% per °C\r\n                -Lifespan: 20-25 years\r\n                -Design: Blue, speckled appearance\r\n                -Advantages: Lower cost, easier manufacturing process\r\n                -Roof Suitability: Suitable for large roofs where space is not a constraint, such as commercial and industrial buildings.\r\n                -Product Type: Standard panels.\r\n                -Installation Type: Roof-mounted, ground-mounted​",
+            "Efficiency__c": 15,
+            "Installation_Type__c": "Roof-Mounted (Standard)",
+            "Manufacturer__c": null,
+            "Power_Output_Wattage__c": 340,
+            "Warranty_Period_Years__c": 20,
+            "Product_Type__c": "Panel",
+            "Product_Code__c": "PSP-001"
         }
     ]
 }
