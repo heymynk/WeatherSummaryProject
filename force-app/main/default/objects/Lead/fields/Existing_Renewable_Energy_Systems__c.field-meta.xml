@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Existing_Renewable_Energy_Systems__c</fullName>
+    <externalId>false</externalId>
+    <label>Existing Renewable Energy Systems</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Solar Panels</fullName>
+                <default>false</default>
+                <label>Solar Panels</label>
+            </value>
+            <value>
+                <fullName>Wind Turbines</fullName>
+                <default>false</default>
+                <label>Wind Turbines</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>3</visibleLines>
+</CustomField>

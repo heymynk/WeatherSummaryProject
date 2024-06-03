@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Roof_Orientation__c</fullName>
+    <externalId>false</externalId>
+    <label>Roof Orientation</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>North-facing</fullName>
+                <default>false</default>
+                <label>North-facing</label>
+            </value>
+            <value>
+                <fullName>South-facing</fullName>
+                <default>false</default>
+                <label>South-facing</label>
+            </value>
+            <value>
+                <fullName>East-facing</fullName>
+                <default>false</default>
+                <label>East-facing</label>
+            </value>
+            <value>
+                <fullName>West-facing</fullName>
+                <default>false</default>
+                <label>West-facing</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

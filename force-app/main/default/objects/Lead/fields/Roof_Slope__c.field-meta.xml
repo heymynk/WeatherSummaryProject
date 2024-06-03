@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Roof_Slope__c</fullName>
+    <externalId>false</externalId>
+    <label>Roof Slope</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Flat</fullName>
+                <default>false</default>
+                <label>Flat</label>
+            </value>
+            <value>
+                <fullName>Low Slope</fullName>
+                <default>false</default>
+                <label>Low Slope</label>
+            </value>
+            <value>
+                <fullName>Medium Slope</fullName>
+                <default>false</default>
+                <label>Medium Slope</label>
+            </value>
+            <value>
+                <fullName>Steep Slope</fullName>
+                <default>false</default>
+                <label>Steep Slope</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
