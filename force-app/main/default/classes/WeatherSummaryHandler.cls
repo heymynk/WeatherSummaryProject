@@ -304,6 +304,41 @@ public with sharing class WeatherSummaryHandler {
         }
     }
 
+    //Create the function to fetch the leadds from the Lead object
+    @AuraEnabled(cacheable=true)
+    public static List<Lead> fetchLeads() {
+        List<Lead> leads = [SELECT Id, Name, Company FROM Lead];
+        return leads;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Lead fetchLeadById(Id leadId) {
+        return [SELECT Id, Name, Company, Email, Phone FROM Lead WHERE Id = :leadId LIMIT 1];
+    }
+
+    @AuraEnabled
+    public static void sendEmail(Id leadId, String formUrl) {
+        // Lead lead = [SELECT Name, Email FROM Lead WHERE Id = :leadId LIMIT 1];
+        // if (lead != null) {
+        //     Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        //     email.setToAddresses(new String[] { lead.Email });
+        //     email.setSubject('Harness the Power of the Sun with ESolarCorp Pvt Ltd');
+        //     email.setPlainTextBody('Dear ' + lead.Name + ',\n\n' +
+        //         'We hope this email finds you well. At ESolarCorp Pvt Ltd, we specialize in providing high-quality solar power solutions to help homeowners like you save on energy costs and contribute to a greener planet.\n\n' +
+        //         'To get started, we would love to gather some basic information about your property. Please take a moment to fill out the short form linked below:\n\n' +
+        //         formUrl + '\n\n' +
+        //         'Thank you for your interest in solar power. We look forward to helping you make the switch!\n\n' +
+        //         'Best regards,\n' +
+        //         'Mayank Singh\n' +
+        //         'Sales And MA Head\n' +
+        //         '[Your Company Name]\n' +
+        //         '[Contact Information]');
+        //     Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });
+        // }
+    }
+
+    
+
     private static String getGeoapifyAPIKey() {
         ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify');
         return geoKeySettings != null ? geoKeySettings.Value__c : null;
