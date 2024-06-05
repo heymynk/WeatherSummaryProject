@@ -1,4 +1,5 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, api, track} from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getEmailTemplateFolders from '@salesforce/apex/EmailController.getEmailTemplateFolders';
 import getEmailTemplates from '@salesforce/apex/EmailController.getEmailTemplates';
 import getLeadEmailAddress from '@salesforce/apex/EmailController.getLeadEmailAddress';
@@ -27,7 +28,7 @@ export default class EmailSender extends LightningElement {
         this.fetchEmailTemplateFolders();
         this.fetchLeadEmailAddress();
         this.fetchOrgWideEmailAddress();
-        this.fetchFileAttachments();
+        //this.fetchFileAttachments();
     }
 
 
