@@ -113,7 +113,7 @@ export default class EmailSender extends LightningElement {
                 this.subject = result[0].Subject;
                 console.log('Email Template Body:', result[0].HtmlValue);
                 //this.body = result[0].HtmlValue;
-                this.HtmlValue = result[0].HtmlValue;
+                this.body = result[0].HtmlValue;
 
 
             })
