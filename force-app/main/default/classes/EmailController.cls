@@ -6,13 +6,7 @@ public with sharing class EmailController {
     @AuraEnabled(cacheable = true)
     public static List<Folder> getEmailTemplateFolders() {
         System.debug('getEmailTemplateFolders called');
-        List<Folder> emailTempFolderLists = [
-<<<<<<< HEAD
-            SELECT Id, Name, Type FROM Folder WHERE Name = 'ESolarCorp'
-=======
-            SELECT Id, Name, Type FROM Folder WHERE Name = 'ESolarCorp'
->>>>>>> 0ce0adcfd0f46292897785959b7e86fb90fa9284
-        ];
+        List<Folder> emailTempFolderLists = [SELECT Id, Name, Type FROM Folder WHERE Name = 'ESolarCorp'];
         System.debug('Number of Email Template Folders found: ' + emailTempFolderLists.size());
         return emailTempFolderLists;
     }
@@ -30,12 +24,7 @@ public with sharing class EmailController {
 
         try {
             List<Folder> emailTempFolderList = [
-<<<<<<< HEAD
-                SELECT Id, Name, Type FROM Folder WHERE Name = :folderName = 'ESolarCorp'
-=======
-                SELECT Id, Name, Type FROM Folder WHERE Name = :folderName = 'ESolarCorp'
->>>>>>> 0ce0adcfd0f46292897785959b7e86fb90fa9284
-            ];
+                SELECT Id, Name, Type FROM Folder WHERE Name = :folderName = 'ESolarCorp'];
 
 
 
@@ -190,11 +179,3 @@ public with sharing class EmailController {
         ];
     }
 }
-
-
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> 0ce0adcfd0f46292897785959b7e86fb90fa9284
