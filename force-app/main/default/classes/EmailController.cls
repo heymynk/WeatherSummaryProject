@@ -1,6 +1,8 @@
 public with sharing class EmailController {
 
 
+
+
     @AuraEnabled(cacheable = true)
     public static List<Folder> getEmailTemplateFolders() {
         System.debug('getEmailTemplateFolders called');
@@ -12,10 +14,14 @@ public with sharing class EmailController {
     }
 
 
+
+
     @AuraEnabled(cacheable = true)
     public static List<EmailTemplate> getEmailTemplates(String folderName) {
         System.debug('getEmailTemplates called with folderName: ' + folderName);
         List<EmailTemplate> emailTempLists = new List<EmailTemplate>();
+
+
 
 
         try {
@@ -24,10 +30,13 @@ public with sharing class EmailController {
             ];
 
 
+
+
             if (!emailTempFolderList.isEmpty()) {
                 emailTempLists = [
-                    SELECT Id, Name, FolderId, Body, Subject FROM EmailTemplate WHERE FolderId = :emailTempFolderList[0].Id
+                    SELECT Id, Name, FolderId, HtmlValue, Subject FROM EmailTemplate WHERE FolderId = :emailTempFolderList[0].Id
                 ];
+                System.debug('HtmlValue: ' + emailTempLists[0].HtmlValue);
                 System.debug('Number of Email Templates found: ' + emailTempLists.size());
             } else {
                 System.debug('Folder not found: ' + folderName);
@@ -37,8 +46,12 @@ public with sharing class EmailController {
         }
 
 
+
+
         return emailTempLists;
     }
+
+
 
 
     @AuraEnabled(cacheable = true)
@@ -47,6 +60,8 @@ public with sharing class EmailController {
         Lead lead = [SELECT Id, Email FROM Lead WHERE Id = :leadRecordId LIMIT 1];
         return lead.Email;
     }
+
+
 
 
     @AuraEnabled(cacheable = true)
@@ -60,25 +75,28 @@ public with sharing class EmailController {
     }
 
 
+
+
     @AuraEnabled(cacheable = true)
-    public static void sendEmailToController(String[] toAddressEmail, Id orgwideEmailAddress, String subjectEmail, String bodyEmail, List<Id> uploadedFiles) {
+    public static void sendEmailToController(String[] toAddressEmail, Id orgwideEmailAddress, String subjectEmail, String emailHtmlValue, List<Id> uploadedFiles) {
         System.debug('sendEmailToController called');
-
-
+   
         if (toAddressEmail.isEmpty()) {
             // Handle case where no to addresses are provided
             System.debug('No "to" addresses provided');
             return;
         }
-
-
+   
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
         email.setToAddresses(toAddressEmail);
-        email.setOrgwideEmailAddressId(orgwideEmailAddress);
+        System.debug('toAddressEmail: ' + toAddressEmail);
+        email.setOrgWideEmailAddressId(orgwideEmailAddress);
+        System.debug('orgwideEmailAddress: ' + orgwideEmailAddress);
         email.setSubject(subjectEmail);
-        email.setHtmlBody(bodyEmail);
-
-
+        System.debug('subjectEmail: ' + subjectEmail);
+        email.setHtmlBody(emailHtmlValue);
+        System.debug('emailHtmlValue: ' + emailHtmlValue);
+   
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
             for (Id contentDocumentId : uploadedFiles) {
@@ -94,8 +112,7 @@ public with sharing class EmailController {
             }
             email.setFileAttachments(emailFileAttachments);
         }
-
-
+   
         try {
             Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
             System.debug('Email sent successfully');
@@ -104,12 +121,17 @@ public with sharing class EmailController {
             // Handle email sending errors (e.g., logging, notifications)
         }
     }
+   
+
+
 
 
     @AuraEnabled(cacheable = true)
     public static List<ContentVersion> fileAttachment(String leadRecordId) {
         System.debug('leadRecordId: ' + leadRecordId);
         System.debug('fileAttachment=======');
+
+
 
 
         List<ContentVersion> conVer = new List<ContentVersion>();
@@ -122,11 +144,15 @@ public with sharing class EmailController {
             ];
 
 
+
+
             // Collect all ContentDocumentIds into a set
             Set<Id> contentDocumentIds = new Set<Id>();
             for (ContentDocumentLink cdl : contentDocumentLinks) {
                 contentDocumentIds.add(cdl.ContentDocumentId);
             }
+
+
 
 
             // Query ContentVersion using the set of ContentDocumentIds
@@ -144,6 +170,8 @@ public with sharing class EmailController {
     }
 
 
+
+
     private static ContentVersion getContentVersion(Id contentDocumentId) {
         return [
             SELECT Id, Title, FileType, VersionData
@@ -154,3 +182,8 @@ public with sharing class EmailController {
         ];
     }
 }
+
+
+
+
+

@@ -6,6 +6,7 @@ import getOrgwideEmailAddress from '@salesforce/apex/EmailController.getOrgwideE
 import sendEmailToController from '@salesforce/apex/EmailController.sendEmailToController';
 import fileAttachment from '@salesforce/apex/EmailController.fileAttachment';
 
+
 export default class EmailSender extends LightningElement {
     @api recordId;
     @track toAddress;
@@ -14,10 +15,12 @@ export default class EmailSender extends LightningElement {
     @track getTempList = [];
     @track emailTempList = [];
     @track subject;
-    @track body;
+    @track HtmlValue;
     @track uploadFile = [];
     @track acceptedFormats = ['.pdf', '.png', '.jpg'];
     @track isModalOpen = false;
+
+
 
 
     connectedCallback() {
@@ -26,6 +29,7 @@ export default class EmailSender extends LightningElement {
         this.fetchOrgWideEmailAddress();
         this.fetchFileAttachments();
     }
+
 
     fetchEmailTemplateFolders() {
         getEmailTemplateFolders()
@@ -36,6 +40,7 @@ export default class EmailSender extends LightningElement {
                 console.error('Error fetching email template folders: ', error);
             });
     }
+
 
     fetchLeadEmailAddress() {
         if (this.recordId) {
@@ -49,6 +54,7 @@ export default class EmailSender extends LightningElement {
         }
     }
 
+
     fetchOrgWideEmailAddress() {
         getOrgwideEmailAddress()
             .then(result => {
@@ -59,6 +65,7 @@ export default class EmailSender extends LightningElement {
                 console.error('Error fetching org-wide email address: ', error);
             });
     }
+
 
     fetchFileAttachments() {
         if (this.recordId) {
@@ -75,13 +82,16 @@ export default class EmailSender extends LightningElement {
         }
     }
 
+
     handleToEmailAddress(event) {
         this.toAddress = event.target.value;
     }
 
+
     handleChange(event) {
         this.orgWideAddress = event.target.value;
     }
+
 
     handleEmailTempFolderChange(event) {
         const folderId = event.detail.value;
@@ -94,25 +104,34 @@ export default class EmailSender extends LightningElement {
             });
     }
 
+
     handleEmailTemplateChange(event) {
         const templateId = event.detail.value;
         getEmailTemplates({ folderName: templateId })
             .then(result => {
+                console.log('Email Template Subject:', result[0].Subject);
                 this.subject = result[0].Subject;
-                this.body = result[0].body;
+                console.log('Email Template Body:', result[0].HtmlValue);
+                //this.body = result[0].HtmlValue;
+                this.HtmlValue = result[0].HtmlValue;
+
+
             })
             .catch(error => {
                 console.error('Error fetching email template: ', error);
             });
     }
 
+
     handleSubject(event) {
         this.subject = event.target.value;
     }
 
+
     handleBodyChange(event) {
-        this.body = event.target.value;
+        this.HtmlValue = event.target.value;
     }
+
 
     handleUploadFinished(event) {
         const uploadedFiles = event.detail.files;
@@ -121,24 +140,26 @@ export default class EmailSender extends LightningElement {
         });
     }
 
+
     fileRemove(event) {
         const contentVersionId = event.target.dataset.id;
         this.uploadFile = this.uploadFile.filter(file => file.contentVersionId !== contentVersionId);
     }
+
 
     sendEmail() {
         console.log('Preparing to send email');
         console.log('To Address:', this.toAddress);
         console.log('Org-Wide Email Address ID:', this.orgWideId);
         console.log('Subject:', this.subject);
-        console.log('Body:', this.body);
+        console.log('Body:', this.HtmlValue);
         console.log('Uploaded Files:', this.uploadFile.map(file => file.contentVersionId));
-    
+   
         sendEmailToController({
             toAddressEmail: [this.toAddress],
             orgwideEmailAddress: this.orgWideId,
             subjectEmail: this.subject,
-            bodyEmail: this.body,
+            emailHtmlValue: this.HtmlValue,
             uploadedFiles: this.uploadFile.map(file => file.contentVersionId)
         })
         .then(() => {
@@ -148,18 +169,15 @@ export default class EmailSender extends LightningElement {
             console.error('Error sending email:', error);
         });
     }
-    
+   
+
 
     openModal(){
         this.isModalOpen = true;
     }
 
+
     cancelPopup(){
         this.isModalOpen = false;
     }
 }
-
-
-
-
-
