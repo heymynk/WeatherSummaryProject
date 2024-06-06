@@ -16,7 +16,7 @@ public with sharing class LeadInteractionHandler {
         // Basic email structure with placeholders for dynamic content
         List<String> emailPromptParts = new List<String>{
             'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead',
-            'Using the provided company information of lead, weather data of lead, and Lead\'s address (city only) and Name, write a personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
+            'Using the provided company information of lead, weather data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
             'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
             'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
             'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
@@ -25,6 +25,7 @@ public with sharing class LeadInteractionHandler {
 
         // Include custom prompt provided by the user if it's not empty
         if (!String.isBlank(customPromptByUser)) {
+            System.debug('customPromptByUser' + customPromptByUser);
             emailPromptParts.add(customPromptByUser);  // Add custom user input to the email content
         }
 
@@ -51,8 +52,8 @@ public with sharing class LeadInteractionHandler {
                 String role = 'assistant';  // Define the role for OpenAI response generation
                 String openAiResponse = getOpenAiResponse(prompt, role);
                 if (openAiResponse != null) {
-                    storeResponseSummary(leadId, openAiResponse);
-                    return openAiResponse;
+                    //storeResponseSummary(leadId, openAiResponse);
+                    return formatContent(openAiResponse);
                 } else {
                     return 'Failed to retrieve OpenAI response.';
                 }
@@ -113,8 +114,8 @@ public with sharing class LeadInteractionHandler {
                 String role = 'assistant';  // Define the role for OpenAI response generation
                 String openAiResponse = getOpenAiResponse(prompt, role);
                 if (openAiResponse != null) {
-                    storeResponseSummary(leadId, openAiResponse);
-                    return openAiResponse;
+                    //storeResponseSummary(leadId, openAiResponse);
+                    return formatContent(openAiResponse);
                 } else {
                     return 'Failed to retrieve OpenAI response.';
                 }
@@ -179,6 +180,83 @@ public with sharing class LeadInteractionHandler {
             return null;
         }
     }
+
+
+    // @AuraEnabled(cacheable=true)
+    // public static CompanyInfoWrapper getCompanyData(Id leadId) {
+    //     String companyInfoApiKey = getCompanyInfoAPIKey();
+    
+    //     Lead lead = [SELECT Company FROM Lead WHERE Id = :leadId LIMIT 1];
+    //     if (lead.Company == null) {
+    //         System.debug('No company name found for the given Lead Id: ' + leadId);
+    //         return null;
+    //     }
+    
+    //     String endpoint = 'https://api.peopledatalabs.com/v5/company/enrich?name=' +
+    //         EncodingUtil.urlEncode(lead.Company, 'UTF-8') + '&pretty=false';
+    //     Http http = new Http();
+    //     HttpRequest request = new HttpRequest();
+    //     request.setEndpoint(endpoint);
+    //     request.setMethod('GET');
+    //     request.setHeader('accept', 'application/json');
+    //     request.setHeader('X-API-Key', companyInfoApiKey);
+    
+    //     try {
+    //         HttpResponse response = http.send(request);
+    //         if (response.getStatusCode() == 200) {
+    //             String responseBody = response.getBody();
+    //             System.debug('Response: ' + responseBody);
+    
+    //             Map<String, Object> responseMap = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
+    //             String displayName = (String) responseMap.get('display_name');
+    //             String summary = (String) responseMap.get('summary');
+    
+    //             List<Company_Information__c> existingInfo = [SELECT Id FROM Company_Information__c WHERE Name = :displayName LIMIT 1];
+    //             Company_Information__c companyInfo;
+    //             if (existingInfo.isEmpty()) {
+    //                 companyInfo = new Company_Information__c(Name = displayName, Company_Info__c = leadId, Description__c = summary);
+    //                 upsert companyInfo; // Perform DML operation
+    //             } else {
+    //                 companyInfo = existingInfo[0];
+    //                 if (!companyInfo.Description__c.equals(summary)) { // Check if update is necessary
+    //                     companyInfo.Description__c = summary;
+    //                     update companyInfo; // Perform DML operation
+    //                 }
+    //             }
+    
+    //             return new CompanyInfoWrapper(displayName, summary);
+    //         } else {
+    //             System.debug('Failed with status code: ' + response.getStatusCode());
+    //             return null;
+    //         }
+    //     } catch (Exception e) {
+    //         System.debug('Exception in getCompanyData: ' + e.getMessage());
+    //         return null;
+    //     }
+    // }
+
+
+    public static String formatContent(String rawText) {
+        // Add HTML formatting here
+        String formattedText = '<p>' + rawText.replace('\n', '</p><p>') + '</p>';
+        return formattedText;
+    }
+    
+    
+
+    @AuraEnabled(cacheable=true)
+    public static String getCompanyInfoByLeadId(Id leadId) {
+        List<Company_Information__c> companyInfos = [SELECT Description__c FROM Company_Information__c WHERE Company_Info__c = :leadId LIMIT 1];
+        system.debug('companyInfos' + companyInfos);
+        if (!companyInfos.isEmpty()) {
+            return companyInfos[0].Description__c;  // Get description from the first record found
+        } else {
+            return 'No company information available';  // Return this if no records are found
+        }
+    }
+    
+
+
 
     // Helper method to construct the request map
     private static Map<String, Object> constructRequestMap(String content, String model, String role) {
@@ -316,18 +394,19 @@ public with sharing class LeadInteractionHandler {
         ResponseSummary__c summary = new ResponseSummary__c();
         summary.Lead__c = leadId;
         summary.Summary__c = summaryText;
-
+    
         try {
             Database.SaveResult[] srList = Database.insert(new List<ResponseSummary__c>{ summary }, false);
             if (srList[0].isSuccess()) {
                 System.debug('Summary record inserted successfully.');
             } else {
+                // Log detailed error messages from the save operation
                 for (Database.Error err : srList[0].getErrors()) {
-                    System.debug('Error message: ' + err.getMessage());
+                    System.debug('Error during insert: ' + err.getStatusCode() + ' - ' + err.getMessage());
                 }
             }
         } catch (Exception e) {
-            System.debug('Error while storing response summary: ' + e.getMessage());
+            System.debug('Exception in storeResponseSummary: ' + e.getMessage());
         }
     }
 
