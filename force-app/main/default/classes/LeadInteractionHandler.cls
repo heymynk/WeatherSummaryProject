@@ -247,16 +247,16 @@ public with sharing class LeadInteractionHandler {
     }
 
     // Get Company Info by Lead Id
-    @AuraEnabled(cacheable=true)
-    public static String getCompanyInfoByLeadId(Id leadId) {
-        List<Company_Information__c> companyInfos = [SELECT Description__c FROM Company_Information__c WHERE Company_Info__c = :leadId LIMIT 1];
-        System.debug('companyInfos: ' + companyInfos);
-        if (!companyInfos.isEmpty()) {
-            return companyInfos[0].Description__c;  // Get description from the first record found
-        } else {
-            return 'No company information available';  // Return this if no records are found
-        }
-    }
+    // @AuraEnabled(cacheable=true)
+    // public static String getCompanyInfoByLeadId(Id leadId) {
+    //     List<Company_Information__c> companyInfos = [SELECT Description__c FROM Company_Information__c WHERE Company_Info__c = :leadId LIMIT 1];
+    //     System.debug('companyInfos: ' + companyInfos);
+    //     if (!companyInfos.isEmpty()) {
+    //         return companyInfos[0].Description__c;  
+    //     } else {
+    //         return 'No company information available';  
+    //     }
+    // }
 
     // Helper method to construct the request map
     private static Map<String, Object> constructRequestMap(String content, String model, String role) {
@@ -536,63 +536,6 @@ public with sharing class LeadInteractionHandler {
             ApiKeys__c solarEnergyKeySettings = ApiKeys__c.getInstance('solarEnergy');
             return solarEnergyKeySettings != null ? solarEnergyKeySettings.Value__c : null;
         }
-
-
-        // Method to make API call to retrieve solar energy data
-        // private static SolarEnergyDataWrapper getSolarEnergyData(Decimal azimuth, Decimal systemCapacity, Decimal losses, Integer arrayType, Integer moduleType, Decimal tilt, String latitude, String longitude) {
-        //     // Retrieve the API key
-        //     String apiKey = getSolarEnergyAPIKey();
-        //     if (apiKey == null) {
-        //         System.debug('API Key not found.');
-        //         return null;
-        //     }
-
-        //     SolarEnergyDataWrapper solarEnergyData = null;
-
-        //     // Construct the endpoint URL
-        //     String endpoint = 'https://developer.nrel.gov/api/pvwatts/v8.json?api_key=' + apiKey +
-        //                     '&azimuth=' + azimuth +
-        //                     '&system_capacity=' + systemCapacity +
-        //                     '&losses=' + losses +
-        //                     '&array_type=' + arrayType +
-        //                     '&module_type=' + moduleType +
-        //                     '&tilt=' + tilt +
-        //                     '&lat=' + latitude +
-        //                     '&lon=' + longitude;
-            
-        //     Http http = new Http();
-        //     HttpRequest request = new HttpRequest();
-            
-        //     request.setEndpoint(endpoint);
-        //     request.setMethod('GET');
-        //     request.setHeader('accept', 'application/json');
-            
-        //     try {
-        //         HttpResponse response = http.send(request);
-                
-        //         if(response.getStatusCode() == 200) {
-        //             String responseBody = response.getBody();
-        //         // System.debug('Response: ' + responseBody);
-                    
-        //             Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
-        //             Map<String, Object> outputs = (Map<String, Object>) jsonResponse.get('outputs');
-        //             List<Object> poaMonthly = (List<Object>) outputs.get('poa_monthly');
-                    
-        //             System.debug('POA Monthly Values: ' + poaMonthly);
-
-        //             solarEnergyData= new SolarEnergyDataWrapper(poaMonthly);
-        //             System.debug('solarEnergyData '+solarEnergyData);
-                    
-        //             return solarEnergyData;
-        //         } else {
-        //             System.debug('Failed with status code: ' + response.getStatusCode());
-        //             return null;
-        //         }
-        //     } catch (Exception e) {
-        //         System.debug('Exception: ' + e.getMessage());
-        //         return null;
-        //     }
-        // }
 
 
     // Method to get Solar Energy Data with static values for parameters
