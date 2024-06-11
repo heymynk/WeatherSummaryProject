@@ -21,6 +21,26 @@
                 class="slds-var-m-bottom_small">
             </lightning-textarea>
 
+            <!-- Input field for subject -->
+            <!-- <lightning-input 
+                label="Email Subject"
+                name="emailSubject"
+                value={emailSubject}
+                onchange={handleEmailSubjectChange}
+                class="slds-var-m-bottom_small">
+            </lightning-input> -->
+
+
+            <!-- Text input for email subject -->
+            <lightning-input 
+                label="Email Subject"
+                name="subject"
+                value={subject}
+                onchange={handleInputChange}
+                placeholder="Enter the email subject here..."
+                class="slds-var-m-bottom_small">
+            </lightning-input>
+
             <!-- Rich text input for email content generation -->
             <lightning-input-rich-text
                 label="Generated Email Content"

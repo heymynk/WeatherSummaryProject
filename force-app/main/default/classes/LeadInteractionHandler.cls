@@ -11,7 +11,7 @@ public with sharing class LeadInteractionHandler {
         }
     }
 
-    // Generate Email Content
+    //Generate Email Content
     @AuraEnabled(cacheable=true)
     public static String generateEmailContent(Id leadId, String customPromptByUser) {
         List<String> emailPromptParts = new List<String>{
@@ -35,9 +35,11 @@ public with sharing class LeadInteractionHandler {
             String latitude = coordinates.latitude;
             String longitude = coordinates.longitude;
 
-            CompanyInfoWrapper companyData = getCompanyData(leadId);
-            String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
-            System.debug('Company Info: ' + companyInfoString);
+            String companyData = 'we are salesforce certified pdo & isv partner, doing amazing things with cloud computing and the salesforce 360 platform  concretio is founded by abhinav - 8 times salesforce mvp (most valuable professional) with over a decade of it experience, was first from india to get rewarded by the mvp title from salesforce.com.highlights:following latest and best practices using sfdx, git, scratch orgs, with ci/cd (via jenkins, circleci, bitbucket pipelines, github actions etc).complex integrations using rest/soap + json/xml + oauth/jwtlwc, aura components with amazing ux. - lightning components and apps. we were among 1st few partners to list an aura component in 2015 in the appexchange component marketplace.appexchange: helped 15+ isv partners take their ideas to a listing on appexchange.salesforce commerce cloud(sfcc) - helping largest e-commerce portals to succeed with demandware, we are quite proud of the javascript skills we bring on to the table.';
+
+            // CompanyInfoWrapper companyData = getCompanyData(leadId);
+            // String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
+            // System.debug('Company Info: ' + companyInfoString);
 
             // HttpResponse forecastResponse = SolarForecastService.getForecast(latitude, longitude, '10');
             // Map<String, String> weatherAverages = SolarForecastService.calculateCurrentDateAverages(forecastResponse);
@@ -50,8 +52,8 @@ public with sharing class LeadInteractionHandler {
                 // Append additional contextual data to the prompt
                 emailPromptParts.add('Lead\'s Address: ' + leadAddress);                
                 String customPrompt = String.join(emailPromptParts, '\n');
-                String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse +
-                                '\n\nCompany Information:\n' + companyInfoString;
+                String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse;
+                // +'\n\nCompany Information:\n' + companyInfoString;
 
                 String role = 'assistant';  // Define the role for OpenAI response generation
                 String openAiResponse = getOpenAiResponse(prompt, role);
@@ -67,6 +69,94 @@ public with sharing class LeadInteractionHandler {
         } else {
             return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
         }
+    }
+
+    // @AuraEnabled(cacheable=true)
+    // public static EmailContentWrapper generateEmailContent(Id leadId, String customPromptByUser) {
+    //     List<String> emailPromptParts = new List<String>{
+    //         'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead',
+    //         'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
+    //         'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
+    //         'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
+    //         'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
+    //         'There is also a prompt which is given by the user from the UI, Consider that prompt as well.'
+    //     };
+
+    //     // Include custom prompt provided by the user if it's not empty
+    //     if (!String.isBlank(customPromptByUser)) {
+    //         System.debug('customPromptByUser: ' + customPromptByUser);
+    //         emailPromptParts.add(customPromptByUser);  // Add custom user input to the email content
+    //     }
+
+    //     String leadAddress = getLeadAddress(leadId);
+    //     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+    //     if (coordinates != null) {
+    //         String latitude = coordinates.latitude;
+    //         String longitude = coordinates.longitude;
+
+    //         String companyData = 'we are salesforce certified pdo & isv partner, doing amazing things with cloud computing and the salesforce 360 platform  concretio is founded by abhinav - 8 times salesforce mvp (most valuable professional) with over a decade of it experience, was first from india to get rewarded by the mvp title from salesforce.com.highlights:following latest and best practices using sfdx, git, scratch orgs, with ci/cd (via jenkins, circleci, bitbucket pipelines, github actions etc).complex integrations using rest/soap + json/xml + oauth/jwtlwc, aura components with amazing ux. - lightning components and apps. we were among 1st few partners to list an aura component in 2015 in the appexchange component marketplace.appexchange: helped 15+ isv partners take their ideas to a listing on appexchange.salesforce commerce cloud(sfcc) - helping largest e-commerce portals to succeed with demandware, we are quite proud of the javascript skills we bring on to the table.';
+
+    //         SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
+    //         System.debug('forecastResponse: ' + forecastResponse);
+
+    //         if (forecastResponse != null && companyData != null) {
+    //             // Append additional contextual data to the prompt
+    //             emailPromptParts.add('Lead\'s Address: ' + leadAddress);                
+    //             String customPrompt = String.join(emailPromptParts, '\n');
+    //             String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse;
+
+    //             String role = 'assistant';  // Define the role for OpenAI response generation
+    //             String openAiResponse = getOpenAiResponse(prompt, role);
+    //             if (openAiResponse != null) {
+    //                 String formattedContent = formatContent(openAiResponse);
+    //                 String subject = extractSubject(formattedContent);
+    //                 formattedContent = removeSubjectFromBody(formattedContent);
+    //                 return new EmailContentWrapper(subject, formattedContent);
+    //             } else {
+    //                 return new EmailContentWrapper('Failed to retrieve OpenAI response.', '');
+    //             }
+    //         } else {
+    //             return new EmailContentWrapper('Failed to retrieve weather data or company information.', '');
+    //         }
+    //     } else {
+    //         return new EmailContentWrapper('Failed to retrieve coordinates for Lead with Id: ' + leadId, '');
+    //     }
+    // }
+
+    // // Extract subject from email content
+    // private static String extractSubject(String emailContent) {
+    //     String subjectPrefix = 'Subject: ';
+    //     Integer startIndex = emailContent.indexOf(subjectPrefix);
+    //     if (startIndex != -1) {
+    //         startIndex += subjectPrefix.length();
+    //         Integer endIndex = emailContent.indexOf('\n', startIndex);
+    //         if (endIndex != -1) {
+    //             String subject = emailContent.substring(startIndex, endIndex).trim();
+    //             // Remove any HTML tags
+    //             subject = subject.replaceAll('<[^>]*>', '');
+    //             return subject;
+    //         }
+    //     }
+    //     return 'No subject found';
+    // }
+
+    // // Remove subject from body content
+    // private static String removeSubjectFromBody(String emailContent) {
+    //     String subjectPrefix = 'Subject: ';
+    //     Integer startIndex = emailContent.indexOf(subjectPrefix);
+    //     if (startIndex != -1) {
+    //         Integer endIndex = emailContent.indexOf('\n', startIndex);
+    //         if (endIndex != -1) {
+    //             return emailContent.substring(endIndex + 1).trim();
+    //         }
+    //     }
+    //     return emailContent;
+    // }
+
+    // Format content for display
+    public static String formatContent(String rawText) {
+        String formattedText = '<p>' + rawText.replace('\n', '</p>\n<p>') + '</p>';
+        return formattedText;
     }
 
     // Generate Call Script
@@ -241,10 +331,10 @@ public with sharing class LeadInteractionHandler {
     // }
 
     // Format content for display
-    public static String formatContent(String rawText) {
-        String formattedText = '<p>' + rawText.replace('\n', '</p>\n<p>') + '</p>';
-        return formattedText;
-    }
+    // public static String formatContent(String rawText) {
+    //     String formattedText = '<p>' + rawText.replace('\n', '</p>\n<p>') + '</p>';
+    //     return formattedText;
+    // }
 
     // Get Company Info by Lead Id
     // @AuraEnabled(cacheable=true)
@@ -459,6 +549,9 @@ public with sharing class LeadInteractionHandler {
         System.debug('subjectEmail: ' + subjectEmail);
         email.setHtmlBody(emailHtmlValue);
         System.debug('emailHtmlValue: ' + emailHtmlValue);
+        //email.setReplyTo('mayank.singh225566@gmail.com');
+        email.setReplyTo('esolarcorp_email_service@9-1xslb6ie126n05z81bruwxf46zy1crdxn2jz0zzxlkp7eajozc.c1-yqwnmai.ind16s.apex.sandbox.salesforce.com');
+
    
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
@@ -603,5 +696,5 @@ public with sharing class LeadInteractionHandler {
         }
     }
 
-    
 }
+

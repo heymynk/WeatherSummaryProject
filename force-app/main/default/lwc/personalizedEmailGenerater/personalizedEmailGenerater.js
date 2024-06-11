@@ -2,10 +2,10 @@ import { LightningElement, api, track } from 'lwc';
 import generateEmailContent from '@salesforce/apex/LeadInteractionHandler.generateEmailContent';
 import generateCallScript from '@salesforce/apex/LeadInteractionHandler.generateCallScript';
 import getCompanyData from '@salesforce/apex/LeadInteractionHandler.getCompanyData';
-import getLeadEmailAddress from '@salesforce/apex/EmailController.getLeadEmailAddress';
-import getOrgwideEmailAddress from '@salesforce/apex/EmailController.getOrgwideEmailAddress';
-import sendEmailToController from '@salesforce/apex/EmailController.sendEmailToController';
-import fileAttachment from '@salesforce/apex/EmailController.fileAttachment';
+import getLeadEmailAddress from '@salesforce/apex/LeadInteractionHandler.getLeadEmailAddress';
+import getOrgwideEmailAddress from '@salesforce/apex/LeadInteractionHandler.getOrgwideEmailAddress';
+import sendEmailToController from '@salesforce/apex/LeadInteractionHandler.sendEmailToController';
+import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachment';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class PersonalizedEmailGenerator extends LightningElement {
@@ -16,7 +16,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @track toAddress;
     @track orgWideAddress;
     @track orgWideId;
-    @track subject;
+    @track subject = '';
     @track HtmlValue;
     @track uploadFile = [];
     @track acceptedFormats = ['.pdf', '.png', '.jpg'];
@@ -25,7 +25,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     connectedCallback() {
         this.fetchLeadEmailAddress();
         this.fetchOrgWideEmailAddress();
-        this.fetchCompanyData();
+        //this.fetchCompanyData();
         //this.fetchFileAttachments();
     }
 
@@ -96,6 +96,10 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         });
     }
 
+    // handleEmailSubjectChange(event) {
+    //     this.emailsubject = event.target.value;
+    // }
+
     fileRemove(event) {
         const contentVersionId = event.target.dataset.id;
         this.uploadFile = this.uploadFile.filter(file => file.contentVersionId !== contentVersionId);
@@ -124,17 +128,38 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         });
     }
 
+    // generateEmail() {
+    //     generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+    //         .then(result => {
+    //             this.emailContent = result.emailContent;
+    //             this.emailSubject = result.subjectEmail; // Set the email subject with the generated one
+    //             this.HtmlValue = result.emailContent; // Set the email body
+    //         })
+    //         .catch(error => {
+    //             this.handleError(error, 'Error generating email content');
+    //         });
+    // }
+
+
     generateEmail() {
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
-                this.emailContent = result;
-                this.subject = 'ESolarCorp Pvt Ltd'; // Set a default or dynamic subject
-                this.HtmlValue = result; // Set the email body
+                // Extract the subject from the generated email content
+                const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
+                if (subjectMatch) {
+                    this.subject = subjectMatch[1];
+                    // Remove the subject line from the email content
+                    this.HtmlValue = result.replace(subjectMatch[0], '').trim();
+                } else {
+                    this.HtmlValue = result;
+                }
+                this.emailContent = this.HtmlValue; // Set the email body without subject
             })
             .catch(error => {
                 this.handleError(error, 'Error generating email content');
             });
     }
+    
 
     generateCallScript() {
         generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
