@@ -20,6 +20,8 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @track HtmlValue;
     @track uploadFile = [];
     @track acceptedFormats = ['.pdf', '.png', '.jpg'];
+    @track isLoading = false; // Loader state
+    @track showEmailFields = false; // Visibility of email fields
     customPromptByUser = '';
 
     connectedCallback() {
@@ -96,10 +98,6 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         });
     }
 
-    // handleEmailSubjectChange(event) {
-    //     this.emailsubject = event.target.value;
-    // }
-
     fileRemove(event) {
         const contentVersionId = event.target.dataset.id;
         this.uploadFile = this.uploadFile.filter(file => file.contentVersionId !== contentVersionId);
@@ -128,20 +126,8 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         });
     }
 
-    // generateEmail() {
-    //     generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
-    //         .then(result => {
-    //             this.emailContent = result.emailContent;
-    //             this.emailSubject = result.subjectEmail; // Set the email subject with the generated one
-    //             this.HtmlValue = result.emailContent; // Set the email body
-    //         })
-    //         .catch(error => {
-    //             this.handleError(error, 'Error generating email content');
-    //         });
-    // }
-
-
     generateEmail() {
+        this.isLoading = true; // Show loader
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
                 // Extract the subject from the generated email content
@@ -154,8 +140,11 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                     this.HtmlValue = result;
                 }
                 this.emailContent = this.HtmlValue; // Set the email body without subject
+                this.showEmailFields = true; // Show email fields
+                this.isLoading = false; // Hide loader
             })
             .catch(error => {
+                this.isLoading = false; // Hide loader
                 this.handleError(error, 'Error generating email content');
             });
     }
@@ -178,5 +167,10 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             variant: variant,
         });
         this.dispatchEvent(event);
+    }
+
+    handleError(error, message) {
+        this.showToast('Error', message, 'error');
+        console.error(message, error);
     }
 }

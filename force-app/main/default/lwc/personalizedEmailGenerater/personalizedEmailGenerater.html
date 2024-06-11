@@ -4,10 +4,10 @@
 
             <!-- Displaying company information if available -->
             <template if:true={companyData}>
-                <div class="slds-text-heading_medium slds-m-bottom_small">
+                <div class="slds-text-heading_medium slds-var-m-bottom_small">
                     {companyData.displayName}
                 </div>
-                <div class="slds-box slds-theme_default slds-m-bottom_medium">
+                <div class="slds-box slds-theme_default slds-var-m-bottom_medium">
                     <p class="slds-text-body_regular">{companyData.summary}</p>
                 </div>
             </template>
@@ -21,43 +21,38 @@
                 class="slds-var-m-bottom_small">
             </lightning-textarea>
 
-            <!-- Input field for subject -->
-            <!-- <lightning-input 
-                label="Email Subject"
-                name="emailSubject"
-                value={emailSubject}
-                onchange={handleEmailSubjectChange}
-                class="slds-var-m-bottom_small">
-            </lightning-input> -->
+            <!-- Display loader while generating email -->
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+            </template>
 
+            <!-- Text input for email subject, rich text input, and file upload -->
+            <template if:true={showEmailFields}>
+                <lightning-input 
+                    label="Email Subject"
+                    name="subject"
+                    value={subject}
+                    onchange={handleInputChange}
+                    placeholder="Enter the email subject here..."
+                    class="slds-var-m-bottom_small">
+                </lightning-input>
 
-            <!-- Text input for email subject -->
-            <lightning-input 
-                label="Email Subject"
-                name="subject"
-                value={subject}
-                onchange={handleInputChange}
-                placeholder="Enter the email subject here..."
-                class="slds-var-m-bottom_small">
-            </lightning-input>
+                <lightning-input-rich-text
+                    label="Generated Email Content"
+                    value={emailContent}
+                    onchange={handleEmailContentChange}
+                    class="slds-var-m-bottom_small">
+                </lightning-input-rich-text>
 
-            <!-- Rich text input for email content generation -->
-            <lightning-input-rich-text
-                label="Generated Email Content"
-                value={emailContent}
-                onchange={handleEmailContentChange}
-                class="slds-var-m-bottom_small">
-            </lightning-input-rich-text>
-
-            <!-- File upload component -->
-            <lightning-file-upload
-                label="Attach Files"
-                name="uploadFile"
-                accept={acceptedFormats}
-                record-id={recordId}
-                onuploadfinished={handleUploadFinished}
-                multiple>
-            </lightning-file-upload>
+                <lightning-file-upload
+                    label="Attach Files"
+                    name="uploadFile"
+                    accept={acceptedFormats}
+                    record-id={recordId}
+                    onuploadfinished={handleUploadFinished}
+                    multiple>
+                </lightning-file-upload>
+            </template>
 
             <!-- Display uploaded files as pills -->
             <template if:true={uploadFile}>
@@ -74,22 +69,25 @@
             </template>
 
             <!-- Action buttons -->
-            <div class="slds-align_absolute-center slds-p-top_medium">
-                <lightning-button 
-                    label="Generate Email" 
-                    variant="brand" 
-                    onclick={generateEmail}
-                    class="slds-m-right_x-small">
-                </lightning-button>
+            <div class="slds-align_absolute-center slds-var-p-top_medium">
+                <template if:false={showEmailFields}>
+                    <lightning-button 
+                        label="Generate Email" 
+                        variant="brand" 
+                        onclick={generateEmail}
+                        class="slds-var-m-right_x-small">
+                    </lightning-button>
+                </template>
                 
-                <lightning-button 
-                    label="Send Email" 
-                    variant="success" 
-                    onclick={sendEmail}
-                    class="slds-m-right_x-small">
-                </lightning-button>
+                <template if:true={showEmailFields}>
+                    <lightning-button 
+                        label="Send Email" 
+                        variant="brand" 
+                        onclick={sendEmail}
+                        class="slds-var-m-right_x-small">
+                    </lightning-button>
+                </template>
             </div>
-
         </div>
     </lightning-card>
 </template>
