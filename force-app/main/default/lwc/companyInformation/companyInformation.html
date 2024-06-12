@@ -1,0 +1,15 @@
+<template>
+    <lightning-card title="Company Information" icon-name="custom:custom19">
+        <template if:true={companyData}>
+            <div class="slds-m-top_medium">
+                <p><strong>Display Name:</strong> {companyData.display_name}</p>
+                <p><strong>Summary:</strong> {companyData.summary}</p>
+            </div>
+        </template>
+        <template if:true={error}>
+            <div class="slds-m-top_medium">
+                <p><strong>Error:</strong> {error.message}</p>
+            </div>
+        </template>
+    </lightning-card>
+</template>

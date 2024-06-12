@@ -1,0 +1,21 @@
+<template>
+    <lightning-card title="Send Email">
+        <div class="slds-p-around_medium">
+            <lightning-input-rich-text label="Email Body" value={HtmlValue} onchange={handleBodyChange}></lightning-input-rich-text>
+        </div>
+        <div class="slds-p-around_medium">
+            <lightning-file-upload label="Upload Files" accept={acceptedFormats} onuploadfinished={handleUploadFinished}></lightning-file-upload>
+            <template if:true={uploadFile}>
+                <template for:each={uploadFile} for:item="file">
+                    <div key={file.contentVersionId} class="slds-p-vertical_x-small">
+                        <span>{file.name}</span>
+                        <lightning-button-icon icon-name="utility:delete" alternative-text="Remove" variant="bare" size="small" data-id={file.contentVersionId} onclick={fileRemove}></lightning-button-icon>
+                    </div>
+                </template>
+            </template>
+        </div>
+        <div class="slds-p-around_medium">
+            <lightning-button label="Email" onclick={sendEmail} variant="brand"></lightning-button>
+        </div>
+    </lightning-card>
+</template>
