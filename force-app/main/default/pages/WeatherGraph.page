@@ -1,4 +1,5 @@
-<apex:page title="Temperature Chart" controller="WeatherSummaryHandler">
+<apex:page title="Temperature Chart" controller="LeadInteractionHandler">
+    <apex:slds />
     <apex:includeScript value="{!$Resource.chartJs}"/>
 
     <style>
@@ -26,114 +27,108 @@
             text-align: center;
             margin-top: 20px;
         }
+
+        /* Spinner container styles */
+        .spinner-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
     </style>
 
-    <div class="chart-container">
-        <canvas id="myChart"></canvas>
-    </div>
-    <div id="errorMessage" class="error-message" style="display: none;">
-        No weather data found.
+    <div class="slds-scope">
+        <div class="chart-container" style="position: relative; height: 400px;">
+            <div id="spinner" class="spinner-container">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+            <canvas id="myChart" style="display: none;"></canvas>
+        </div>
+        <div id="errorMessage" class="error-message" style="display: none;">
+            No solar data found.
+        </div>
     </div>
 
     <script>
-        function parseCSV(csv) {
-            const lines = csv.split("\n");
-            const headers = lines[0].split(", ");
-            const data = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                const obj = {};
-                const currentline = lines[i].split(",");
-                if (currentline.length === headers.length) {
-                    for (let j = 0; j < headers.length; j++) {
-                        obj[headers[j].trim()] = currentline[j].trim();
-                    }
-                    data.push(obj);
-                }
-            }
-            return data;
-        }
-
         window.onload = function() {
             var leadId = '{!$CurrentPage.parameters.Id}';
 
-            WeatherSummaryHandler.getWeatherDataJSON(leadId, function(result, event) {
+            function decodeHtml(html) {
+                var txt = document.createElement("textarea");
+                txt.innerHTML = html;
+                return txt.value;
+            }
+
+            LeadInteractionHandler.getSolarDataJSON(leadId, function(result, event) {
                 if (event.status && result) {
-                    console.log('result',result);
-                    var weatherData = parseCSV(result);
-                    console.log('weatherData',weatherData)
+                    console.log('result', result);
+                    var decodedResult = decodeHtml(result);
+                    console.log('decoded result:', decodedResult);
+                    var solarData = JSON.parse(decodedResult);
 
-                    if (weatherData && weatherData.length > 0) {
-                        var timestamps = [];
-                        var temperatures = [];
-                        var rain = [];
-                        var showers = [];
-                        var snowfall = [];
-                        var relative_humidity_2m = [];
-
-                        for (var i = 0; i < weatherData.length; i++) {
-                            timestamps.push(weatherData[i]["Time"].substring(11, 13));
-                            temperatures.push(parseFloat(weatherData[i]["Temperature (°C)"]));
-                            rain.push(parseFloat(weatherData[i]["Rain (mm)"]));
-                            snowfall.push(parseFloat(weatherData[i]["Snowfall (cm)"]));
-                            showers.push(parseFloat(weatherData[i]["Showers (mm)"]));
-                            relative_humidity_2m.push(parseFloat(weatherData[i]["Relative Humidity (%)"]));
-                        }
-
-                        var ctx = document.getElementById('myChart').getContext('2d');
-                        var myChart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: timestamps,
-                                datasets: [
-                                    {
-                                        label: 'Temperature (°C)',
-                                        data: temperatures,
-                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                        borderColor: 'rgba(54, 162, 235, 1)',
-                                        borderWidth: 1,
-                                        fill: true,
-                                        tension: 0.3
-                                    },
-                                    {
-                                        label: 'Rain (mm)',
-                                        data: rain,
-                                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                        borderColor: 'rgba(255, 99, 132, 1)',
-                                        borderWidth: 1,
-                                        fill: true,
-                                        tension: 0.3
-                                    },
-                                    {
-                                        label: 'Snowfall (mm)',
-                                        data: snowfall,
-                                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                                        borderColor: 'rgba(255, 206, 86, 1)',
-                                        borderWidth: 1,
-                                        fill: true,
-                                        tension: 0.3
-                                    },
-                                    {
-                                        label: 'Showers (mm)',
-                                        data: showers,
-                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                        borderColor: 'rgba(75, 192, 192, 1)',
-                                        borderWidth: 1,
-                                        fill: true,
-                                        tension: 0.3
-                                    },
-                                    {
-                                        label: 'Humidity (%)',
-                                        data: relative_humidity_2m,
-                                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                                        borderColor: 'rgba(153, 102, 255, 1)',
-                                        borderWidth: 1,
-                                        fill: true,
-                                        tension: 0.4
-                                    }
-                                ]
-                            },
-                            options: {
+                    if (solarData && solarData.poaMonthly && solarData.poaMonthly.length > 0) {
+                        console.log('AC Monthly:', solarData.acMonthly);
+                        console.log('POA Monthly:', solarData.poaMonthly);
+                        console.log('Solar Radiation Monthly:', solarData.solradMonthly);
+                        console.log('DC Monthly:', solarData.dcMonthly);
+                        
+                        // Plot the data on a graph using Chart.js
+                        plotSolarData(solarData);
+                    } else {
+                        console.log('No data found.');
+                        document.getElementById('errorMessage').style.display = 'block';
+                    }
+                } else {
+                    console.error('Error:', event.message);
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+                document.getElementById('spinner').style.display = 'none'; // Hide the spinner after data retrieval
+            });
+        };
+    
+        function plotSolarData(solarData) {
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'POA Monthly',
+                        data: solarData.poaMonthly,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'AC Monthly',
+                        data: solarData.acMonthly,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'Solar Radiation Monthly',
+                        data: solarData.solradMonthly,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        fill: true,
+                        tension: 0.3
+                    }, {
+                        label: 'DC Monthly',
+                        data: solarData.dcMonthly,
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
                                 responsive: true, // Enable responsiveness
                                 devicePixelRatio: window.devicePixelRatio,
                                 animation: {
@@ -143,7 +138,7 @@
                                     display: true,
                                     labels: {
                                         fontColor: 'black',
-                                        fontSize: 11
+                                        fontSize: 8
                                     }
                                 },
                                 tooltips: {
@@ -159,7 +154,7 @@
                                         display: true,
                                         scaleLabel: {
                                             display: true,
-                                            labelString: 'Time (hours)',
+                                            labelString: 'Month',
                                             fontColor: 'black',
                                             fontSize: 12
                                         },
@@ -173,7 +168,7 @@
                                             display: true,
                                             labelString: 'Value',
                                             fontColor: 'black',
-                                            fontSize: 14
+                                            fontSize: 16
                                         },
                                         ticks: {
                                             fontColor: 'black'
@@ -181,15 +176,8 @@
                                     }]
                                 }
                             }
-                        });
-                    } else {
-                        document.getElementById('errorMessage').style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('errorMessage').style.display = 'block';
-                    console.error('Error:', event.message);
-                }
             });
-        };
+            document.getElementById('myChart').style.display = 'block'; // Show the chart after it's been rendered
+        }
     </script>
 </apex:page>

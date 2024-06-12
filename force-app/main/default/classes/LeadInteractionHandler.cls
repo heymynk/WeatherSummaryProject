@@ -71,87 +71,6 @@ public with sharing class LeadInteractionHandler {
         }
     }
 
-    // @AuraEnabled(cacheable=true)
-    // public static EmailContentWrapper generateEmailContent(Id leadId, String customPromptByUser) {
-    //     List<String> emailPromptParts = new List<String>{
-    //         'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead',
-    //         'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
-    //         'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
-    //         'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
-    //         'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
-    //         'There is also a prompt which is given by the user from the UI, Consider that prompt as well.'
-    //     };
-
-    //     // Include custom prompt provided by the user if it's not empty
-    //     if (!String.isBlank(customPromptByUser)) {
-    //         System.debug('customPromptByUser: ' + customPromptByUser);
-    //         emailPromptParts.add(customPromptByUser);  // Add custom user input to the email content
-    //     }
-
-    //     String leadAddress = getLeadAddress(leadId);
-    //     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-    //     if (coordinates != null) {
-    //         String latitude = coordinates.latitude;
-    //         String longitude = coordinates.longitude;
-
-    //         String companyData = 'we are salesforce certified pdo & isv partner, doing amazing things with cloud computing and the salesforce 360 platform  concretio is founded by abhinav - 8 times salesforce mvp (most valuable professional) with over a decade of it experience, was first from india to get rewarded by the mvp title from salesforce.com.highlights:following latest and best practices using sfdx, git, scratch orgs, with ci/cd (via jenkins, circleci, bitbucket pipelines, github actions etc).complex integrations using rest/soap + json/xml + oauth/jwtlwc, aura components with amazing ux. - lightning components and apps. we were among 1st few partners to list an aura component in 2015 in the appexchange component marketplace.appexchange: helped 15+ isv partners take their ideas to a listing on appexchange.salesforce commerce cloud(sfcc) - helping largest e-commerce portals to succeed with demandware, we are quite proud of the javascript skills we bring on to the table.';
-
-    //         SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
-    //         System.debug('forecastResponse: ' + forecastResponse);
-
-    //         if (forecastResponse != null && companyData != null) {
-    //             // Append additional contextual data to the prompt
-    //             emailPromptParts.add('Lead\'s Address: ' + leadAddress);                
-    //             String customPrompt = String.join(emailPromptParts, '\n');
-    //             String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse;
-
-    //             String role = 'assistant';  // Define the role for OpenAI response generation
-    //             String openAiResponse = getOpenAiResponse(prompt, role);
-    //             if (openAiResponse != null) {
-    //                 String formattedContent = formatContent(openAiResponse);
-    //                 String subject = extractSubject(formattedContent);
-    //                 formattedContent = removeSubjectFromBody(formattedContent);
-    //                 return new EmailContentWrapper(subject, formattedContent);
-    //             } else {
-    //                 return new EmailContentWrapper('Failed to retrieve OpenAI response.', '');
-    //             }
-    //         } else {
-    //             return new EmailContentWrapper('Failed to retrieve weather data or company information.', '');
-    //         }
-    //     } else {
-    //         return new EmailContentWrapper('Failed to retrieve coordinates for Lead with Id: ' + leadId, '');
-    //     }
-    // }
-
-    // // Extract subject from email content
-    // private static String extractSubject(String emailContent) {
-    //     String subjectPrefix = 'Subject: ';
-    //     Integer startIndex = emailContent.indexOf(subjectPrefix);
-    //     if (startIndex != -1) {
-    //         startIndex += subjectPrefix.length();
-    //         Integer endIndex = emailContent.indexOf('\n', startIndex);
-    //         if (endIndex != -1) {
-    //             String subject = emailContent.substring(startIndex, endIndex).trim();
-    //             // Remove any HTML tags
-    //             subject = subject.replaceAll('<[^>]*>', '');
-    //             return subject;
-    //         }
-    //     }
-    //     return 'No subject found';
-    // }
-
-    // // Remove subject from body content
-    // private static String removeSubjectFromBody(String emailContent) {
-    //     String subjectPrefix = 'Subject: ';
-    //     Integer startIndex = emailContent.indexOf(subjectPrefix);
-    //     if (startIndex != -1) {
-    //         Integer endIndex = emailContent.indexOf('\n', startIndex);
-    //         if (endIndex != -1) {
-    //             return emailContent.substring(endIndex + 1).trim();
-    //         }
-    //     }
-    //     return emailContent;
-    // }
 
     // Format content for display
     public static String formatContent(String rawText) {
@@ -172,7 +91,7 @@ public with sharing class LeadInteractionHandler {
 
         // Include custom prompt provided by the user if it's not empty
         if (!String.isBlank(customPromptByUser)) {
-            callPromptParts.add(customPromptByUser);  // Add custom user input to the email content
+            callPromptParts.add(customPromptByUser); 
         }
 
         String leadAddress = getLeadAddress(leadId);
@@ -183,10 +102,6 @@ public with sharing class LeadInteractionHandler {
 
             CompanyInfoWrapper companyData = getCompanyData(leadId);
             String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
-
-            // HttpResponse forecastResponse = SolarForecastService.getForecast(latitude, longitude, '10');
-            // Map<String, String> weatherAverages = SolarForecastService.calculateCurrentDateAverages(forecastResponse);
-
 
             SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
 
@@ -277,77 +192,6 @@ public with sharing class LeadInteractionHandler {
         }
     }
 
-    // @AuraEnabled(cacheable=true)
-    // public static CompanyInfoWrapper getCompanyData(Id leadId) {
-    //     String companyInfoApiKey = getCompanyInfoAPIKey();
-
-    //     Lead lead = [SELECT Company FROM Lead WHERE Id = :leadId LIMIT 1];
-    //     if (lead.Company == null) {
-    //         System.debug('No company name found for the given Lead Id: ' + leadId);
-    //         return null;
-    //     }
-
-    //     String endpoint = 'https://api.peopledatalabs.com/v5/company/enrich?name=' +
-    //         EncodingUtil.urlEncode(lead.Company, 'UTF-8') + '&pretty=false';
-    //     Http http = new Http();
-    //     HttpRequest request = new HttpRequest();
-    //     request.setEndpoint(endpoint);
-    //     request.setMethod('GET');
-    //     request.setHeader('accept', 'application/json');
-    //     request.setHeader('X-API-Key', companyInfoApiKey);
-
-    //     try {
-    //         HttpResponse response = http.send(request);
-    //         if (response.getStatusCode() == 200) {
-    //             String responseBody = response.getBody();
-    //             System.debug('Response: ' + responseBody);
-
-    //             Map<String, Object> responseMap = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
-    //             String displayName = (String) responseMap.get('display_name');
-    //             String summary = (String) responseMap.get('summary');
-
-    //             List<Company_Information__c> existingInfo = [SELECT Id FROM Company_Information__c WHERE Name = :displayName LIMIT 1];
-    //             Company_Information__c companyInfo;
-    //             if (existingInfo.isEmpty()) {
-    //                 companyInfo = new Company_Information__c(Name = displayName, Company_Info__c = leadId, Description__c = summary);
-    //                 upsert companyInfo; // Perform DML operation
-    //             } else {
-    //                 companyInfo = existingInfo[0];
-    //                 if (!companyInfo.Description__c.equals(summary)) { // Check if update is necessary
-    //                     companyInfo.Description__c = summary;
-    //                     update companyInfo; // Perform DML operation
-    //                 }
-    //             }
-
-    //             return new CompanyInfoWrapper(displayName, summary);
-    //         } else {
-    //             System.debug('Failed with status code: ' + response.getStatusCode());
-    //             return null;
-    //         }
-    //     } catch (Exception e) {
-    //         System.debug('Exception in getCompanyData: ' + e.getMessage());
-    //         return null;
-    //     }
-    // }
-
-    // Format content for display
-    // public static String formatContent(String rawText) {
-    //     String formattedText = '<p>' + rawText.replace('\n', '</p>\n<p>') + '</p>';
-    //     return formattedText;
-    // }
-
-    // Get Company Info by Lead Id
-    // @AuraEnabled(cacheable=true)
-    // public static String getCompanyInfoByLeadId(Id leadId) {
-    //     List<Company_Information__c> companyInfos = [SELECT Description__c FROM Company_Information__c WHERE Company_Info__c = :leadId LIMIT 1];
-    //     System.debug('companyInfos: ' + companyInfos);
-    //     if (!companyInfos.isEmpty()) {
-    //         return companyInfos[0].Description__c;  
-    //     } else {
-    //         return 'No company information available';  
-    //     }
-    // }
-
     // Helper method to construct the request map
     private static Map<String, Object> constructRequestMap(String content, String model, String role) {
         return new Map<String, Object>{
@@ -406,6 +250,37 @@ public with sharing class LeadInteractionHandler {
         return companyInfoKeySettings != null ? companyInfoKeySettings.Value__c : null;
     }
 
+    //weather data for graph
+    @RemoteAction
+    public static String getSolarDataJSON(Id leadId) {
+        // Call methods to fetch and process weather data
+        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+        System.debug('coordinates getWeatherDataJSON'+coordinates);
+        // Check if coordinates are available
+        if (coordinates != null) {
+            String latitude = coordinates.latitude;
+            String longitude = coordinates.longitude;
+    
+            // Call method to fetch weather data
+            SolarEnergyDataWrapper forecastSolarData = getSolarEnergyData(latitude, longitude);
+            
+            System.debug('forecastSolarData: ' + forecastSolarData);
+    
+            // Process the response and convert to JSON
+            if (forecastSolarData != null) {
+                System.debug('forecastSolarData: ' + forecastSolarData);
+    
+                // Serialize the SolarEnergyDataWrapper object to JSON
+                String jsonForecastSolarData = JSON.serialize(forecastSolarData);
+                return jsonForecastSolarData;
+            } else {
+                return 'Failed to retrieve weather data.';
+            }
+        } else {
+            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        }
+    }
+    
     // Fetch Geoapify API Key
     private static String getGeoapifyAPIKey() {
         ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify');
@@ -549,9 +424,7 @@ public with sharing class LeadInteractionHandler {
         System.debug('subjectEmail: ' + subjectEmail);
         email.setHtmlBody(emailHtmlValue);
         System.debug('emailHtmlValue: ' + emailHtmlValue);
-        //email.setReplyTo('mayank.singh225566@gmail.com');
-        email.setReplyTo('esolarcorp_email_service@9-1xslb6ie126n05z81bruwxf46zy1crdxn2jz0zzxlkp7eajozc.c1-yqwnmai.ind16s.apex.sandbox.salesforce.com');
-
+        email.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
    
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
@@ -621,14 +494,13 @@ public with sharing class LeadInteractionHandler {
         ];
     }
 
-    // New Solar API Methods 
-
     
         // Method to retrieve the API key from the custom setting
-        private static String getSolarEnergyAPIKey() {
+    private static String getSolarEnergyAPIKey() {
             ApiKeys__c solarEnergyKeySettings = ApiKeys__c.getInstance('solarEnergy');
             return solarEnergyKeySettings != null ? solarEnergyKeySettings.Value__c : null;
-        }
+    }
+
 
 
     // Method to get Solar Energy Data with static values for parameters
@@ -674,15 +546,20 @@ public with sharing class LeadInteractionHandler {
             
             if(response.getStatusCode() == 200) {
                 String responseBody = response.getBody();
-                // System.debug('Response: ' + responseBody);
+                System.debug('Response: ' + responseBody);
                 
                 Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
                 Map<String, Object> outputs = (Map<String, Object>) jsonResponse.get('outputs');
+                System.debug('outputs'+outputs);
                 List<Object> poaMonthly = (List<Object>) outputs.get('poa_monthly');
-                
+                List<Object> acMonthly = (List<Object>) outputs.get('ac_monthly');
+                List<Object> solradMonthly = (List<Object>) outputs.get('solrad_monthly');
+                List<Object> dcMonthly = (List<Object>) outputs.get('dc_monthly');
+        
+            
                 System.debug('POA Monthly Values: ' + poaMonthly);
 
-                solarEnergyData = new SolarEnergyDataWrapper(poaMonthly);
+                solarEnergyData = new SolarEnergyDataWrapper(poaMonthly,acMonthly,solradMonthly,dcMonthly);
                 System.debug('solarEnergyData ' + solarEnergyData);
                 
                 return solarEnergyData;
