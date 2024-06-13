@@ -24,8 +24,8 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @track showEmailFields = false; 
     @track showCallScript = false; 
     @track showGenerateEmailButton = true; 
-    @track showGenerateCallScriptButton = false; // New state for Generate Call Script button visibility
-    customPromptByUser = '';
+    @track showGenerateCallScriptButton = false; 
+    @track customPromptByUser = ''; // Ensure this is tracked
 
     connectedCallback() {
         this.fetchLeadEmailAddress();
@@ -90,7 +90,12 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     }
 
     handleInputChange(event) {
-        this[event.target.name] = event.target.value;
+        const field = event.target.name;
+        if (field === 'customPromptByUser') {
+            this.customPromptByUser = event.target.value;
+        } else {
+            this[field] = event.target.value;
+        }
     }
 
     handleEmailContentChange(event) {
@@ -121,7 +126,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         console.log('Subject:', this.subject);
         console.log('Body:', this.HtmlValue);
         console.log('Uploaded Files:', this.uploadFile.map(file => file.contentVersionId));
-
+    
         sendEmailToController({
             toAddressEmail: [this.toAddress],
             orgwideEmailAddress: this.orgWideId,
@@ -135,7 +140,14 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             this.showEmailFields = false; 
             this.showCallScript = false; 
             this.showGenerateEmailButton = false; 
-            this.showGenerateCallScriptButton = true; // Hide Generate Call Script button
+            this.showGenerateCallScriptButton = true; // Show Generate Call Script button
+            
+            // Clear the form fields
+            this.subject = '';
+            this.HtmlValue = '';
+            this.emailContent = '';
+            this.customPromptByUser = ''; // Clear custom prompt
+            this.uploadFile = [];
         })
         .catch(error => {
             this.isLoading = false; 

@@ -14,12 +14,13 @@
 
             <!-- Textarea for additional prompts -->
             <lightning-textarea 
-                label="Additional Prompt"
-                name="customPromptByUser"
-                onchange={handleInputChange}
-                placeholder="Enter additional instructions or information here..."
-                class="slds-var-m-bottom_small">
-            </lightning-textarea>
+            label="Additional Prompt"
+            name="customPromptByUser"
+            value={customPromptByUser}
+            onchange={handleInputChange}
+            placeholder="Enter additional instructions or information here..."
+            class="slds-var-m-bottom_small">
+        </lightning-textarea>
 
             <!-- Display loader while generating email or call script -->
             <template if:true={isLoading}>
