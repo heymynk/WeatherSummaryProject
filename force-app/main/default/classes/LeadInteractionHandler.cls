@@ -82,7 +82,8 @@ public with sharing class LeadInteractionHandler {
     @AuraEnabled(cacheable=true)
     public static String generateCallScript(Id leadId, String customPromptByUser) {
         List<String> callPromptParts = new List<String>{
-            'Using the provided company information of lead, weather data of lead\'s address, and solar panel product details our company offers, generate a scripted first phone call for the lead (Do not include lead response).',
+            'Note- Purpose of call script is to grab the attention of lead to grow our business by giving our services and showcasing our products to lead',
+            'Using the provided company information of lead, Solar Data of lead, Lead\'s address (city only), Name and product dats write (n if applicable in user prompt) personalized, formatted call script for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information and showcasing the products',
             'The script should be engaging, starting with an introduction of ESolarCorp, our company, followed by a discussion on how our solar panel products can benefit the lead considering the current weather conditions.',
             'Include key points about the advantages of our products and tailor the conversation to address the lead\'s specific needs.',
             'Ensure the script is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
@@ -143,17 +144,6 @@ public with sharing class LeadInteractionHandler {
         } else {
             return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
         }
-    }
-
-    // Method to format averages into a string
-    private static String formatAverages(Map<String, String> averages) {
-        return 'Average Temperature: ' + averages.get('avg_temp') + ' °C\n' +
-            'Average Clear Sky: ' + averages.get('avg_clear_sky') + ' %\n' +
-            'Average Predicted Power: ' + averages.get('avg_p_predicted') + ' kW\n' +
-            'Average Pressure: ' + averages.get('avg_pressure') + ' hPa\n' +
-            'Average Humidity: ' + averages.get('avg_humidity') + ' %\n' +
-            'Average Wind Speed: ' + averages.get('avg_wind_speed') + ' m/s\n' +
-            'Average Cloud Cover: ' + averages.get('avg_clouds_all') + ' %';
     }
 
     // Fetch Company Data
