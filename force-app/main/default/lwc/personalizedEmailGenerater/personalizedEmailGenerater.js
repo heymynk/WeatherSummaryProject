@@ -20,8 +20,11 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @track HtmlValue;
     @track uploadFile = [];
     @track acceptedFormats = ['.pdf', '.png', '.jpg'];
-    @track isLoading = false; // Loader state
-    @track showEmailFields = false; // Visibility of email fields
+    @track isLoading = false; 
+    @track showEmailFields = false; 
+    @track showCallScript = false; 
+    @track showGenerateEmailButton = true; 
+    @track showGenerateCallScriptButton = false; // New state for Generate Call Script button visibility
     customPromptByUser = '';
 
     connectedCallback() {
@@ -29,6 +32,13 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         this.fetchOrgWideEmailAddress();
         //this.fetchCompanyData();
         //this.fetchFileAttachments();
+    }
+
+    get dynamicTitle() {
+        if (this.showGenerateCallScriptButton) {
+            return 'Personalized Call Script Generator';
+        }
+        return 'Personalized Email Generator';
     }
 
     fetchLeadEmailAddress() {
@@ -104,13 +114,14 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     }
 
     sendEmail() {
+        this.isLoading = true; // Show loader
         console.log('Preparing to send email');
         console.log('To Address:', this.toAddress);
         console.log('Org-Wide Email Address ID:', this.orgWideId);
         console.log('Subject:', this.subject);
         console.log('Body:', this.HtmlValue);
         console.log('Uploaded Files:', this.uploadFile.map(file => file.contentVersionId));
-   
+
         sendEmailToController({
             toAddressEmail: [this.toAddress],
             orgwideEmailAddress: this.orgWideId,
@@ -120,16 +131,25 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         })
         .then(() => {
             this.showToast('Success', 'Email sent successfully', 'success');
+            this.isLoading = false; 
+            this.showEmailFields = false; 
+            this.showCallScript = false; 
+            this.showGenerateEmailButton = false; 
+            this.showGenerateCallScriptButton = true; // Hide Generate Call Script button
         })
         .catch(error => {
+            this.isLoading = false; 
             this.handleError(error, 'Error sending email');
         });
     }
 
     generateEmail() {
-        this.isLoading = true; // Show loader
+        this.isLoading = true; 
+        console.log('Generating email...');
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
+                console.log('Email generated successfully.');
+                console.log('Result:', result);
                 // Extract the subject from the generated email content
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
                 if (subjectMatch) {
@@ -139,25 +159,79 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                 } else {
                     this.HtmlValue = result;
                 }
-                this.emailContent = this.HtmlValue; // Set the email body without subject
-                this.showEmailFields = true; // Show email fields
-                this.isLoading = false; // Hide loader
+                this.emailContent = this.HtmlValue; 
+                this.showEmailFields = true; 
+                this.showCallScript = false; 
+                this.isLoading = false; 
+                this.showGenerateEmailButton = false; 
             })
             .catch(error => {
-                this.isLoading = false; // Hide loader
+                this.isLoading = false; 
                 this.handleError(error, 'Error generating email content');
             });
     }
-    
 
-    generateCallScript() {
-        generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+    regenerateEmail() {
+        this.isLoading = true; 
+        console.log('Regenerating email...');
+        generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
-                this.callScript = result;
+                console.log('Email regenerated successfully.');
+                console.log('Result:', result);
+                const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
+                if (subjectMatch) {
+                    this.subject = subjectMatch[1];
+                    this.HtmlValue = result.replace(subjectMatch[0], '').trim();
+                } else {
+                    this.HtmlValue = result;
+                }
+                this.emailContent = this.HtmlValue; 
+                this.isLoading = false; 
             })
             .catch(error => {
+                this.isLoading = false; 
+                this.handleError(error, 'Error regenerating email content');
+            });
+    }
+
+    generateCallScript() {
+        this.isLoading = true; 
+        console.log('Generating call script...');
+        generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+            .then(result => {
+                console.log('Call script generated successfully.');
+                console.log('Result:', result);
+                this.callScript = result;
+                this.isLoading = false; 
+                this.showCallScript = true; // Show call script fields
+                this.showGenerateCallScriptButton = false; // Hide Generate Call Script button
+            })
+            .catch(error => {
+                this.isLoading = false; 
                 this.handleError(error, 'Error generating call script');
             });
+    }
+
+    regenerateCallScript() {
+        this.isLoading = true; 
+        console.log('Regenerating call script...');
+        generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+            .then(result => {
+                console.log('Call script regenerated successfully.');
+                console.log('Result:', result);
+                this.callScript = result;
+                this.isLoading = false; 
+            })
+            .catch(error => {
+                this.isLoading = false; 
+                this.handleError(error, 'Error regenerating call script');
+            });
+    }
+
+    callLead() {
+        // Implement the logic for calling the lead
+        console.log('Calling the lead...');
+        // Add your call logic here
     }
 
     showToast(title, message, variant) {

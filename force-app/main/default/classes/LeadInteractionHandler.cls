@@ -26,7 +26,7 @@ public with sharing class LeadInteractionHandler {
         // Include custom prompt provided by the user if it's not empty
         if (!String.isBlank(customPromptByUser)) {
             System.debug('customPromptByUser: ' + customPromptByUser);
-            emailPromptParts.add(customPromptByUser);  // Add custom user input to the email content
+            emailPromptParts.add(customPromptByUser);  
         }
 
         String leadAddress = getLeadAddress(leadId);
@@ -100,8 +100,10 @@ public with sharing class LeadInteractionHandler {
             String latitude = coordinates.latitude;
             String longitude = coordinates.longitude;
 
-            CompanyInfoWrapper companyData = getCompanyData(leadId);
-            String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
+            // CompanyInfoWrapper companyData = getCompanyData(leadId);
+            // String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
+
+            String companyData = 'we are salesforce certified pdo & isv partner, doing amazing things with cloud computing and the salesforce 360 platform  concretio is founded by abhinav - 8 times salesforce mvp (most valuable professional) with over a decade of it experience, was first from india to get rewarded by the mvp title from salesforce.com.highlights:following latest and best practices using sfdx, git, scratch orgs, with ci/cd (via jenkins, circleci, bitbucket pipelines, github actions etc).complex integrations using rest/soap + json/xml + oauth/jwtlwc, aura components with amazing ux. - lightning components and apps. we were among 1st few partners to list an aura component in 2015 in the appexchange component marketplace.appexchange: helped 15+ isv partners take their ideas to a listing on appexchange.salesforce commerce cloud(sfcc) - helping largest e-commerce portals to succeed with demandware, we are quite proud of the javascript skills we bring on to the table.';
 
             SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
 
@@ -118,8 +120,14 @@ public with sharing class LeadInteractionHandler {
                 // Join the custom prompt parts into a single string
                 String customPrompt = String.join(callPromptParts, '\n');
 
-                String prompt = customPrompt + '\n\nWeather Data:\n' + forecastResponse +
-                    '\n\nSolar Panel Data:\n' + solarPanelDataString + '\n\nCompany Information:\n' + companyInfoString;
+                String prompt = customPrompt +
+                 '\n\nWeather Data:\n'
+                  + forecastResponse +
+                    '\n\nSolar Panel Data:\n' 
+                    + solarPanelDataString + 
+                    '\n\nCompany Information:\n' 
+                    //+ companyInfoString;
+                    + companyData;
 
                 String role = 'assistant';  // Define the role for OpenAI response generation
                 String openAiResponse = getOpenAiResponse(prompt, role);
@@ -424,7 +432,7 @@ public with sharing class LeadInteractionHandler {
         System.debug('subjectEmail: ' + subjectEmail);
         email.setHtmlBody(emailHtmlValue);
         System.debug('emailHtmlValue: ' + emailHtmlValue);
-        email.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
+        email.setReplyTo('esolarcorp_email_service@2z44w6hzvpw0whp3369j44g37ghjwwreyv2w5ujftu5fq7wykk.c1-11nfdmaa.ind16s.apex.sandbox.salesforce.com');
    
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();

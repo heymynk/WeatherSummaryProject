@@ -37,11 +37,17 @@
         }
     </style>
 
-    <div class="slds-scope">
-        <div class="chart-container" style="position: relative; height: 400px;">
-            <div id="spinner" class="spinner-container">
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+<div class="slds-scope">
+    <div class="spinner-container" id="spinnerContainer">
+        <div class="slds-spinner_container">
+            <div role="status" class="slds-spinner slds-spinner_medium">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
             </div>
+        </div>
+    </div>
+    <div class="chart-container" style="position: relative; height: 400px;">
             <canvas id="myChart" style="display: none;"></canvas>
         </div>
         <div id="errorMessage" class="error-message" style="display: none;">
@@ -67,10 +73,10 @@
                     var solarData = JSON.parse(decodedResult);
 
                     if (solarData && solarData.poaMonthly && solarData.poaMonthly.length > 0) {
-                        console.log('AC Monthly:', solarData.acMonthly);
-                        console.log('POA Monthly:', solarData.poaMonthly);
-                        console.log('Solar Radiation Monthly:', solarData.solradMonthly);
-                        console.log('DC Monthly:', solarData.dcMonthly);
+                        // console.log('AC Monthly:', solarData.acMonthly);
+                        // console.log('POA Monthly:', solarData.poaMonthly);
+                        // console.log('Solar Radiation Monthly:', solarData.solradMonthly);
+                        // console.log('DC Monthly:', solarData.dcMonthly);
                         
                         // Plot the data on a graph using Chart.js
                         plotSolarData(solarData);
@@ -95,7 +101,7 @@
                 data: {
                     labels: months,
                     datasets: [{
-                        label: 'POA Monthly',
+                        label: 'POA Monthly(kWh/m2)',
                         data: solarData.poaMonthly,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgba(255, 99, 132, 1)',
@@ -103,7 +109,7 @@
                         fill: true,
                         tension: 0.3
                     }, {
-                        label: 'AC Monthly',
+                        label: 'AC Monthly(kWhac)',
                         data: solarData.acMonthly,
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderColor: 'rgba(75, 192, 192, 1)',
@@ -111,7 +117,7 @@
                         fill: true,
                         tension: 0.3
                     }, {
-                        label: 'Solar Radiation Monthly',
+                        label: 'Solar Radiation Monthly(kWh/m2/day)',
                         data: solarData.solradMonthly,
                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
                         borderColor: 'rgba(54, 162, 235, 1)',
@@ -119,7 +125,7 @@
                         fill: true,
                         tension: 0.3
                     }, {
-                        label: 'DC Monthly',
+                        label: 'DC Monthly(kWhdc)',
                         data: solarData.dcMonthly,
                         backgroundColor: 'rgba(255, 206, 86, 0.2)',
                         borderColor: 'rgba(255, 206, 86, 1)',
@@ -138,7 +144,7 @@
                                     display: true,
                                     labels: {
                                         fontColor: 'black',
-                                        fontSize: 8
+                                        fontSize: 10
                                     }
                                 },
                                 tooltips: {
@@ -168,7 +174,7 @@
                                             display: true,
                                             labelString: 'Value',
                                             fontColor: 'black',
-                                            fontSize: 16
+                                            fontSize: 14
                                         },
                                         ticks: {
                                             fontColor: 'black'

@@ -1,5 +1,5 @@
 <template>
-    <lightning-card title="Personalized Email Generator" icon-name="standard:email">
+    <lightning-card title={dynamicTitle} icon-name="standard:email">
         <div class="slds-var-p-around_medium">
 
             <!-- Displaying company information if available -->
@@ -21,12 +21,12 @@
                 class="slds-var-m-bottom_small">
             </lightning-textarea>
 
-            <!-- Display loader while generating email -->
+            <!-- Display loader while generating email or call script -->
             <template if:true={isLoading}>
                 <lightning-spinner alternative-text="Loading"></lightning-spinner>
             </template>
 
-            <!-- Text input for email subject, rich text input, and file upload -->
+            <!-- Email fields -->
             <template if:true={showEmailFields}>
                 <lightning-input 
                     label="Email Subject"
@@ -70,7 +70,8 @@
 
             <!-- Action buttons -->
             <div class="slds-align_absolute-center slds-var-p-top_medium">
-                <template if:false={showEmailFields}>
+                <!-- Generate Email button only visible when showEmailFields is false and showCallScript is false -->
+                <template if:true={showGenerateEmailButton}>
                     <lightning-button 
                         label="Generate Email" 
                         variant="brand" 
@@ -86,8 +87,49 @@
                         onclick={sendEmail}
                         class="slds-var-m-right_x-small">
                     </lightning-button>
+
+                    <lightning-button 
+                        label="Regenerate Email" 
+                        variant="brand" 
+                        onclick={regenerateEmail}
+                        class="slds-var-m-right_x-small">
+                    </lightning-button>
+                </template>
+
+                <!-- Generate Call Script button only visible when showGenerateCallScriptButton is true -->
+                <template if:true={showGenerateCallScriptButton}>
+                    <lightning-button 
+                        label="Generate Call Script" 
+                        variant="brand" 
+                        onclick={generateCallScript}
+                        class="slds-var-m-right_x-small">
+                    </lightning-button>
                 </template>
             </div>
+
+            <!-- Call script section -->
+            <template if:true={showCallScript}>
+                <lightning-input-rich-text
+                    label="Generated Call Script"
+                    value={callScript}
+                    onchange={handleCallScriptChange}
+                    class="slds-var-m-bottom_small">
+                </lightning-input-rich-text>
+                
+                <lightning-button 
+                    label="Regenerate Call Script" 
+                    variant="brand" 
+                    onclick={regenerateCallScript}
+                    class="slds-var-m-right_x-small">
+                </lightning-button>
+
+                <lightning-button 
+                    label="Call Lead" 
+                    variant="brand" 
+                    onclick={callLead}
+                    class="slds-var-m-right_x-small">
+                </lightning-button>
+            </template>
         </div>
     </lightning-card>
 </template>
