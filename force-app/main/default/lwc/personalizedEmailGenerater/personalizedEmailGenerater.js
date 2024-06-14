@@ -30,7 +30,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     connectedCallback() {
         this.fetchLeadEmailAddress();
         this.fetchOrgWideEmailAddress();
-        //this.fetchCompanyData();
+        this.fetchCompanyData();
         //this.fetchFileAttachments();
     }
 
@@ -68,6 +68,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         getCompanyData({ leadId: this.recordId })
             .then(result => {
                 this.companyData = result;
+                console.log('Company Data:', this.companyData);
             })
             .catch(error => {
                 this.handleError(error, 'Error fetching company data');

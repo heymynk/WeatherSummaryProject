@@ -1,17 +1,31 @@
-/**
- * @description       : 
- * @author            : Mayank Singh
- * @group             : 
- * @last modified on  : 05-16-2024
- * @last modified by  : Mayank Singh
-**/
 public class HttpHelper {
+
+    public static HttpResponse sendGetRequestForCompany(String endPoint, String companyInfoApiKey) {
+        Http http = new Http();
+        HttpRequest httpReq = new HttpRequest();
+        httpReq.setMethod('GET');
+        httpReq.setEndpoint(endPoint);
+        httpReq.setHeader('Content-Type', 'application/json');
+
+        try {
+            HttpResponse response = http.send(httpReq);
+            if (response.getStatusCode() == 200) {
+                return response;
+            } else {
+                System.debug('Error: ' + response.getStatus() + ' Status code: ' + response.getStatusCode());
+            }
+        } catch (System.CalloutException e) {
+            System.debug('Error: ' + e.getMessage());
+        }
+        return null;
+    }
+
     public static HttpResponse sendGetRequest(String endPoint) {
         Http http = new Http();
         HttpRequest httpReq = new HttpRequest();
         httpReq.setMethod('GET');
         httpReq.setEndpoint(endPoint);
-        httpReq.setHeader('content-type', 'application/json');
+        httpReq.setHeader('Content-Type', 'application/json');
 
         try {
             HttpResponse response = http.send(httpReq);
