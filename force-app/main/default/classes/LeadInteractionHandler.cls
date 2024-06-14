@@ -446,7 +446,46 @@ public with sharing class LeadInteractionHandler {
         return null;
     }
 
-    // Send Email
+    // // Send Email
+    // @AuraEnabled(cacheable=true)
+    // public static void sendEmailToController(String[] toAddressEmail, Id orgwideEmailAddress, String subjectEmail, String emailHtmlValue, List<Id> uploadedFiles) {
+    //     if (toAddressEmail.isEmpty()) {
+    //         System.debug('No "to" addresses provided');
+    //         return;
+    //     }
+
+    //     Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+    //     email.setToAddresses(toAddressEmail);
+    //     email.setOrgWideEmailAddressId(orgwideEmailAddress);
+    //     email.setSubject(subjectEmail);
+    //     email.setHtmlBody(emailHtmlValue);
+    //     email.setReplyTo('esolarcorp_email_service@2z44w6hzvpw0whp3369j44g37ghjwwreyv2w5ujftu5fq7wykk.c1-11nfdmaa.ind16s.apex.sandbox.salesforce.com');
+
+    //     if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
+    //         List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
+    //         for (Id contentDocumentId : uploadedFiles) {
+    //             ContentVersion contentVersion = getContentVersion(contentDocumentId);
+    //             if (contentVersion != null) {
+    //                 Messaging.EmailFileAttachment efa = new Messaging.EmailFileAttachment();
+    //                 efa.setFileName(contentVersion.Title + '.' + contentVersion.FileType);
+    //                 efa.setBody(contentVersion.VersionData);
+    //                 emailFileAttachments.add(efa);
+    //             } else {
+    //                 System.debug('ContentVersion not found for Id: ' + contentDocumentId);
+    //             }
+    //         }
+    //         email.setFileAttachments(emailFileAttachments);
+    //     }
+
+    //     try {
+    //         Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
+    //         System.debug('Email sent successfully');
+    //     } catch (Exception ex) {
+    //         System.debug('Error sending email: ' + ex.getMessage());
+    //     }
+    // }
+
+
     @AuraEnabled(cacheable=true)
     public static void sendEmailToController(String[] toAddressEmail, Id orgwideEmailAddress, String subjectEmail, String emailHtmlValue, List<Id> uploadedFiles) {
         if (toAddressEmail.isEmpty()) {
@@ -478,10 +517,51 @@ public with sharing class LeadInteractionHandler {
         }
 
         try {
+            // Send the email
             Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
             System.debug('Email sent successfully');
+
+            // Create EmailMessage record and associate it with Lead
+            Id leadId = getLeadIdFromEmail(toAddressEmail);
+            if (leadId != null) {
+                insertEmailMessageRecord(leadId, toAddressEmail, subjectEmail, emailHtmlValue);
+            } else {
+                System.debug('No Lead found for provided email addresses.');
+            }
         } catch (Exception ex) {
             System.debug('Error sending email: ' + ex.getMessage());
+        }
+    }
+
+    private static Id getLeadIdFromEmail(String[] toAddressEmail) {
+        // Assuming there is only one email address in the array
+        if (toAddressEmail.isEmpty()) {
+            return null;
+        }
+        String emailAddress = toAddressEmail[0];
+
+        List<Lead> leads = [SELECT Id FROM Lead WHERE Email = :emailAddress LIMIT 1];
+        if (!leads.isEmpty()) {
+            return leads[0].Id;
+        }
+        return null;
+    }
+
+    // Method to insert EmailMessage record
+    @future
+    private static void insertEmailMessageRecord(Id leadId, String[] toAddressEmail, String subjectEmail, String emailHtmlValue) {
+        try {
+            EmailMessage emailMessage = new EmailMessage();
+            emailMessage.Related_Lead__c = leadId; // Set the custom field with the LeadId
+            emailMessage.Status = '3'; // Assuming '3' is the status for sent emails
+            emailMessage.ToAddress = String.join(toAddressEmail, ',');
+            emailMessage.Subject = subjectEmail;
+            emailMessage.HtmlBody = emailHtmlValue;
+
+            insert emailMessage;
+            System.debug('EmailMessage inserted successfully. Id: ' + emailMessage.Id);
+        } catch (Exception ex) {
+            System.debug('Error inserting EmailMessage: ' + ex.getMessage());
         }
     }
 
