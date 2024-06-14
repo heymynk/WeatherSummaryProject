@@ -220,7 +220,6 @@ public with sharing class LeadInteractionHandler {
             HttpResponse response = HttpHelper.sendGetRequestForCompany(endpoint, companyInfoApiKey);
             if (response != null && response.getStatusCode() == 200) {
                 String responseBody = response.getBody();
-                System.debug('Response: ' + responseBody);
 
                 Map<String, Object> responseMap = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
                 String displayName = (String) responseMap.get('display_name');
@@ -278,7 +277,6 @@ public with sharing class LeadInteractionHandler {
             
             if(response.getStatusCode() == 200) {
                 String responseBody = response.getBody();
-                System.debug('Response: ' + responseBody);
                 
                 Map<String, Object> jsonResponse = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
                 Map<String, Object> outputs = (Map<String, Object>) jsonResponse.get('outputs');
@@ -563,11 +561,9 @@ public with sharing class LeadInteractionHandler {
             // Call method to fetch weather data
             SolarEnergyDataWrapper forecastSolarData = getSolarEnergyData(latitude, longitude);
             
-            System.debug('forecastSolarData: ' + forecastSolarData);
     
             // Process the response and convert to JSON
             if (forecastSolarData != null) {
-                System.debug('forecastSolarData: ' + forecastSolarData);
     
                 // Serialize the SolarEnergyDataWrapper object to JSON
                 String jsonForecastSolarData = JSON.serialize(forecastSolarData);
