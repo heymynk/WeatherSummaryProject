@@ -1,4 +1,4 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track,wire } from 'lwc';
 import generateEmailContent from '@salesforce/apex/LeadInteractionHandler.generateEmailContent';
 import generateCallScript from '@salesforce/apex/LeadInteractionHandler.generateCallScript';
 import getCompanyData from '@salesforce/apex/LeadInteractionHandler.getCompanyData';
@@ -7,6 +7,8 @@ import getOrgwideEmailAddress from '@salesforce/apex/LeadInteractionHandler.getO
 import sendEmailToController from '@salesforce/apex/LeadInteractionHandler.sendEmailToController';
 import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachment';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import getEmailMessagesForLead from '@salesforce/apex/LeadInteractionHandler.getEmailMessagesForLead';
+
 
 export default class PersonalizedEmailGenerator extends LightningElement {
     @api recordId; 
@@ -25,7 +27,9 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @track showCallScript = false; 
     @track showGenerateEmailButton = true; 
     @track showGenerateCallScriptButton = false; 
-    @track customPromptByUser = ''; // Ensure this is tracked
+    @track customPromptByUser = ''; 
+    @track emailMessages;
+    @track emailError;
 
     connectedCallback() {
         this.fetchLeadEmailAddress();
@@ -53,6 +57,21 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         }
     }
 
+    @wire(getEmailMessagesForLead, { leadRecordId: '$recordId' })
+    wiredEmailMessages({ error, data }) {
+        if (data) {
+            this.emailMessages = data;
+            this.emailError = undefined;
+            console.log('Email Messages:', JSON.stringify(this.emailMessages));
+        } else if (error) {
+            this.emailError = error;
+            this.emailMessages = undefined;
+            this.handleError(error, 'Error fetching email messages');
+        }
+    }
+
+
+
     fetchOrgWideEmailAddress() {
         getOrgwideEmailAddress()
             .then(result => {
@@ -68,7 +87,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         getCompanyData({ leadId: this.recordId })
             .then(result => {
                 this.companyData = result;
-                console.log('Company Data:', this.companyData);
+                console.log('Company Data:',JSON.stringify(this.companyData));
             })
             .catch(error => {
                 this.handleError(error, 'Error fetching company data');
@@ -177,6 +196,9 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                 this.showCallScript = false; 
                 this.isLoading = false; 
                 this.showGenerateEmailButton = false; 
+                this.customPromptByUser = '';
+
+
             })
             .catch(error => {
                 this.isLoading = false; 
@@ -190,7 +212,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
                 console.log('Email regenerated successfully.');
-                console.log('Result:', result);
+                // console.log('Result:', result);
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
                 if (subjectMatch) {
                     this.subject = subjectMatch[1];
@@ -200,12 +222,15 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                 }
                 this.emailContent = this.HtmlValue; 
                 this.isLoading = false; 
+                this.customPromptByUser = '';
+
             })
             .catch(error => {
                 this.isLoading = false; 
                 this.handleError(error, 'Error regenerating email content');
             });
     }
+
 
     generateCallScript() {
         this.isLoading = true; 
@@ -214,10 +239,14 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             .then(result => {
                 console.log('Call script generated successfully.');
                 console.log('Result:', result);
-                this.callScript = result;
+               // this.callScript = result;
+                this.callScript = this.stripHtml(result);
+
                 this.isLoading = false; 
                 this.showCallScript = true; // Show call script fields
                 this.showGenerateCallScriptButton = false; // Hide Generate Call Script button
+                this.customPromptByUser = '';
+
             })
             .catch(error => {
                 this.isLoading = false; 
@@ -232,8 +261,10 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             .then(result => {
                 console.log('Call script regenerated successfully.');
                 console.log('Result:', result);
-                this.callScript = result;
+                this.callScript = this.stripHtml(result);
                 this.isLoading = false; 
+                this.customPromptByUser = '';
+
             })
             .catch(error => {
                 this.isLoading = false; 
@@ -242,9 +273,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     }
 
     callLead() {
-        // Implement the logic for calling the lead
         console.log('Calling the lead...');
-        // Add your call logic here
     }
 
     showToast(title, message, variant) {
@@ -259,5 +288,10 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     handleError(error, message) {
         this.showToast('Error', message, 'error');
         console.error(message, error);
+    }
+
+    stripHtml(html) {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.body.textContent || "";
     }
 }

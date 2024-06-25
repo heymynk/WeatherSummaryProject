@@ -1,0 +1,44 @@
+public class LeadInterMockRespGenerator implements HttpCalloutMock {
+
+    public HTTPResponse respond(HTTPRequest req) {
+        System.debug('Request Endpoint: ' + req.getEndpoint());
+        
+        // Check the endpoint to determine which mock response to generate
+        if (req.getEndpoint().contains('developer.nrel.gov/api/pvwatts/v8.json')) {
+            return createSolarEnergyDataResponse(req);
+        } 
+        else if(req.getEndpoint().contains('https://api.peopledatalabs.com')){
+            return createFetchCompanyDataResponse();
+        }
+        else {
+            return createFetchResponse();
+        }
+    }
+
+    // Method to create the fetch coordinates HTTP response
+    private static HTTPResponse createFetchResponse() {
+        HTTPResponse res = new HTTPResponse();
+        res.setHeader('Content-Type', 'application/json');
+        res.setBody('{"features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.088358,37.431753]}}]}');
+        res.setStatusCode(200);
+        return res;
+    }
+
+    // Method to create the solar energy data HTTP response
+    private static HTTPResponse createSolarEnergyDataResponse(HTTPRequest req) {
+        HTTPResponse res = new HTTPResponse();
+        res.setHeader('Content-Type', 'application/json');
+        res.setBody('{"outputs":{"ac_monthly":[280.060241503727,371.8049243572069,523.8606626615604,612.5064774102962,682.2216221299857,725.7339743768631,735.7917617894415,682.2635122154807,558.7717727766641,455.7575437168644,336.3449600118929,278.5799998351707],"poa_monthly":[86.97699521735579,117.1467814831449,167.4430247876726,199.402282601217,223.4233175827579,237.4547829183102,244.9994193901751,228.7080106388902,187.1800295138034,147.990740383875,107.1812802325201,87.24158362626507],"solrad_monthly":[2.805709523140509,4.183813624398032,5.401387896376534,6.6467427533739,7.20720379299219,7.915159430610339,7.903207077102423,7.377677762544846,6.239334317126779,4.773894851092743,3.572709341084003,2.814244633105325],"dc_monthly":[295.0428325091651,390.3519841649413,548.9859677462168,641.3228126081834,714.3601524724627,759.2758053085325,769.9437099893739,714.0823871790579,585.2158263641302,478.0228209236658,353.6091709410452,293.6458227831609]}}');
+        res.setStatusCode(200);
+        return res;
+    }
+
+    private static HTTPResponse createFetchCompanyDataResponse() {
+        HTTPResponse res = new HTTPResponse();
+        res.setHeader('Content-Type', 'application/json');
+        res.setBody('{"display_name": "Concretio (Salesforce Consulting Services)", "summary": "we are salesforce certified pdo & isv partner, doing amazing things with cloud computing and the salesforce 360 platform. concretio is founded by abhinav - 8 times salesforce mvp (most valuable professional) with over a decade of it experience, was first from india to get rewarded by the mvp title from salesforce.com. highlights: - following latest and best practices using sfdx, git, scratch orgs, with ci/cd (via jenkins, circleci, bitbucket pipelines, github actions etc). - complex integrations using rest/soap + json/xml + oauth/jwt - lwc, aura components with amazing ux. - lightning components and apps. we were among 1st few partners to list an aura component in 2015 in the appexchange component marketplace. - appexchange: helped 15+ isv partners take their ideas to a listing on appexchange. - salesforce commerce cloud(sfcc) - helping largest e-commerce portals to succeed with demandware, we are quite proud of the javascript skills we bring on to the table. - salesforce marketing cl"}');
+        res.setStatusCode(200);
+        return res;
+    }
+
+}

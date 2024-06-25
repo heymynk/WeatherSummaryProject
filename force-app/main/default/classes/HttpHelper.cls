@@ -1,21 +1,24 @@
 public class HttpHelper {
 
-    public static HttpResponse sendGetRequestForCompany(String endPoint, String companyInfoApiKey) {
+    public static HttpResponse sendGetRequestCompany(String endpoint, String apiKey) {
         Http http = new Http();
-        HttpRequest httpReq = new HttpRequest();
-        httpReq.setMethod('GET');
-        httpReq.setEndpoint(endPoint);
-        httpReq.setHeader('Content-Type', 'application/json');
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint(endpoint);
+
+        request.setEndpoint(endpoint);
+        request.setMethod('GET');
+        request.setHeader('accept', 'application/json');
+        request.setHeader('X-API-Key', apiKey);
 
         try {
-            HttpResponse response = http.send(httpReq);
+            HttpResponse response = http.send(request);
             if (response.getStatusCode() == 200) {
                 return response;
             } else {
-                System.debug('Error: ' + response.getStatus() + ' Status code: ' + response.getStatusCode());
+                System.debug('HTTP Request failed with status code: ' + response.getStatusCode());
             }
         } catch (System.CalloutException e) {
-            System.debug('Error: ' + e.getMessage());
+            System.debug('HTTP Request failed: ' + e.getMessage());
         }
         return null;
     }

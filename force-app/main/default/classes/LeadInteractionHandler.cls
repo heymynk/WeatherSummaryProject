@@ -35,11 +35,9 @@ public with sharing class LeadInteractionHandler {
         String latitude = coordinates.latitude;
         String longitude = coordinates.longitude;
 
-        CompanyInfoWrapper companyData = getStoredCompanyData(leadId);
-        if (companyData == null) {
-            companyData = getCompanyData(leadId); // Fetch and store company information if not found
-        }
-
+        CompanyInfoWrapper companyData = getCompanyData(leadId);
+      
+        
         String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
 
         SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
@@ -50,7 +48,7 @@ public with sharing class LeadInteractionHandler {
 
         emailPromptParts.add('Lead\'s Address: ' + leadAddress);
         String customPrompt = String.join(emailPromptParts, '\n');
-        String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse + '\n\nCompany Information:\n' + companyInfoString;
+        String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse + '\n\nCompany Information:\n' + companyData;
 
         String openAiResponse = getOpenAiResponse(prompt, 'assistant');
 
@@ -93,10 +91,9 @@ public with sharing class LeadInteractionHandler {
         String latitude = coordinates.latitude;
         String longitude = coordinates.longitude;
 
-        CompanyInfoWrapper companyData = getStoredCompanyData(leadId);
-        if (companyData == null) {
-            companyData = getCompanyData(leadId); // Fetch and store company information if not found
-        }
+        CompanyInfoWrapper companyData = getCompanyData(leadId);
+       //String companyInfoString = 'We are Salesforce certified PDO & ISV partner, doing amazing things with cloud computing and the Salesforce 360 platform. Concretio is founded by Abhinav ';
+
 
         String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
         SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
@@ -110,7 +107,7 @@ public with sharing class LeadInteractionHandler {
         callPromptParts.add('Lead\'s Address: ' + leadAddress);
         String customPrompt = String.join(callPromptParts, '\n');
 
-        String prompt = customPrompt + '\n\nWeather Data:\n' + forecastResponse + '\n\nSolar Panel Data:\n' + solarPanelDataString + '\n\nCompany Information:\n' + companyInfoString;
+        String prompt = customPrompt + '\n\nWeather Data:\n' + forecastResponse + '\n\nSolar Panel Data:\n' + solarPanelDataString + '\n\nCompany Information:\n' + companyData;
 
         String openAiResponse = getOpenAiResponse(prompt, 'assistant');
 
@@ -147,103 +144,57 @@ public with sharing class LeadInteractionHandler {
         return solarPanelDataString;
     }
 
-    // Get Stored Company Data
-    @AuraEnabled(cacheable=true)
-    public static CompanyInfoWrapper getStoredCompanyData(Id leadId) {
-        if (!Schema.sObjectType.Lead.fields.Company.isAccessible() || !Schema.sObjectType.Lead.fields.Company_Information__c.isAccessible()) {
-            return null;
-        }
 
-        Lead lead = [SELECT Company, Company_Information__c FROM Lead WHERE Id = :leadId LIMIT 1];
-
-        if (lead.Company_Information__c != null) {
-            if (!Schema.sObjectType.Company_Information__c.fields.Name.isAccessible() || !Schema.sObjectType.Company_Information__c.fields.Description__c.isAccessible()) {
-                return null;
-            }
-            Company_Information__c existingInfo = [SELECT Name, Description__c FROM Company_Information__c WHERE Id = :lead.Company_Information__c LIMIT 1];
-            return new CompanyInfoWrapper(existingInfo.Name, existingInfo.Description__c);
-        }
-
-        if (lead.Company == null) {
-            System.debug('No company name found for the given Lead Id: ' + leadId);
-            return null;
-        }
-
-        String companyName = lead.Company;
-        List<Company_Information__c> existingInfoList = [SELECT Id, Name, Description__c FROM Company_Information__c WHERE Name = :companyName LIMIT 1];
-
-        if (!existingInfoList.isEmpty()) {
-            Company_Information__c existingInfo = existingInfoList[0];
-            lead.Company_Information__c = existingInfo.Id;
-            if (Schema.sObjectType.Lead.isUpdateable()) {
-                Database.update(lead);
-            }
-            return new CompanyInfoWrapper(existingInfo.Name, existingInfo.Description__c);
-        }
-
-        return null; // No existing information found
-    }
-
-    // Fetch Company Data from API
     @AuraEnabled(cacheable=true)
     public static CompanyInfoWrapper getCompanyData(Id leadId) {
         String companyInfoApiKey = getCompanyInfoAPIKey();
         
-        Lead lead = [SELECT Company, Company_Information__c FROM Lead WHERE Id = :leadId LIMIT 1];
-        
-        if (lead.Company_Information__c != null) {
-            Company_Information__c existingInfo = [SELECT Name, Description__c FROM Company_Information__c WHERE Id = :lead.Company_Information__c LIMIT 1];
-            return new CompanyInfoWrapper(existingInfo.Name, existingInfo.Description__c);
-        }
+        Lead lead = [SELECT Company FROM Lead WHERE Id = :leadId LIMIT 1];
         
         if (lead.Company == null) {
             System.debug('No company name found for the given Lead Id: ' + leadId);
-            return null;
+            return getHardcodedCompanyInfo();
         }
         
         String companyName = lead.Company;
-        List<Company_Information__c> existingInfoList = [SELECT Id, Name, Description__c FROM Company_Information__c WHERE Name = :companyName LIMIT 1];
         
-        if (!existingInfoList.isEmpty()) {
-            Company_Information__c existingInfo = existingInfoList[0];
-            lead.Company_Information__c = existingInfo.Id;
-            if (Schema.sObjectType.Lead.isUpdateable()) {
-                Database.update(lead);
-            }
-            return new CompanyInfoWrapper(existingInfo.Name, existingInfo.Description__c);
-        }
+        String endpoint = 'https://api.peopledatalabs.com/v5/company/enrich?name=' + EncodingUtil.urlEncode(companyName, 'UTF-8') + '&pretty=false';
         
-        String endpoint = 'https://api.peopledatalabs.com/v5/company/enrich?name=' +
-            EncodingUtil.urlEncode(companyName, 'UTF-8') + '&pretty=false';
-
         try {
-            HttpResponse response = HttpHelper.sendGetRequestForCompany(endpoint, companyInfoApiKey);
-            if (response != null && response.getStatusCode() == 200) {
-                String responseBody = response.getBody();
-
-                Map<String, Object> responseMap = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
-                String displayName = (String) responseMap.get('display_name');
-                String summary = (String) responseMap.get('summary');
-
-                Company_Information__c newCompanyInfo = new Company_Information__c(Name = displayName, Description__c = summary);
-                if (Schema.sObjectType.Company_Information__c.isCreateable()) {
-                    Database.insert(newCompanyInfo);
+            // Call helper method to send GET request
+            HttpResponse response = HttpHelper.sendGetRequestCompany(endpoint, companyInfoApiKey);
+            
+            if (response != null) {
+                // Check HTTP status code
+                if (response.getStatusCode() == 200) {
+                    // Process successful response
+                    String responseBody = response.getBody();
+                    Map<String, Object> responseMap = (Map<String, Object>) JSON.deserializeUntyped(responseBody);
+                    String displayName = (String) responseMap.get('display_name');
+                    String summary = (String) responseMap.get('summary');
+                    
+                    return new CompanyInfoWrapper(displayName, summary);
+                } else {
+                    // Handle non-200 status codes
+                    System.debug('Failed with status code: ' + response.getStatusCode());
+                    return getHardcodedCompanyInfo();
                 }
-                
-                lead.Company_Information__c = newCompanyInfo.Id;
-                if (Schema.sObjectType.Lead.isUpdateable()) {
-                    Database.update(lead);
-                }
-
-                return new CompanyInfoWrapper(displayName, summary);
             } else {
-                System.debug('Failed with status code: ' + response.getStatusCode());
-                return null;
+                // Handle null response
+                System.debug('No response received.');
+                return getHardcodedCompanyInfo();
             }
         } catch (Exception e) {
+            // Handle exception
             System.debug('Exception: ' + e.getMessage());
-            return null;
+            return getHardcodedCompanyInfo();
         }
+    }
+    
+    private static CompanyInfoWrapper getHardcodedCompanyInfo() {
+        String hardcodedDisplayName = 'Concretio';
+        String hardcodedSummary = 'We are Salesforce certified PDO & ISV partner, doing amazing things with cloud computing and the Salesforce 360 platform. Concretio is founded by Abhinav - 8 times Salesforce MVP (Most Valuable Professional) with over a decade of IT experience, was first from India to get rewarded by the MVP title from Salesforce.com.\n\nHighlights:\n- Following latest and best practices using SFDX, GIT, Scratch Orgs, with CI/CD (via Jenkins, CircleCI, Bitbucket Pipelines, GitHub Actions etc).\n- Complex Integrations using REST/SOAP + JSON/XML + OAuth/JWT.\n- LWC, Aura components with amazing UX. - Lightning components and apps. We were among the first few partners to list an Aura component in 2015 in the AppExchange component marketplace.\n- AppExchange: Helped 15+ ISV partners take their ideas to a listing on AppExchange.\n- Salesforce Commerce Cloud(SFCC) - Helping largest e-commerce portals to succeed with Demandware, we are quite proud of the Javascript skills we bring on to the table.\n- Salesforce Marketing Cloud (SFMC).';
+        return new CompanyInfoWrapper(hardcodedDisplayName, hardcodedSummary);
     }
 
     // Get Solar Energy Data
@@ -311,6 +262,7 @@ public with sharing class LeadInteractionHandler {
     }
 
     // Fetch Lead Address Coordinates
+    @TestVisible
     private static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
         CoordinatesWrapper coordinates = null;
         String errorMessage = '';
@@ -446,6 +398,17 @@ public with sharing class LeadInteractionHandler {
         return null;
     }
 
+
+//message EmailBody
+    @AuraEnabled(cacheable=true)
+    public static List<EmailMessage> getEmailMessagesForLead(String leadRecordId) {
+        return [
+            SELECT Id, TextBody 
+            FROM EmailMessage 
+            WHERE ParentId = :leadRecordId
+        ];
+    }
+
     // Send Email
     @AuraEnabled(cacheable=true)
     public static void sendEmailToController(String[] toAddressEmail, Id orgwideEmailAddress, String subjectEmail, String emailHtmlValue, List<Id> uploadedFiles) {
@@ -453,13 +416,15 @@ public with sharing class LeadInteractionHandler {
             System.debug('No "to" addresses provided');
             return;
         }
+        
 
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
         email.setToAddresses(toAddressEmail);
         email.setOrgWideEmailAddressId(orgwideEmailAddress);
         email.setSubject(subjectEmail);
         email.setHtmlBody(emailHtmlValue);
-        email.setReplyTo('esolarcorp_email_service@2z44w6hzvpw0whp3369j44g37ghjwwreyv2w5ujftu5fq7wykk.c1-11nfdmaa.ind16s.apex.sandbox.salesforce.com');
+        //email.setReplyTo('esolarcorp_email_service@2z44w6hzvpw0whp3369j44g37ghjwwreyv2w5ujftu5fq7wykk.c1-11nfdmaa.ind16s.apex.sandbox.salesforce.com');
+        email.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
 
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
