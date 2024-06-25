@@ -196,6 +196,12 @@ public with sharing class LeadInteractionHandler {
         String hardcodedSummary = 'We are Salesforce certified PDO & ISV partner, doing amazing things with cloud computing and the Salesforce 360 platform. Concretio is founded by Abhinav - 8 times Salesforce MVP (Most Valuable Professional) with over a decade of IT experience, was first from India to get rewarded by the MVP title from Salesforce.com.\n\nHighlights:\n- Following latest and best practices using SFDX, GIT, Scratch Orgs, with CI/CD (via Jenkins, CircleCI, Bitbucket Pipelines, GitHub Actions etc).\n- Complex Integrations using REST/SOAP + JSON/XML + OAuth/JWT.\n- LWC, Aura components with amazing UX. - Lightning components and apps. We were among the first few partners to list an Aura component in 2015 in the AppExchange component marketplace.\n- AppExchange: Helped 15+ ISV partners take their ideas to a listing on AppExchange.\n- Salesforce Commerce Cloud(SFCC) - Helping largest e-commerce portals to succeed with Demandware, we are quite proud of the Javascript skills we bring on to the table.\n- Salesforce Marketing Cloud (SFMC).';
         return new CompanyInfoWrapper(hardcodedDisplayName, hardcodedSummary);
     }
+    
+        // Wrapper method to access the private getHardcodedCompanyInfo method for testing
+    @TestVisible
+    public static CompanyInfoWrapper accessHardcodedCompanyInfo() {
+        return getHardcodedCompanyInfo();
+    }
 
     // Get Solar Energy Data
     @AuraEnabled(cacheable=true)
@@ -399,15 +405,6 @@ public with sharing class LeadInteractionHandler {
     }
 
 
-//message EmailBody
-    @AuraEnabled(cacheable=true)
-    public static List<EmailMessage> getEmailMessagesForLead(String leadRecordId) {
-        return [
-            SELECT Id, TextBody 
-            FROM EmailMessage 
-            WHERE ParentId = :leadRecordId
-        ];
-    }
 
     // Send Email
     @AuraEnabled(cacheable=true)
@@ -568,5 +565,15 @@ public with sharing class LeadInteractionHandler {
     private static String getGeoapifyAPIKey() {
         ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify');
         return geoKeySettings != null ? geoKeySettings.Value__c : null;
+    }
+    
+    //Function to get the email msg body
+    @AuraEnabled(cacheable=true)
+    public static List<EmailMessage> getEmailMessages() {
+        return [
+            SELECT Id, CreatedDate, FromAddress, ReplyToEmailMessageId, TextBody
+            FROM EmailMessage
+            LIMIT 100
+        ];
     }
 }
