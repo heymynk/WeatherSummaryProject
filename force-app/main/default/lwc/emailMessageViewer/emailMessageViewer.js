@@ -1,6 +1,8 @@
-import { LightningElement, wire } from 'lwc';
-import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getEmailMessages';
+import { LightningElement, api, wire } from 'lwc';
+import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
 
 export default class EmailMessageViewer extends LightningElement {
-    @wire(getEmailMessages) emailMessages;
+    @api recordId;
+    
+    @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
 }

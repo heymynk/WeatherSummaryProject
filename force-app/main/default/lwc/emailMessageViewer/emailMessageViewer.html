@@ -3,11 +3,9 @@
         <template if:true={emailMessages.data}>
             <template for:each={emailMessages.data} for:item="email">
                 <div key={email.Id} class="slds-box slds-m-around_small">
-                    <p><strong>From:</strong> {email.FromAddress}</p>
-                    <p><strong>Created Date:</strong> {email.CreatedDate}</p>
-                    <p><strong>Reply To Email Message ID:</strong> {email.ReplyToEmailMessageId}</p>
-                    <p><strong>Text Body:</strong></p>
                     <p>{email.TextBody}</p>
+                    <p>{email.Subject}</p>
+                    <p>{email.CreatedDate}</p>
                 </div>
             </template>
         </template>
