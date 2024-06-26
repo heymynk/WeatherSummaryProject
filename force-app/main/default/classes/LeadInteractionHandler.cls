@@ -92,7 +92,6 @@ public with sharing class LeadInteractionHandler {
         String longitude = coordinates.longitude;
 
         CompanyInfoWrapper companyData = getCompanyData(leadId);
-       //String companyInfoString = 'We are Salesforce certified PDO & ISV partner, doing amazing things with cloud computing and the Salesforce 360 platform. Concretio is founded by Abhinav ';
 
 
         String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
@@ -195,6 +194,12 @@ public with sharing class LeadInteractionHandler {
         String hardcodedDisplayName = 'Concretio';
         String hardcodedSummary = 'We are Salesforce certified PDO & ISV partner, doing amazing things with cloud computing and the Salesforce 360 platform. Concretio is founded by Abhinav - 8 times Salesforce MVP (Most Valuable Professional) with over a decade of IT experience, was first from India to get rewarded by the MVP title from Salesforce.com.\n\nHighlights:\n- Following latest and best practices using SFDX, GIT, Scratch Orgs, with CI/CD (via Jenkins, CircleCI, Bitbucket Pipelines, GitHub Actions etc).\n- Complex Integrations using REST/SOAP + JSON/XML + OAuth/JWT.\n- LWC, Aura components with amazing UX. - Lightning components and apps. We were among the first few partners to list an Aura component in 2015 in the AppExchange component marketplace.\n- AppExchange: Helped 15+ ISV partners take their ideas to a listing on AppExchange.\n- Salesforce Commerce Cloud(SFCC) - Helping largest e-commerce portals to succeed with Demandware, we are quite proud of the Javascript skills we bring on to the table.\n- Salesforce Marketing Cloud (SFMC).';
         return new CompanyInfoWrapper(hardcodedDisplayName, hardcodedSummary);
+    }
+    
+        // Wrapper method to access the private getHardcodedCompanyInfo method for testing
+    @TestVisible
+    private static CompanyInfoWrapper accessHardcodedCompanyInfo() {
+        return getHardcodedCompanyInfo();
     }
 
     // Get Solar Energy Data
@@ -399,15 +404,6 @@ public with sharing class LeadInteractionHandler {
     }
 
 
-//message EmailBody
-    @AuraEnabled(cacheable=true)
-    public static List<EmailMessage> getEmailMessagesForLead(String leadRecordId) {
-        return [
-            SELECT Id, TextBody 
-            FROM EmailMessage 
-            WHERE ParentId = :leadRecordId
-        ];
-    }
 
     // Send Email
     @AuraEnabled(cacheable=true)
@@ -569,4 +565,43 @@ public with sharing class LeadInteractionHandler {
         ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify');
         return geoKeySettings != null ? geoKeySettings.Value__c : null;
     }
+    
+     // Function to get the latest email msg body for a specific lead
+     @AuraEnabled(cacheable=true)
+     public static List<EmailMessage> getLatestEmailMessageForLead(Id leadId) {
+         String leadEmail = getLeadEmailAddress(leadId);
+ 
+         System.debug('Entering getLatestEmailMessageForLead method');
+         System.debug('Lead Id: ' + leadId);
+         
+         List<EmailMessage> emailMessages = new List<EmailMessage>();
+         
+         try {
+             emailMessages = [
+                 SELECT Id, CreatedDate, FromAddress, ToAddress, ReplyToEmailMessageId, TextBody
+                 FROM EmailMessage
+                 WHERE ToAddress = :leadEmail
+                 ORDER BY CreatedDate DESC
+                 LIMIT 1
+             ];
+             
+             System.debug('Email Messages retrieved: ' + emailMessages.size());
+             if (!emailMessages.isEmpty()) {
+                 System.debug('Latest Email Message Id: ' + emailMessages[0].Id);
+                 System.debug('Latest Email Message CreatedDate: ' + emailMessages[0].CreatedDate);
+                 System.debug('Latest Email Message FromAddress: ' + emailMessages[0].FromAddress);
+                 System.debug('Latest Email Message ToAddress: ' + emailMessages[0].ToAddress);
+                 System.debug('Latest Email Message ReplyToEmailMessageId: ' + emailMessages[0].ReplyToEmailMessageId);
+                 System.debug('Latest Email Message TextBody: ' + emailMessages[0].TextBody);
+             } else {
+                 System.debug('No Email Messages found for the given Lead Id');
+             }
+         } catch (Exception e) {
+             System.debug('Error occurred while retrieving email messages: ' + e.getMessage());
+         }
+         
+         System.debug('Exiting getLatestEmailMessageForLead method');
+         return emailMessages;
+     }
+ 
 }
