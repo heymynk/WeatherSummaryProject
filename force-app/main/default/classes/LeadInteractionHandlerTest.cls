@@ -295,6 +295,20 @@ public class LeadInteractionHandlerTest {
         System.assertEquals('testlead@example.com', result, 'The email address of the Lead should match the expected value.');
     }
 
+<<<<<<< HEAD
+    @isTest
+    static void testGetEmailMessages() {
+        // Call the method and assert the result
+        Test.startTest();
+        List<EmailMessage> result = LeadInteractionHandler.getEmailMessages();
+        Test.stopTest();
+
+        System.debug('Email Messages Result: ' + result);
+        System.assert(!result.isEmpty(), 'Expected a non-empty list of EmailMessages.');
+        System.assert(result.size() <= 100, 'The number of email messages should not exceed 100.');
+        System.assertEquals('This is a test email body.', result[0].TextBody, 'The text body of the first EmailMessage should match the expected value.');
+    }
+=======
     // @isTest
     // static void testGetEmailMessages() {
     //     // Call the method and assert the result
@@ -307,6 +321,7 @@ public class LeadInteractionHandlerTest {
     //     System.assert(result.size() <= 100, 'The number of email messages should not exceed 100.');
     //     System.assertEquals('This is a test email body.', result[0].TextBody, 'The text body of the first EmailMessage should match the expected value.');
     // }
+>>>>>>> bd1badf4bff06c016027ceb0c55af6260f45f3b6
     
     @isTest
     static void testGetOrgwideEmailAddress() {

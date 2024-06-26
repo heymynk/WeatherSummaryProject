@@ -108,17 +108,6 @@
                 </template>
             </div>
 
-            <lightning-card title="Email Messages">
-                <template if:true={emailMessages}>
-                    <template for:each={emailMessages} for:item="email">
-                        <p key={email.Id}>{email.TextBody}</p>
-                    </template>
-                </template>
-                <template if:true={emailError}>
-                    <p class="slds-text-color_error">{emailError}</p>
-                </template>
-            </lightning-card>
-
             <!-- Call script section -->
             <template if:true={showCallScript}>
                 <div class="slds-form-element">

@@ -92,7 +92,6 @@ public with sharing class LeadInteractionHandler {
         String longitude = coordinates.longitude;
 
         CompanyInfoWrapper companyData = getCompanyData(leadId);
-       //String companyInfoString = 'We are Salesforce certified PDO & ISV partner, doing amazing things with cloud computing and the Salesforce 360 platform. Concretio is founded by Abhinav ';
 
 
         String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
@@ -199,7 +198,7 @@ public with sharing class LeadInteractionHandler {
     
         // Wrapper method to access the private getHardcodedCompanyInfo method for testing
     @TestVisible
-    public static CompanyInfoWrapper accessHardcodedCompanyInfo() {
+    private static CompanyInfoWrapper accessHardcodedCompanyInfo() {
         return getHardcodedCompanyInfo();
     }
 
@@ -566,61 +565,43 @@ public with sharing class LeadInteractionHandler {
         ApiKeys__c geoKeySettings = ApiKeys__c.getInstance('Geoapify');
         return geoKeySettings != null ? geoKeySettings.Value__c : null;
     }
-        
-    // Function to get the latest email msg body for a specific lead
-    @AuraEnabled(cacheable=true)
-    public static List<EmailMessage> getLatestEmailMessageForLead(Id leadId) {
-        String leadEmail = getLeadEmailAddress(leadId);
-
-        System.debug('Entering getLatestEmailMessageForLead method');
-        System.debug('Lead Id: ' + leadId);
-        
-        List<EmailMessage> emailMessages = new List<EmailMessage>();
-        
-        try {
-            emailMessages = [
-                SELECT Id, CreatedDate, FromAddress, ToAddress, ReplyToEmailMessageId, TextBody
-                FROM EmailMessage
-                WHERE Related_Lead__c = :leadId OR ToAddress = :leadEmail
-                ORDER BY CreatedDate DESC
-                LIMIT 1
-            ];
-            
-            System.debug('Email Messages retrieved: ' + emailMessages.size());
-            if (!emailMessages.isEmpty()) {
-                System.debug('Latest Email Message Id: ' + emailMessages[0].Id);
-                System.debug('Latest Email Message CreatedDate: ' + emailMessages[0].CreatedDate);
-                System.debug('Latest Email Message FromAddress: ' + emailMessages[0].FromAddress);
-                System.debug('Latest Email Message ToAddress: ' + emailMessages[0].ToAddress);
-                System.debug('Latest Email Message ReplyToEmailMessageId: ' + emailMessages[0].ReplyToEmailMessageId);
-                System.debug('Latest Email Message TextBody: ' + emailMessages[0].TextBody);
-            } else {
-                System.debug('No Email Messages found for the given Lead Id');
-            }
-        } catch (Exception e) {
-            System.debug('Error occurred while retrieving email messages: ' + e.getMessage());
-        }
-        
-        System.debug('Exiting getLatestEmailMessageForLead method');
-        return emailMessages;
-    }
-
-    // Function to get the latest email msg body for a specific lead
-    // @AuraEnabled(cacheable=true)
-    // public static List<EmailMessage> getLatestEmailMessageForLead(Id leadId) {
-    //     String leadEmail = getLeadEmailAddress(leadId);
-    //     List<EmailMessage> emailMessages = new List<EmailMessage>();
-    //     try {
-    //         emailMessages = [
-    //             SELECT Id, CreatedDate, FromAddress, ToAddress, ReplyToEmailMessageId, TextBody
-    //             FROM EmailMessage
-    //             WHERE Related_Lead__c = :leadId AND ToAddress = :leadEmail
-    //             ORDER BY CreatedDate DESC
-    //             LIMIT 1
-    //         ];
-    //     } catch (Exception e) {
-    //         System.debug('Error occurred while retrieving email messages: ' + e.getMessage());
-    //     }
-    //     return emailMessages;
-    // }
+    
+     // Function to get the latest email msg body for a specific lead
+     @AuraEnabled(cacheable=true)
+     public static List<EmailMessage> getLatestEmailMessageForLead(Id leadId) {
+         String leadEmail = getLeadEmailAddress(leadId);
+ 
+         System.debug('Entering getLatestEmailMessageForLead method');
+         System.debug('Lead Id: ' + leadId);
+         
+         List<EmailMessage> emailMessages = new List<EmailMessage>();
+         
+         try {
+             emailMessages = [
+                 SELECT Id, CreatedDate,ToAddress,FromAddress,TextBody
+                 FROM EmailMessage
+                 WHERE ToAddress LIKE :('%' + leadEmail + '%') OR FromAddress LIKE '%sha.kundan@concret.io%'
+                 ORDER BY CreatedDate DESC
+                 LIMIT 1
+             ];
+             
+             System.debug('Email Messages retrieved: ' + emailMessages.size());
+             if (!emailMessages.isEmpty()) {
+                 System.debug('Latest Email Message Id: ' + emailMessages[0].Id);
+                 System.debug('Latest Email Message CreatedDate: ' + emailMessages[0].CreatedDate);
+                 System.debug('Latest Email Message FromAddress: ' + emailMessages[0].FromAddress);
+                 System.debug('Latest Email Message ToAddress: ' + emailMessages[0].ToAddress);
+                 System.debug('Latest Email Message ReplyToEmailMessageId: ' + emailMessages[0].ReplyToEmailMessageId);
+                 System.debug('Latest Email Message TextBody: ' + emailMessages[0].TextBody);
+             } else {
+                 System.debug('No Email Messages found for the given Lead Id');
+             }
+         } catch (Exception e) {
+             System.debug('Error occurred while retrieving email messages: ' + e.getMessage());
+         }
+         
+         System.debug('Exiting getLatestEmailMessageForLead method');
+         return emailMessages;
+     }
+ 
 }
