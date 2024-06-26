@@ -191,6 +191,11 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     }
 
     regenerateEmail() {
+
+        if (!this.customPromptByUser) {
+            this.showToast('Alert', 'Please enter the prompt to regenerate the email.', 'warning');
+            return;
+        }
         this.isLoading = true; 
         console.log('Regenerating email...');
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
@@ -239,6 +244,11 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     }
 
     regenerateCallScript() {
+
+        if (!this.customPromptByUser) {
+            this.showToast('Alert', 'Please enter the prompt to regenerate the call script.', 'warning');
+            return;
+        }
         this.isLoading = true; 
         console.log('Regenerating call script...');
         generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })

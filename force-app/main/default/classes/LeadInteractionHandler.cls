@@ -578,9 +578,9 @@ public with sharing class LeadInteractionHandler {
          
          try {
              emailMessages = [
-                 SELECT Id, CreatedDate, FromAddress, ToAddress, ReplyToEmailMessageId, TextBody
+                 SELECT Id, CreatedDate,ToAddress,FromAddress,TextBody
                  FROM EmailMessage
-                 WHERE ToAddress = :leadEmail
+                 WHERE ToAddress LIKE :('%' + leadEmail + '%') OR FromAddress LIKE '%sha.kundan@concret.io%'
                  ORDER BY CreatedDate DESC
                  LIMIT 1
              ];
