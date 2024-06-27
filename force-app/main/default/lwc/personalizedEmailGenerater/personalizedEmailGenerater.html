@@ -1,15 +1,45 @@
 <template>
     <lightning-card title={dynamicTitle} icon-name="standard:email">
-        <div class="slds-var-p-around_medium">
+        <div class="slds-var-p-around_medium" style="margin-top: -0.75rem">
+            <!-- Displaying company information if Generate Call Script button is not visible -->
+            <template if:false={showGenerateCallScriptButton}>
+                <template if:true={companyData}>
+                    <!-- Show "Waiting for Response" message when Lead Response is Working - Contacted -->
+                    <template if:true={isWorkingContacted}>
+                        <p class="slds-text-heading_medium">Waiting for Response...</p>
+                    </template>
+                    <template if:false={isWorkingContacted}>
+                        <div class="slds-var-m-bottom_medium" style="border: none;">
+                            <div class="slds-text-heading_medium" style="margin-bottom: 0.5rem;">
+                                {companyData.displayName}
+                            </div>
+                            <p class="slds-text-body_regular">{companyData.summary}</p>
+                        </div>
+                    </template>
+                </template>
+            </template>
 
-            <!-- Displaying company information if available -->
-            <template if:true={companyData}>
-                <div class="slds-var-m-bottom_medium" style="border: none;">
-                    <div class="slds-text-heading_medium slds-var-m-bottom_small">
-                        {companyData.displayName}
+            <template if:true={showGenerateCallScriptButton}>
+                <!-- Display Email Messages -->
+                <template if:true={emailMessages.data}>
+                    <template for:each={emailMessages.data} for:item="email">
+                        <div key={email.Id} class="slds-box slds-m-bottom_small">
+                            <p><strong>From:</strong> {email.FromAddress}</p>
+                            <p><strong>Date:</strong> {email.CreatedDate}</p>
+                            <p><strong>Body:</strong> {email.TextBody}</p>
+                        </div>
+                    </template>
+                </template>
+                <!-- Display Email Error -->
+                <template if:true={emailMessages.error}>
+                    <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error">
+                        <span class="slds-assistive-text">Error</span>
+                        <span class="slds-icon_container slds-icon-utility-error" title="error">
+                            <lightning-icon icon-name="utility:error" alternative-text="error" size="small"></lightning-icon>
+                        </span>
+                        <h2>{emailMessages.error.body.message}</h2>
                     </div>
-                    <p class="slds-text-body_regular">{companyData.summary}</p>
-                </div>
+                </template>
             </template>
 
             <!-- Textarea for additional prompts -->
@@ -82,19 +112,25 @@
                 </template>
                 
                 <template if:true={showEmailFields}>
-                    <lightning-button 
-                        label="Send Email" 
-                        variant="brand" 
-                        onclick={sendEmail}
-                        class="slds-var-m-right_x-small">
-                    </lightning-button>
+                    <!-- Only show Send Email button when not contacted -->
+                    <template if:false={isOpenContacted}>
+                        <lightning-button 
+                            label="Send Email" 
+                            variant="brand" 
+                            onclick={sendEmail}
+                            class="slds-var-m-right_x-small">
+                        </lightning-button>
+                    </template>
 
-                    <lightning-button 
-                        label="Regenerate Email" 
-                        variant="neutral" 
-                        onclick={regenerateEmail}
-                        class="slds-var-m-right_x-small">
-                    </lightning-button>
+                    <!-- Regenerate Email button only visible when Lead response status is 'Open - Contacted' -->
+                    <template if:true={isWorkingContacted}>
+                        <lightning-button 
+                            label="Regenerate Email" 
+                            variant="neutral" 
+                            onclick={regenerateEmail}
+                            class="slds-var-m-right_x-small">
+                        </lightning-button>
+                    </template>
                 </template>
 
                 <!-- Generate Call Script button only visible when showGenerateCallScriptButton is true -->
@@ -128,12 +164,6 @@
                     class="slds-var-m-right_x-small slds-m-top_x-small">
                 </lightning-button>
 
-                <lightning-button 
-                    label="Call Lead" 
-                    variant="brand" 
-                    onclick={callLead}
-                    class="slds-var-m-right_x-small">
-                </lightning-button>
             </template>
         </div>
     </lightning-card>

@@ -603,5 +603,11 @@ public with sharing class LeadInteractionHandler {
          System.debug('Exiting getLatestEmailMessageForLead method');
          return emailMessages;
      }
+
+     @AuraEnabled(cacheable=true)
+     public static String getLeadResponse(Id leadId) {
+         Lead leadRecord = [SELECT Lead_Response__c FROM Lead WHERE Id = :leadId LIMIT 1];
+         return leadRecord.Lead_Response__c;
+     }
  
 }
