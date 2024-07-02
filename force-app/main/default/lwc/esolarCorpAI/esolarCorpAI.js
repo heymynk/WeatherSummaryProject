@@ -15,21 +15,21 @@ export default class EsolarCorpAI extends LightningElement {
         // Fetch initial data or perform any initialization
     }
 
-    // Event handler for email generation completion
-    handleEmailGenerated(event) {
-        const { emailContent } = event.detail;
-        // Handle email content
-    }
+    // // Event handler for email generation completion
+    // handleEmailGenerated(event) {
+    //     const { emailContent } = event.detail;
+    //     // Handle email content
+    // }
 
-    // Event handler for call script generation completion
-    handleCallScriptGenerated(event) {
-        const { callScript } = event.detail;
-        // Handle call script
-    }
+    // // Event handler for call script generation completion
+    // handleCallScriptGenerated(event) {
+    //     const { callScript } = event.detail;
+    //     // Handle call script
+    // }
 
-    // Event handler for file upload completion
-    handleFileUploaded(event) {
-        const { uploadedFiles } = event.detail;
-        // Handle uploaded files
-    }
+    // // Event handler for file upload completion
+    // handleFileUploaded(event) {
+    //     const { uploadedFiles } = event.detail;
+    //     // Handle uploaded files
+    // }
 }
