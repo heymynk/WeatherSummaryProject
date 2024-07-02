@@ -4,16 +4,23 @@
             <!-- Displaying company information if Generate Call Script button is not visible -->
             <template if:false={showGenerateCallScriptButton}>
                 <template if:true={companyData}>
-                    <div class="slds-var-m-bottom_medium" style="border: none;">
-                        <div class="slds-text-heading_medium" style="margin-bottom: 0.5rem;">
-                            {companyData.displayName}
+                    <!-- Show "Waiting for Response" message when Lead Response is Working - Contacted -->
+                    <template if:true={isWorkingContacted}>
+                        <p class="slds-text-heading_medium">Waiting for Response...</p>
+                    </template>
+                    <template if:false={isWorkingContacted}>
+                        <div class="slds-var-m-bottom_medium" style="border: none;">
+                            <div class="slds-text-heading_medium" style="margin-bottom: 0.5rem;">
+                                {companyData.displayName}
+                            </div>
+                            <p class="slds-text-body_regular">{companyData.summary}</p>
                         </div>
-                        <p class="slds-text-body_regular">{companyData.summary}</p>
-                    </div>
+                    </template>
                 </template>
             </template>
 
             <template if:true={showGenerateCallScriptButton}>
+                <!-- Display Email Messages -->
                 <template if:true={emailMessages.data}>
                     <template for:each={emailMessages.data} for:item="email">
                         <div key={email.Id} class="slds-box slds-m-bottom_small">
@@ -23,6 +30,7 @@
                         </div>
                     </template>
                 </template>
+                <!-- Display Email Error -->
                 <template if:true={emailMessages.error}>
                     <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error">
                         <span class="slds-assistive-text">Error</span>
@@ -104,19 +112,25 @@
                 </template>
                 
                 <template if:true={showEmailFields}>
-                    <lightning-button 
-                        label="Send Email" 
-                        variant="brand" 
-                        onclick={sendEmail}
-                        class="slds-var-m-right_x-small">
-                    </lightning-button>
+                    <!-- Only show Send Email button when not contacted -->
+                    <template if:false={isOpenContacted}>
+                        <lightning-button 
+                            label="Send Email" 
+                            variant="brand" 
+                            onclick={sendEmail}
+                            class="slds-var-m-right_x-small">
+                        </lightning-button>
+                    </template>
 
-                    <lightning-button 
-                        label="Regenerate Email" 
-                        variant="neutral" 
-                        onclick={regenerateEmail}
-                        class="slds-var-m-right_x-small">
-                    </lightning-button>
+                    <!-- Regenerate Email button only visible when Lead response status is 'Open - Contacted' -->
+                    <template if:true={isWorkingContacted}>
+                        <lightning-button 
+                            label="Regenerate Email" 
+                            variant="neutral" 
+                            onclick={regenerateEmail}
+                            class="slds-var-m-right_x-small">
+                        </lightning-button>
+                    </template>
                 </template>
 
                 <!-- Generate Call Script button only visible when showGenerateCallScriptButton is true -->
@@ -143,15 +157,12 @@
                     </div>
                 </div>
 
-                <!-- Wrap the button with a div that adds top margin -->
-                <div class="slds-m-top_medium">
-                    <lightning-button 
-                        label="Regenerate Call Script" 
-                        variant="brand" 
-                        onclick={regenerateCallScript}
-                        class="slds-var-m-right_x-small">
-                    </lightning-button>
-                </div>
+                <lightning-button 
+                    label="Regenerate Call Script" 
+                    variant="brand" 
+                    onclick={regenerateCallScript}
+                    class="slds-var-m-right_x-small slds-m-top_x-small">
+                </lightning-button>
 
             </template>
         </div>

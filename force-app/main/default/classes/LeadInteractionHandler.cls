@@ -61,7 +61,7 @@ public with sharing class LeadInteractionHandler {
 
     private static List<String> prepareEmailPrompt(String customPromptByUser) {
         List<String> emailPromptParts = new List<String>{
-            'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead, "I hope this email finds you well", Use other alternative statements in each response while creating or regenerating emails',
+            'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead',
             'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
             'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
             'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
@@ -413,6 +413,7 @@ public with sharing class LeadInteractionHandler {
             return;
         }
         
+
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
         email.setToAddresses(toAddressEmail);
         email.setOrgWideEmailAddressId(orgwideEmailAddress);
@@ -440,26 +441,8 @@ public with sharing class LeadInteractionHandler {
         try {
             Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
             System.debug('Email sent successfully');
-            updateLeadStatus(email.getToAddresses());
         } catch (Exception ex) {
             System.debug('Error sending email: ' + ex.getMessage());
-        }
-    }
-
-
-    @future
-    private static void updateLeadStatus(String[] toAddresses) {
-        List<Lead> leadsToUpdate = [SELECT Id,Email, Lead_Response__c FROM Lead WHERE Email IN :toAddresses LIMIT 1];
-        
-    for (Lead lead : leadsToUpdate) {
-        if (lead.Lead_Response__c == 'Open - Not Contacted') {
-            lead.Lead_Response__c = 'Working - Contacted';
-        }
-    }
-        
-        if (!leadsToUpdate.isEmpty()) {
-            update leadsToUpdate;
-            System.debug('Lead status updated to Open - Contacted');
         }
     }
 
