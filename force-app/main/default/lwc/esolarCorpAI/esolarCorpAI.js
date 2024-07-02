@@ -15,7 +15,7 @@ export default class EsolarCorpAI extends LightningElement {
         // Fetch initial data or perform any initialization
     }
 
-    // // Event handler for email generation completion
+    // Event handler for email generation completion
     // handleEmailGenerated(event) {
     //     const { emailContent } = event.detail;
     //     // Handle email content

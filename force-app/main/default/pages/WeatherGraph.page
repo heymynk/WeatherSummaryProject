@@ -67,9 +67,9 @@
 
             LeadInteractionHandler.getSolarDataJSON(leadId, function(result, event) {
                 if (event.status && result) {
-                   // console.log('result', result);
+                    console.log('result', result);
                     var decodedResult = decodeHtml(result);
-                    //console.log('decoded result:', decodedResult);
+                    console.log('decoded result:', decodedResult);
                     var solarData = JSON.parse(decodedResult);
 
                     if (solarData && solarData.poaMonthly && solarData.poaMonthly.length > 0) {
