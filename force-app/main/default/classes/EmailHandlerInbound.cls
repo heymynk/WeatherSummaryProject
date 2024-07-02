@@ -1,3 +1,4 @@
+
 global class EmailHandlerInbound implements Messaging.InboundEmailHandler {
     global Messaging.InboundEmailResult handleInboundEmail(Messaging.InboundEmail email, Messaging.InboundEnvelope envelope) {
         // Create an instance of InboundEmailResult
@@ -40,7 +41,7 @@ global class EmailHandlerInbound implements Messaging.InboundEmailHandler {
             // Forward the email and save it as an activity on the Lead
             Messaging.SingleEmailMessage message = new Messaging.SingleEmailMessage();
             message.setToAddresses(new String[] { UserInfo.getUserEmail() });
-            message.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
+            message.setReplyTo('email@k-wjll6vgoiazqxb5l3b6cf07p3n87hh32tfppsixjev9oqjso.72-2ywcdeaw.ind3s.apex.sandbox.salesforce.com');
             message.setSubject(emailSubject != null ? emailSubject : 'No Subject');
             message.setPlainTextBody(emailBody != null ? emailBody : 'No Body');
             if (email.htmlBody != null) {
