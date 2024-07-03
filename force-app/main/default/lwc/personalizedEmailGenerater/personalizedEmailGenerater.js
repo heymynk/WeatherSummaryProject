@@ -407,25 +407,47 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             });
     }
 
-    regenerateCallScript() {
+    // regenerateCallScript() {
 
-        if (!this.customPromptByUser) {
-            this.showToast('Alert', 'Please enter the prompt to regenerate the call script.', 'warning');
-            return;
-        }
+    //     if (!this.customPromptByUser) {
+    //         this.showToast('Alert', 'Please enter the prompt to regenerate the call script.', 'warning');
+    //         return;
+    //     }
+    //     this.isLoading = true; 
+    //     console.log('Regenerating call script...');
+    //     generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+    //         .then(result => {
+    //             console.log('Call script regenerated successfully.');
+    //             console.log('Result:', result);
+    //             this.callScript = this.stripHtml(result);
+    //             this.isLoading = false; 
+    //             this.customPromptByUser = '';
+
+    //         })
+    //         .catch(error => {
+    //             this.isLoading = false; 
+    //             this.handleError(error, 'Error regenerating call script');
+    //         });
+    // }
+
+
+    regenerateCallScript() {
         this.isLoading = true; 
-        console.log('Regenerating call script...');
-        generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+        const hardCodedPrompt = 'Create a unique version of the call script with different wording and approach compared to previous versions. Make it engaging, personalized, and fresh.';
+        const uniqueSuffix = ` (unique ID: ${Math.random().toString(36).substring(2, 8)})`;
+        generateCallScript({ leadId: this.recordId, customPromptByUser: hardCodedPrompt + uniqueSuffix })
             .then(result => {
+                this.showToast('Success', 'Call Script successfully regenerated', 'success');
                 console.log('Call script regenerated successfully.');
                 console.log('Result:', result);
+                this.callScript = result;
                 this.callScript = this.stripHtml(result);
                 this.isLoading = false; 
                 this.customPromptByUser = '';
-
             })
             .catch(error => {
                 this.isLoading = false; 
+                this.updateLoadingState(false);
                 this.handleError(error, 'Error regenerating call script');
             });
     }

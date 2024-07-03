@@ -3,14 +3,16 @@
         <div class="slds-var-p-around_medium" style="margin-top: -0.75rem">
             <!-- Displaying company information if Generate Call Script button is not visible -->
             <template if:false={showGenerateCallScriptButton}>
-                <template if:true={companyData}>
-                    <div class="slds-var-m-bottom_medium" style="border: none;">
-                        <h6 class="slds-m-bottom_xx-small">Company Information</h6>
-                        <div class="slds-text-heading_medium" style="margin-bottom: 0.5rem;">
-                            {companyData.displayName}
+                <template if:true={isWorkingContacted}>
+                    <template if:true={companyData}>
+                        <div class="slds-var-m-bottom_medium" style="border: none;">
+                            <h6 class="slds-var-m-bottom_xx-small">Company Information</h6>
+                            <div class="slds-text-heading_medium" style="margin-bottom: 0.5rem;">
+                                {companyData.displayName}
+                            </div>
+                            <p class="slds-text-body_regular">{companyData.summary}</p>
                         </div>
-                        <p class="slds-text-body_regular">{companyData.summary}</p>
-                    </div>
+                    </template>
                 </template>
             </template>
 
@@ -36,17 +38,20 @@
             </template>
 
 
-            <template if:true={companyData}>
-                            <!-- Textarea for additional prompts -->
-            <lightning-textarea 
-            label="Additional Prompt"
-            name="customPromptByUser"
-            value={customPromptByUser}
-            onchange={handleInputChange}
-            placeholder="Enter additional instructions or information for generating personalized email..."
-            class="slds-var-p-top_xx-large">
-        </lightning-textarea>
+            <template if:true={isWorkingContacted}>
+                <template if:true={companyData}>
+                    <!-- Textarea for additional prompts -->
+    <lightning-textarea 
+    label="Additional Prompt"
+    name="customPromptByUser"
+    value={customPromptByUser}
+    onchange={handleInputChange}
+    placeholder="Enter additional instructions or information for generating personalized email..."
+    class="slds-var-p-top_xx-large">
+</lightning-textarea>
+    </template>
             </template>
+
 
         
 
