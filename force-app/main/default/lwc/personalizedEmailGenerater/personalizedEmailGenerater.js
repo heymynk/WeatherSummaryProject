@@ -16,7 +16,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @api recordId;
     @track emailContent;
     @track callScript;
-    @track companyData;
+    @track companyData = true;
     @track toAddress;
     @track orgWideAddress;
     @track orgWideId;
@@ -31,7 +31,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @track showGenerateCallScriptButton = false;
     @track customPromptByUser = '';
     @track emailMessages = { data: null, error: null };
-    @track isWorkingContacted = false;
+    @track isWorkingContacted = true;
 
     connectedCallback() {
         this.fetchLeadEmailAddress();
@@ -101,6 +101,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                         this.showGenerateCallScriptButton = false;
                         this.showGenerateEmailButton = false;
                         this.companyData = false; 
+                        this.isWorkingContacted = false;
                     } else {
                         // Default behavior when result is not 'Working - Contacted'
                         this.showGenerateCallScriptButton = result === 'Working - Reply';
@@ -213,11 +214,12 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         .then(() => {
             this.showToast('Success', 'Email sent successfully', 'success');
             this.isLoading = false; 
-            this.showEmailFields = false; 
+            this.showEmailFields = false;   
             this.showCallScript = false; 
             this.showGenerateEmailButton = false; 
             this.showGenerateCallScriptButton = false; // Show Generate Call Script button
-            this.companyData = false;            
+            this.companyData = false;      
+            this.isWorkingContacted = false;      
             // Clear the form fields
             this.subject = '';
             this.HtmlValue = '';
@@ -268,16 +270,95 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             });
     }
 
+    // regenerateEmail() {
+    //     if (!this.customPromptByUser) {
+    //         this.showToast('Alert', 'Email Successfully regenerated.', 'Success');
+    //         return;
+    //     }
+    
+    //     this.isLoading = true; // Show loading spinner
+    //     console.log('Loading state set to true:', this.isLoading);
+    
+    //     generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+    //         .then(result => {
+    //             console.log('Email regenerated successfully.');
+    //             // Handle result and update component state accordingly
+    //             const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
+    //             if (subjectMatch) {
+    //                 this.subject = subjectMatch[1];
+    //                 this.HtmlValue = result.replace(subjectMatch[0], '').trim();
+    //             } else {
+    //                 this.HtmlValue = result;
+    //             }
+    //             this.emailContent = this.HtmlValue;
+    //         })
+    //         .catch(error => {
+    //             this.handleError(error, 'Error regenerating email content');
+    //         })
+    //         .finally(() => {
+    //             this.isLoading = false; // Hide loading spinner
+    //             console.log('Loading state reset to false:', this.isLoading);
+    //         });
+    // }
+
+
+    // regenerateEmail() {
+    //     // if (!this.customPromptByUser) {
+    //     //     this.showToast('Alert', 'Email Successfully regenerated.', 'Success');
+    //     //     return;
+    //     // }
+    
+    //     this.isLoading = true; // Show loading spinner
+    //     console.log('Loading state set to true:', this.isLoading);
+    
+    //     // Define the hard-coded prompt
+    //     const hardCodedPrompt = 'Use diffrent words and approach for the email, it must  not be same as before.';
+        
+    //     // Append the hard-coded prompt to the custom prompt
+    //     const combinedPrompt = hardCodedPrompt + this.customPromptByUser;
+    //     console.log('Combined Prompt:', combinedPrompt);
+    
+    //     // Call the Apex method with the combined prompt
+    //     generateEmailContent({ leadId: this.recordId, customPromptByUser: combinedPrompt })
+    //         .then(result => {
+    //             console.log('Email regenerated successfully.');
+    //             // Handle result and update component state accordingly
+    //             const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
+    //             if (subjectMatch) {
+    //                 this.subject = subjectMatch[1];
+    //                 this.HtmlValue = result.replace(subjectMatch[0], '').trim();
+    //             } else {
+    //                 this.HtmlValue = result;
+    //             }
+    //             this.emailContent = this.HtmlValue;
+    //             this.showToast('Success', 'Email Successfully regenerated.', 'success');
+    //         })
+    //         .catch(error => {
+    //             this.handleError(error, 'Error regenerating email content');
+    //         })
+    //         .finally(() => {
+    //             this.isLoading = false; // Hide loading spinner
+    //             console.log('Loading state reset to false:', this.isLoading);
+    //         });
+    // }
+
     regenerateEmail() {
-        if (!this.customPromptByUser) {
-            this.showToast('Alert', 'Email Successfully regenerated.', 'Success');
-            return;
-        }
     
         this.isLoading = true; // Show loading spinner
         console.log('Loading state set to true:', this.isLoading);
     
-        generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+        // Define the hard-coded prompt
+        const hardCodedPrompt = 'Create a unique version of the email with different wording and approach compared to previous versions. Make it engaging, personalized, and fresh.';
+        
+        // Generate a random number or use a timestamp to make each prompt unique
+        const uniqueSuffix = ` (unique ID: ${Math.random().toString(36).substring(2)})`;
+        
+        // Append the hard-coded prompt and the unique suffix to the custom prompt
+        const combinedPrompt = hardCodedPrompt + ' ' + this.customPromptByUser + uniqueSuffix;
+        console.log('Combined Prompt:', combinedPrompt);
+    
+        // Call the Apex method with the combined prompt
+        generateEmailContent({ leadId: this.recordId, customPromptByUser: combinedPrompt })
             .then(result => {
                 console.log('Email regenerated successfully.');
                 // Handle result and update component state accordingly
@@ -289,6 +370,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                     this.HtmlValue = result;
                 }
                 this.emailContent = this.HtmlValue;
+                this.showToast('Success', 'Email Successfully regenerated.', 'success');
             })
             .catch(error => {
                 this.handleError(error, 'Error regenerating email content');
@@ -298,6 +380,8 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                 console.log('Loading state reset to false:', this.isLoading);
             });
     }
+    
+    
     
 
 
