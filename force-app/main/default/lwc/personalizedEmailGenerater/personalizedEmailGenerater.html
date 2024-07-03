@@ -1,5 +1,5 @@
 <template>
-    <lightning-card title={dynamicTitle} icon-name="standard:email">
+    <lightning-card title={dynamicTitle} icon-name={dynamicIcon}>
         <div class="slds-var-p-around_medium" style="margin-top: -0.75rem">
             <!-- Displaying company information if Generate Call Script button is not visible -->
             <template if:false={showGenerateCallScriptButton}>
@@ -148,9 +148,21 @@
                     <lightning-button 
                         label="Generate Call Script" 
                         variant="brand" 
+                        icon-name = "utility:call"
                         onclick={generateCallScript}
                         class="slds-var-m-right_x-small">
                     </lightning-button>
+
+                                    <!-- Generate Call Script button only visible when showGenerateCallScriptButton is true -->
+                <template if:true={showGenerateCallScriptButton}>
+                    <lightning-button 
+                        label="Reply with Email" 
+                        variant="brand" 
+                        icon-name = "utility:email"
+                        onclick={replyWithEmail}
+                        class="slds-var-m-right_x-small">
+                    </lightning-button>
+                </template>
                 </template>
             </div>
 
@@ -172,6 +184,7 @@
                     <lightning-button 
                         label="Regenerate Call Script" 
                         variant="brand" 
+                        icon-name = "utility:refresh"
                         onclick={regenerateCallScript}
                         class="slds-var-m-right_x-small">
                     </lightning-button>
@@ -327,8 +340,8 @@
                     </g>
                     </svg>
                     <div class="slds-text-longform">
-                    <h3 class="slds-text-heading_medium">The email has been sent to the user, we are waiting for the response.</h3>
-                    <p class="slds-text-body_regular">We will nortify you as soon ss we will get the reply from the lead.</p>
+                        <h3 class="slds-text-heading_medium">The email has been sent to the user. We are awaiting their response.</h3>
+                        <p class="slds-text-body_regular">We will notify you as soon as we receive a reply from the lead.</p>                        
                     </div>
                     </div>
             </template>

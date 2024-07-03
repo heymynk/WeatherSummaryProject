@@ -9,6 +9,9 @@ import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachme
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
 import getLeadResponse from '@salesforce/apex/LeadInteractionHandler.getLeadResponse';
+import { getRecord } from 'lightning/uiRecordApi';
+import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
+
 
 
 export default class PersonalizedEmailGenerator extends LightningElement {
@@ -45,8 +48,30 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     get dynamicTitle() {
         if (this.showGenerateCallScriptButton) {
             return 'Personalized Call Script Generator';
+        } else if (!this.isWorkingContacted) {
+            return '';
         }
         return 'Personalized Email Generator';
+    }
+
+    get dynamicIcon() {
+        if (this.showGenerateCallScriptButton) {
+            return 'utility:call';
+        } else if (!this.isWorkingContacted) {
+            return '';
+        }
+        return 'utility:email';
+    }
+
+    @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
+    wiredRecord({ error, data }) {
+        if (data) {
+            if (data.fields.Reply_Received__c.value) {
+                this.showToast('Reply Notification', 'A reply has been received from the lead.', 'success');
+            }
+        } else if (error) {
+            console.error('Error fetching lead record:', error);
+        }
     }
 
     // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
@@ -270,6 +295,42 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             });
     }
 
+
+    replyWithEmail() {
+        this.isLoading = true; 
+        console.log('Generating email...');
+        generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+            .then(result => {
+                this.showToast('Success', 'Email successfully generated', 'success');
+                console.log('Email generated successfully.');
+                console.log('Result:', result);
+                // Extract the subject from the generated email content
+                const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
+                if (subjectMatch) {
+                    this.subject = subjectMatch[1];
+                    // Remove the subject line from the email content
+                    this.HtmlValue = result.replace(subjectMatch[0], '').trim();
+                } else {
+                    this.HtmlValue = result;
+                }
+                this.emailContent = this.HtmlValue;
+                this.showEmailFields = true; 
+                // this.showCallScript = false; 
+                this.isLoading = false; 
+                this.showGenerateCallScriptButton = false
+                // this.showGenerateEmailButton = false; 
+                // this.customPromptByUser = '';
+
+
+            })
+            .catch(error => {
+                this.isLoading = false; 
+                this.handleError(error, 'Error generating email content');
+            });
+    }
+
+
+    
     // regenerateEmail() {
     //     if (!this.customPromptByUser) {
     //         this.showToast('Alert', 'Email Successfully regenerated.', 'Success');
