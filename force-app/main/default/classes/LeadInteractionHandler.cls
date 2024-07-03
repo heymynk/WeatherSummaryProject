@@ -66,7 +66,8 @@ public with sharing class LeadInteractionHandler {
             'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
             'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
             'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
-            'There is also a prompt which is given by the user from the UI, Consider that prompt as well.'
+            'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
+            'Please use a greeting other than "I hope this email finds you well" to avoid predictability and ensure authenticity.'
         };
 
         if (!String.isBlank(customPromptByUser)) {

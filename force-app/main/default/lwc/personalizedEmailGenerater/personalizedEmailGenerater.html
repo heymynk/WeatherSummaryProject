@@ -5,6 +5,7 @@
             <template if:false={showGenerateCallScriptButton}>
                 <template if:true={companyData}>
                     <div class="slds-var-m-bottom_medium" style="border: none;">
+                        <h6 class="slds-m-bottom_xx-small">Company Information</h6>
                         <div class="slds-text-heading_medium" style="margin-bottom: 0.5rem;">
                             {companyData.displayName}
                         </div>
@@ -16,7 +17,7 @@
             <template if:true={showGenerateCallScriptButton}>
                 <template if:true={emailMessages.data}>
                     <template for:each={emailMessages.data} for:item="email">
-                        <div key={email.Id} class="slds-box slds-m-bottom_small">
+                        <div key={email.Id} class="slds-box slds-var-m-bottom_small">
                             <p><strong>From:</strong> {email.FromAddress}</p>
                             <p><strong>Date:</strong> {email.CreatedDate}</p>
                             <p><strong>Body:</strong> {email.TextBody}</p>
@@ -34,15 +35,20 @@
                 </template>
             </template>
 
-            <!-- Textarea for additional prompts -->
+
+            <template if:true={companyData}>
+                            <!-- Textarea for additional prompts -->
             <lightning-textarea 
-                label="Additional Prompt"
-                name="customPromptByUser"
-                value={customPromptByUser}
-                onchange={handleInputChange}
-                placeholder="Enter additional instructions or information here..."
-                class="slds-var-m-bottom_small">
-            </lightning-textarea>
+            label="Additional Prompt"
+            name="customPromptByUser"
+            value={customPromptByUser}
+            onchange={handleInputChange}
+            placeholder="Enter additional instructions or information for generating personalized email..."
+            class="slds-var-p-top_xx-large">
+        </lightning-textarea>
+            </template>
+
+        
 
             <!-- Display loader while generating email or call script -->
             <template if:true={isLoading}>
@@ -51,6 +57,14 @@
 
             <!-- Email fields -->
             <template if:true={showEmailFields}>
+                <lightning-input 
+                label="To"
+                name="toAddress"
+                value={toAddress}
+                onchange={handleInputChange}
+                placeholder="Enter the recipients email address here..."
+                class=" slds-var-p-top_small">
+            </lightning-input>
                 <lightning-input 
                     label="Email Subject"
                     name="subject"
@@ -77,19 +91,21 @@
                 </lightning-file-upload>
             </template>
 
-            <!-- Display uploaded files as pills -->
-            <template if:true={uploadFile}>
-                <template for:each={uploadFile} for:item="fileIterator" for:index="index">
+              <!-- Display uploaded files as pills -->
+              <template if:true={uploadFile}>
+                <div class="slds-var-p-around_small slds-grid slds-wrap">
+                  <template for:each={uploadFile} for:item="fileIterator">
                     <lightning-pill
-                        class="FilesPill"
-                        key={fileIterator.contentVersionId}
-                        label={fileIterator.name}
-                        data-id={fileIterator.contentVersionId}
-                        data-index={index}
-                        onremove={fileRemove}>
+                      class="slds-var-m-right_x-small slds-var-m-bottom_x-small"
+                      key={fileIterator.contentVersionId}
+                      label={fileIterator.name}
+                      data-id={fileIterator.contentVersionId}
+                      onremove={fileRemove}
+                    >
                     </lightning-pill>
-                </template>
-            </template>
+                  </template>
+                </div>
+              </template>
 
             <!-- Action buttons -->
             <div class="slds-text-align_left slds-var-p-top_medium">
@@ -98,6 +114,7 @@
                     <lightning-button 
                         label="Generate Email" 
                         variant="brand" 
+                        icon-name="utility:magicwand"
                         onclick={generateEmail}
                         class="slds-var-m-right_x-small">
                     </lightning-button>
@@ -107,6 +124,7 @@
                     <lightning-button 
                         label="Send Email" 
                         variant="brand" 
+                        icon-name="utility:send"
                         onclick={sendEmail}
                         class="slds-var-m-right_x-small">
                     </lightning-button>
@@ -114,6 +132,7 @@
                     <lightning-button 
                         label="Regenerate Email" 
                         variant="neutral" 
+                        icon-name="utility:refresh"
                         onclick={regenerateEmail}
                         class="slds-var-m-right_x-small">
                     </lightning-button>
@@ -154,6 +173,17 @@
                 </div>
 
             </template>
+
+
+            <template if:true={isWorkingContacted}>
+                <div class="slds-illustration slds-illustration_large">
+                    <svg class="slds-illustration__svg" viewBox="0 0 466 297" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Your SVG content from SLDS goes here -->
+                        <!-- Example of SVG content is too lengthy to fit in this message -->
+                    </svg>
+                </div>
+            </template>
+
         </div>
     </lightning-card>
 </template>

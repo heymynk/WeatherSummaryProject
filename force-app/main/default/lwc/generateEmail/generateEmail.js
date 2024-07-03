@@ -4,21 +4,23 @@ import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachme
 import sendEmailToController from '@salesforce/apex/LeadInteractionHandler.sendEmailToController';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
-
 export default class GenerateEmail extends LightningElement {
     @api recordId;
     @api isOpenContacted;
+    @api isOpenNotContacted;
     @track emailContent;
     @track uploadFile = [];
     @track isLoading = false;
     @track showEmailFields = false;
     @track showGenerateEmailButton = true;
+    @track additionalPrompt = true;
     customPromptByUser = '';
     subject = '';
     HtmlValue = '';
+    loadingMessage = '';
 
     generateEmail() {
-        this.toggleLoading(true);
+        this.setLoading(true, 'Generating email content...');
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
@@ -32,17 +34,18 @@ export default class GenerateEmail extends LightningElement {
                 this.showEmailFields = true;
                 this.showGenerateEmailButton = false;
                 this.customPromptByUser = '';
+                this.additionalPrompt = false;
             })
             .catch(error => this.handleError(error, 'Error generating email content'))
-            .finally(() => this.toggleLoading(false));
+            .finally(() => this.setLoading(false, ''));
     }
 
     regenerateEmail() {
+        this.setLoading(true, 'Regenerating email content...');
         if (!this.customPromptByUser) {
-            this.showToast('Alert', 'Please enter the prompt to regenerate the email.', 'warning');
+            this.showToast('Alert', 'Email Regenerated Sucessfully.', 'Success');
             return;
         }
-        this.toggleLoading(true);
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
@@ -57,7 +60,7 @@ export default class GenerateEmail extends LightningElement {
                 this.showEmailFields = true;
             })
             .catch(error => this.handleError(error, 'Error regenerating email content'))
-            .finally(() => this.toggleLoading(false));
+            .finally(() => this.setLoading(false, ''));
     }
 
     handleInputChange(event) {
@@ -90,7 +93,7 @@ export default class GenerateEmail extends LightningElement {
     }
 
     sendEmail() {
-        this.toggleLoading(true);
+        this.setLoading(true, 'Sending email...');
         sendEmailToController({
             toAddressEmail: [this.toAddress],
             orgwideEmailAddress: this.orgWideId,
@@ -103,11 +106,12 @@ export default class GenerateEmail extends LightningElement {
             this.resetForm();
         })
         .catch(error => this.handleError(error, 'Error sending email'))
-        .finally(() => this.toggleLoading(false));
+        .finally(() => this.setLoading(false, ''));
     }
 
-    toggleLoading(isLoading) {
+    setLoading(isLoading, message) {
         this.isLoading = isLoading;
+        this.loadingMessage = message;
     }
 
     resetForm() {
@@ -120,17 +124,13 @@ export default class GenerateEmail extends LightningElement {
         this.uploadFile = [];
     }
 
-    handleError(error, message) {
-        console.error(message, error);
+    handleError(error, defaultMessage) {
+        const message = error.body?.message || defaultMessage;
         this.showToast('Error', message, 'error');
+        this.setLoading(false, '');
     }
 
     showToast(title, message, variant) {
-        const event = new ShowToastEvent({
-            title: title,
-            message: message,
-            variant: variant,
-        });
-        this.dispatchEvent(event);
+        this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
     }
 }

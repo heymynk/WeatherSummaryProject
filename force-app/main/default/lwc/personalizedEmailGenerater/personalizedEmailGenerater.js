@@ -30,12 +30,16 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     @track showGenerateEmailButton = true;
     @track showGenerateCallScriptButton = false;
     @track customPromptByUser = '';
+    @track emailMessages = { data: null, error: null };
+    @track isWorkingContacted = false;
 
     connectedCallback() {
         this.fetchLeadEmailAddress();
         this.fetchOrgWideEmailAddress();
         this.fetchCompanyData();
         this.fetchLeadResponse();
+        this.fetchEmailMessages();
+
     }
 
     get dynamicTitle() {
@@ -45,7 +49,44 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         return 'Personalized Email Generator';
     }
 
-    @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
+    // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
+
+    fetchEmailMessages() {
+        if (this.recordId) {
+            getEmailMessages({ leadId: this.recordId })
+                .then(result => {
+                    // Replace '>' with a newline in the TextBody of each email
+                    this.emailMessages.data = result.map(email => {
+                        return {
+                            ...email,
+                            TextBody: email.TextBody.replace(/[<>]/g, '\n')
+                        };
+                    });
+                    console.log('Email Messages:', JSON.stringify(this.emailMessages.data));
+                })
+                .catch(error => {
+                    this.emailMessages.error = error;
+                    this.handleError(error, 'Error fetching email messages');
+                });
+        }
+    }
+
+
+    // fetchLeadResponse() {
+    //     if (this.recordId) {
+    //         getLeadResponse({ leadId: this.recordId })
+    //             .then(result => {
+    //                 this.leadResponse = result;
+    //                 console.log('leadResponse',this.leadResponse);
+    //                 this.showGenerateCallScriptButton = result === 'Working - Reply';
+    //                 this.showGenerateEmailButton = !this.showGenerateCallScriptButton;  
+    //             })
+    //             .catch(error => {
+    //                 this.handleError(error, 'Error fetching lead response');
+    //             });
+    //     }
+    // }
+
 
 
     fetchLeadResponse() {
@@ -53,15 +94,27 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             getLeadResponse({ leadId: this.recordId })
                 .then(result => {
                     this.leadResponse = result;
-                    console.log('leadResponse',this.leadResponse);
-                    this.showGenerateCallScriptButton = result === 'Working - Reply';
-                    this.showGenerateEmailButton = !this.showGenerateCallScriptButton;
+                    console.log('leadResponse', this.leadResponse);
+    
+                    if (result === 'Working - Contacted') {
+                        // Set flags to hide both buttons and clear any related data
+                        this.showGenerateCallScriptButton = false;
+                        this.showGenerateEmailButton = false;
+                        this.companyData = false; 
+                    } else {
+                        // Default behavior when result is not 'Working - Contacted'
+                        this.showGenerateCallScriptButton = result === 'Working - Reply';
+                        this.showGenerateEmailButton = !this.showGenerateCallScriptButton;
+
+                    }
                 })
                 .catch(error => {
                     this.handleError(error, 'Error fetching lead response');
                 });
         }
     }
+    
+
 
     fetchLeadEmailAddress() {
         if (this.recordId) {
@@ -163,16 +216,20 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             this.showEmailFields = false; 
             this.showCallScript = false; 
             this.showGenerateEmailButton = false; 
-            this.showGenerateCallScriptButton = true; // Show Generate Call Script button
-            
+            this.showGenerateCallScriptButton = false; // Show Generate Call Script button
+            this.companyData = false;            
             // Clear the form fields
             this.subject = '';
             this.HtmlValue = '';
             this.emailContent = '';
-            this.customPromptByUser = ''; // Clear custom prompt
+            this.customPromptByUser = ''; 
             this.uploadFile = [];
            // location.reload();
-        })
+           setTimeout(() => {
+            location.reload();
+        },4000); 
+    })
+           
         .catch(error => {
             this.isLoading = false; 
             this.handleError(error, 'Error sending email');
@@ -184,6 +241,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         console.log('Generating email...');
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
+                this.showToast('Success', 'Email successfully generated', 'success');
                 console.log('Email generated successfully.');
                 console.log('Result:', result);
                 // Extract the subject from the generated email content
@@ -195,7 +253,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                 } else {
                     this.HtmlValue = result;
                 }
-                this.emailContent = this.HtmlValue; 
+                this.emailContent = this.HtmlValue;
                 this.showEmailFields = true; 
                 this.showCallScript = false; 
                 this.isLoading = false; 
@@ -211,17 +269,18 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     }
 
     regenerateEmail() {
-
         if (!this.customPromptByUser) {
-            this.showToast('Alert', 'Please enter the prompt to regenerate the email.', 'warning');
+            this.showToast('Alert', 'Email Successfully regenerated.', 'Success');
             return;
         }
-        this.isLoading = true; 
-        console.log('Regenerating email...');
+    
+        this.isLoading = true; // Show loading spinner
+        console.log('Loading state set to true:', this.isLoading);
+    
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
                 console.log('Email regenerated successfully.');
-                // console.log('Result:', result);
+                // Handle result and update component state accordingly
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
                 if (subjectMatch) {
                     this.subject = subjectMatch[1];
@@ -229,16 +288,17 @@ export default class PersonalizedEmailGenerator extends LightningElement {
                 } else {
                     this.HtmlValue = result;
                 }
-                this.emailContent = this.HtmlValue; 
-                this.isLoading = false; 
-                this.customPromptByUser = '';
-
+                this.emailContent = this.HtmlValue;
             })
             .catch(error => {
-                this.isLoading = false; 
                 this.handleError(error, 'Error regenerating email content');
+            })
+            .finally(() => {
+                this.isLoading = false; // Hide loading spinner
+                console.log('Loading state reset to false:', this.isLoading);
             });
     }
+    
 
 
     generateCallScript() {
@@ -304,4 +364,6 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         const doc = new DOMParser().parseFromString(html, 'text/html');
         return doc.body.textContent || "";
     }
+
+    
 }

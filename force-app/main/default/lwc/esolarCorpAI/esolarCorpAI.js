@@ -10,6 +10,7 @@ export default class EsolarCorpAI extends LightningElement {
     @track showCompanyInformation = true;
     @track showFileUpload = false;
     @track isOpenContacted = true;
+    @track isOpenNotContacted = true;
 
     connectedCallback() {
         // Fetch initial data or perform any initialization
