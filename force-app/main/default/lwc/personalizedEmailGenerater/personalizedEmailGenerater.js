@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 07-04-2024
+ * @last modified by  : Mayank Singh
+**/
 import { LightningElement, api, track, wire } from 'lwc';
 import generateEmailContent from '@salesforce/apex/LeadInteractionHandler.generateEmailContent';
 import generateCallScript from '@salesforce/apex/LeadInteractionHandler.generateCallScript';
@@ -11,10 +18,12 @@ import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestE
 import getLeadResponse from '@salesforce/apex/LeadInteractionHandler.getLeadResponse';
 import { getRecord } from 'lightning/uiRecordApi';
 import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
+import { NavigationMixin } from 'lightning/navigation';
 
 
 
-export default class PersonalizedEmailGenerator extends LightningElement {
+
+export default class PersonalizedEmailGenerator extends NavigationMixin(LightningElement) {
     @track leadResponse;
     @api recordId;
     @track emailContent;
@@ -42,11 +51,12 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         this.fetchCompanyData();
         this.fetchLeadResponse();
         this.fetchEmailMessages();
+        
 
     }
 
     get dynamicTitle() {
-        if (this.showGenerateCallScriptButton) {
+        if (this.showGenerateCallScriptButton || this.showCallScript) {
             return 'Personalized Call Script Generator';
         } else if (!this.isWorkingContacted) {
             return '';
@@ -55,12 +65,19 @@ export default class PersonalizedEmailGenerator extends LightningElement {
     }
 
     get dynamicIcon() {
-        if (this.showGenerateCallScriptButton) {
+        if (this.showGenerateCallScriptButton || this.showCallScript) {
             return 'utility:call';
         } else if (!this.isWorkingContacted) {
             return '';
         }
         return 'utility:email';
+    }
+
+    get dynamicPlaceholder(){
+        if (this.showGenerateCallScriptButton || this.showCallScript) {
+            return 'Enter additional instructions or information for generating personalized call...';
+        }
+        return 'Enter additional instructions or information for generating personalized email...';
     }
 
     @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
@@ -72,6 +89,7 @@ export default class PersonalizedEmailGenerator extends LightningElement {
         } else if (error) {
             console.error('Error fetching lead record:', error);
         }
+        
     }
 
     // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
@@ -214,6 +232,86 @@ export default class PersonalizedEmailGenerator extends LightningElement {
             this.uploadFile.push({ contentVersionId: file.documentId, name: file.name });
         });
     }
+
+    // getBack() {
+    //     try {
+    //         this[NavigationMixin.Navigate]({
+    //             type: 'standard__recordPage',
+    //             attributes: {
+    //                 recordId: this.recordId,
+    //                 objectApiName: 'Lead',
+    //                 actionName: 'view'
+    //             }
+    //         })
+    //         console.log("Here is the navigation page")
+    //         .then((navigationResult) => {
+    //             console.log("Navigation successful: ", navigationResult);
+    //             console.log(this.recordId);
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error navigating: ", error);
+    //         });
+    //     } catch (error) {
+    //         console.error("Error navigating: ", error);
+    //     }
+    // }
+
+    getBack() {
+        try {
+            console.log("Starting navigation process...");
+    
+            // Log the recordId before attempting navigation
+            console.log("Record ID: ", this.recordId);
+    
+            this[NavigationMixin.Navigate]({
+                type: 'standard__recordPage',
+                attributes: {
+                    recordId: this.recordId,
+                    objectApiName: 'Lead',
+                    actionName: 'view'
+                }
+            })
+    
+        } catch (error) {
+            // Log detailed error information
+            console.error("Error navigating (inside try-catch): ", error);
+            if (error && error.message) {
+                console.error("Error message: ", error.message);
+            }
+            if (error && error.stack) {
+                console.error("Error stack: ", error.stack);
+            }
+        }
+    }
+
+
+
+    getBackBrowser() {
+        try {
+            console.log("Navigating back to the previous page...");
+            window.history.back();
+            console.log("Back navigation triggered");
+        } catch (error) {
+            // Log detailed error information
+            console.error("Error navigating back: ", error);
+            if (error && error.message) {
+                console.error("Error message: ", error.message);
+            }
+            if (error && error.stack) {
+                console.error("Error stack: ", error.stack);
+            }
+        }
+    }
+    
+    
+    
+    
+
+    // getBack() {
+    //     // Go back one step in the browser history
+    //     window.history.back();
+    // }
+
 
     fileRemove(event) {
         const contentVersionId = event.target.dataset.id;
