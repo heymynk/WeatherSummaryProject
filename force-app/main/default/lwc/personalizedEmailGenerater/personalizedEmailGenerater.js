@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 07-04-2024
+ * @last modified on  : 07-05-2024
  * @last modified by  : Mayank Singh
 **/
 import { LightningElement, api, track, wire } from 'lwc';
@@ -114,24 +114,6 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         }
     }
 
-
-    // fetchLeadResponse() {
-    //     if (this.recordId) {
-    //         getLeadResponse({ leadId: this.recordId })
-    //             .then(result => {
-    //                 this.leadResponse = result;
-    //                 console.log('leadResponse',this.leadResponse);
-    //                 this.showGenerateCallScriptButton = result === 'Working - Reply';
-    //                 this.showGenerateEmailButton = !this.showGenerateCallScriptButton;  
-    //             })
-    //             .catch(error => {
-    //                 this.handleError(error, 'Error fetching lead response');
-    //             });
-    //     }
-    // }
-
-
-
     fetchLeadResponse() {
         if (this.recordId) {
             getLeadResponse({ leadId: this.recordId })
@@ -233,28 +215,6 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         });
     }
 
-    // getBack() {
-    //     try {
-    //         this[NavigationMixin.Navigate]({
-    //             type: 'standard__recordPage',
-    //             attributes: {
-    //                 recordId: this.recordId,
-    //                 objectApiName: 'Lead',
-    //                 actionName: 'view'
-    //             }
-    //         })
-    //         console.log("Here is the navigation page")
-    //         .then((navigationResult) => {
-    //             console.log("Navigation successful: ", navigationResult);
-    //             console.log(this.recordId);
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error navigating: ", error);
-    //         });
-    //     } catch (error) {
-    //         console.error("Error navigating: ", error);
-    //     }
-    // }
 
     getBack() {
         try {
@@ -302,15 +262,6 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
             }
         }
     }
-    
-    
-    
-    
-
-    // getBack() {
-    //     // Go back one step in the browser history
-    //     window.history.back();
-    // }
 
 
     fileRemove(event) {
@@ -428,79 +379,6 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
     }
 
 
-    
-    // regenerateEmail() {
-    //     if (!this.customPromptByUser) {
-    //         this.showToast('Alert', 'Email Successfully regenerated.', 'Success');
-    //         return;
-    //     }
-    
-    //     this.isLoading = true; // Show loading spinner
-    //     console.log('Loading state set to true:', this.isLoading);
-    
-    //     generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
-    //         .then(result => {
-    //             console.log('Email regenerated successfully.');
-    //             // Handle result and update component state accordingly
-    //             const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
-    //             if (subjectMatch) {
-    //                 this.subject = subjectMatch[1];
-    //                 this.HtmlValue = result.replace(subjectMatch[0], '').trim();
-    //             } else {
-    //                 this.HtmlValue = result;
-    //             }
-    //             this.emailContent = this.HtmlValue;
-    //         })
-    //         .catch(error => {
-    //             this.handleError(error, 'Error regenerating email content');
-    //         })
-    //         .finally(() => {
-    //             this.isLoading = false; // Hide loading spinner
-    //             console.log('Loading state reset to false:', this.isLoading);
-    //         });
-    // }
-
-
-    // regenerateEmail() {
-    //     // if (!this.customPromptByUser) {
-    //     //     this.showToast('Alert', 'Email Successfully regenerated.', 'Success');
-    //     //     return;
-    //     // }
-    
-    //     this.isLoading = true; // Show loading spinner
-    //     console.log('Loading state set to true:', this.isLoading);
-    
-    //     // Define the hard-coded prompt
-    //     const hardCodedPrompt = 'Use diffrent words and approach for the email, it must  not be same as before.';
-        
-    //     // Append the hard-coded prompt to the custom prompt
-    //     const combinedPrompt = hardCodedPrompt + this.customPromptByUser;
-    //     console.log('Combined Prompt:', combinedPrompt);
-    
-    //     // Call the Apex method with the combined prompt
-    //     generateEmailContent({ leadId: this.recordId, customPromptByUser: combinedPrompt })
-    //         .then(result => {
-    //             console.log('Email regenerated successfully.');
-    //             // Handle result and update component state accordingly
-    //             const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
-    //             if (subjectMatch) {
-    //                 this.subject = subjectMatch[1];
-    //                 this.HtmlValue = result.replace(subjectMatch[0], '').trim();
-    //             } else {
-    //                 this.HtmlValue = result;
-    //             }
-    //             this.emailContent = this.HtmlValue;
-    //             this.showToast('Success', 'Email Successfully regenerated.', 'success');
-    //         })
-    //         .catch(error => {
-    //             this.handleError(error, 'Error regenerating email content');
-    //         })
-    //         .finally(() => {
-    //             this.isLoading = false; // Hide loading spinner
-    //             console.log('Loading state reset to false:', this.isLoading);
-    //         });
-    // }
-
     regenerateEmail() {
     
         this.isLoading = true; // Show loading spinner
@@ -566,28 +444,6 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
             });
     }
 
-    // regenerateCallScript() {
-
-    //     if (!this.customPromptByUser) {
-    //         this.showToast('Alert', 'Please enter the prompt to regenerate the call script.', 'warning');
-    //         return;
-    //     }
-    //     this.isLoading = true; 
-    //     console.log('Regenerating call script...');
-    //     generateCallScript({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
-    //         .then(result => {
-    //             console.log('Call script regenerated successfully.');
-    //             console.log('Result:', result);
-    //             this.callScript = this.stripHtml(result);
-    //             this.isLoading = false; 
-    //             this.customPromptByUser = '';
-
-    //         })
-    //         .catch(error => {
-    //             this.isLoading = false; 
-    //             this.handleError(error, 'Error regenerating call script');
-    //         });
-    // }
 
 
     regenerateCallScript() {

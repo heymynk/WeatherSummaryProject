@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 07-04-2024
+ * @last modified on  : 07-05-2024
  * @last modified by  : Mayank Singh
 **/
 public with sharing class LeadInteractionHandler {
@@ -275,8 +275,8 @@ public with sharing class LeadInteractionHandler {
     }
 
     // Fetch Lead Address Coordinates
-    @TestVisible
-    private static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
+    @AuraEnabled(cacheable=true)
+    public static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
         CoordinatesWrapper coordinates = null;
         String errorMessage = '';
 
@@ -327,6 +327,8 @@ public with sharing class LeadInteractionHandler {
                                 String latitude = String.valueOf(coordinatesList[1]);
                                 String longitude = String.valueOf(coordinatesList[0]);
                                 coordinates = new CoordinatesWrapper(latitude, longitude);
+                                System.debug('latitude' + latitude + ' longitude' + longitude);
+
                             }
                         }
                     }
@@ -534,33 +536,73 @@ public with sharing class LeadInteractionHandler {
         }
     }
     //weather data for graph
-    @RemoteAction
-    public static String getSolarDataJSON(Id leadId) {
-        // Call methods to fetch and process weather data
-        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-        System.debug('coordinates getWeatherDataJSON'+coordinates);
-        // Check if coordinates are available
-        if (coordinates != null) {
-            String latitude = coordinates.latitude;
-            String longitude = coordinates.longitude;
+    // @AuraEnabled(cacheable=true)
+    // public static String getSolarDataJSON(Id leadId) {
+    //     // Call methods to fetch and process weather data
+    //     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+    //     System.debug('coordinates getWeatherDataJSON'+coordinates);
+    //     // Check if coordinates are available
+    //     if (coordinates != null) {
+    //         String latitude = coordinates.latitude;
+    //         String longitude = coordinates.longitude;
     
-            // Call method to fetch weather data
-            SolarEnergyDataWrapper forecastSolarData = getSolarEnergyData(latitude, longitude);
+    //         // Call method to fetch weather data
+    //         SolarEnergyDataWrapper forecastSolarData = getSolarEnergyData(latitude, longitude);
             
     
-            // Process the response and convert to JSON
-            if (forecastSolarData != null) {
+    //         // Process the response and convert to JSON
+    //         if (forecastSolarData != null) {
     
-                // Serialize the SolarEnergyDataWrapper object to JSON
-                String jsonForecastSolarData = JSON.serialize(forecastSolarData);
-                return jsonForecastSolarData;
+    //             // Serialize the SolarEnergyDataWrapper object to JSON
+    //             String jsonForecastSolarData = JSON.serialize(forecastSolarData);
+    //             return jsonForecastSolarData;
+    //         } else {
+    //             return 'Failed to retrieve weather data.';
+    //         }
+    //     } else {
+    //         return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+    //     }
+    // }
+
+
+    @AuraEnabled(cacheable=true)
+    public static String getSolarDataJSON(Id leadId) {
+        try {
+            // Call methods to fetch and process weather data
+            CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+            System.debug('Coordinates: ' + coordinates);
+            
+            // Check if coordinates are available
+            if (coordinates != null) {
+                String latitude = coordinates.latitude;
+                String longitude = coordinates.longitude;
+
+                // Call method to fetch weather data
+                SolarEnergyDataWrapper forecastSolarData = getSolarEnergyData(latitude, longitude);
+
+                // Process the response and convert to JSON
+                if (forecastSolarData != null) {
+                    // Serialize the SolarEnergyDataWrapper object to JSON
+                    String jsonForecastSolarData = JSON.serialize(forecastSolarData);
+                    System.debug('JSON Forecast Solar Data: ' + jsonForecastSolarData);
+                    return jsonForecastSolarData;
+                } else {
+                    String errorMessage = '{"error": "Failed to retrieve weather data."}';
+                    System.debug('Error: ' + errorMessage);
+                    return errorMessage;
+                }
             } else {
-                return 'Failed to retrieve weather data.';
+                String errorMessage = '{"error": "Failed to retrieve coordinates for Lead with Id: ' + leadId + '"}';
+                System.debug('Error: ' + errorMessage);
+                return errorMessage;
             }
-        } else {
-            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        } catch (Exception e) {
+            String errorMessage = '{"error": "Exception occurred while fetching solar data: ' + e.getMessage() + '"}';
+            System.debug('Exception: ' + errorMessage);
+            return errorMessage;
         }
     }
+
 
     // Format content for display
     public static String formatContent(String rawText) {
