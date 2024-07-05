@@ -1,0 +1,35 @@
+<template>
+    <div>
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        </template>
+
+        <template if:true={leadAddress}>
+            <div class="slds-p-around_medium slds-text-body_medium">
+                <p><strong> Address:</strong> {leadAddress}</p>
+            </div>
+        </template>
+        <template if:false={leadAddress}>
+            <p>No lead address available.</p>
+        </template>
+
+        <div>
+            <template if:true={mapLoading}>
+                <lightning-spinner alternative-text="Loading Map"></lightning-spinner>
+            </template>
+            <template if:true={mapMarkers.length}>
+                <lightning-map
+                    map-markers={mapMarkers}
+                    markers-title={markersTitle}
+                    onmarkerselect={callMarkerHandler}
+                    selected-marker-value={selectedMarker}>
+                </lightning-map>
+            </template>
+            <template if:false={mapLoading}>
+                <template if:false={mapMarkers.length}>
+                    No Lead Location found!!!
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

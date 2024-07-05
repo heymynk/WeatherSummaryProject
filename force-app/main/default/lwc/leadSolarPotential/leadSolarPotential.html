@@ -1,0 +1,40 @@
+<template>
+    <lightning-card title="Lead Land's Solar Potential">
+<div>
+    <div class="lead-location-container slds-m-bottom_large">
+        <c-lead-location record-id={recordId}></c-lead-location>
+    </div>
+
+    <div class="slds-spinner_container" if:true={showSpinner}>
+        <div role="status" class="slds-spinner slds-spinner_medium">
+            <span class="slds-assistive-text">Loading</span>
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+        </div>
+    </div>
+
+    <div class="description-container slds-p-left_medium slds-text-body_small" if:true={showDescription} style="background-color: #f3f3f3;">
+        <p><strong>POA (Plane of Array):</strong> This represents the solar energy received per unit area of the solar panel, measured in kWh/m².</p>
+        <p><strong>AC Monthly (Kilowatt Alternating Current):</strong> This represents the AC power output from the solar inverter, measured in kilowatt-hours (kWhac).</p>
+        <p><strong>Solar Radiation Monthly:</strong> This represents the solar radiation received per unit area per day, measured in kWh/m²/day.</p>
+        <p><strong>DC Monthly:</strong> This represents the DC power output from the solar panels, measured in kWhdc.</p>
+    </div>
+    
+
+    <div class="chart-container" style="position: relative; width: 100%; height: 300px;">
+    </div>
+</div>
+<div class="slds-p-around_medium">
+    <template if:false={isLoading}>
+    <template if:true={summaryText}>
+        <div><strong><h2>AI Generated Solar Potential</h2></strong> </div>
+        <p>{summaryText}</p>
+    </template>
+    <template if:false={summaryText}>
+        <p>No summary available.</p>
+    </template>
+    </template>
+</div>
+
+    </lightning-card>
+</template>

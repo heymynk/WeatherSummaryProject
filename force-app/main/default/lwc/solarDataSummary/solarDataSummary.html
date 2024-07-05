@@ -1,16 +1,10 @@
 <template>
-    <lightning-card title="Solar Panel Data Summary" icon-name="utility:solar_panel">
-        <template if:true={isLoading}>
-            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
-        </template>
-        <template if:true={hasError}>
-            <p>{errorMessage}</p>
-        </template>
-        <template if:true={solarPanelSummary}>
-            <p>{solarPanelSummary}</p>
-        </template>
-        <template if:true={isNoData}>
-            <p>No data available.</p>
-        </template>
-    </lightning-card>
+  <lightning-card title="Solar Data Summary">
+      <template if:true={summary}>
+          <p>{summary}</p>
+      </template>
+      <template if:true={error}>
+          <p class="error">{error}</p>
+      </template>
+  </lightning-card>
 </template>

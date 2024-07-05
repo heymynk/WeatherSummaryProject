@@ -1,9 +1,8 @@
-
 public with sharing class LeadInteractionHandler {
 
     // Get Lead Address
     @AuraEnabled(cacheable=true)
-    public static String getLeadAddress(Id leadId) {
+    public static String getLeadAddress(String leadId) {
         if (!Schema.sObjectType.Lead.fields.Street.isAccessible() || 
             !Schema.sObjectType.Lead.fields.City.isAccessible() ||
             !Schema.sObjectType.Lead.fields.State.isAccessible() ||
@@ -13,14 +12,14 @@ public with sharing class LeadInteractionHandler {
             return 'Address not available due to insufficient permissions';
         }
 
-        Lead lead = [SELECT Name, Street, City, State, PostalCode, Country FROM Lead WHERE Id = :leadId LIMIT 1];
+        Lead lead = [SELECT Street, City, State, PostalCode, Country FROM Lead WHERE Id = :leadId LIMIT 1];
         if (lead != null) {
-            return lead.Street + ', ' + lead.City + ', ' + lead.State + ', ' + lead.PostalCode + ', ' + lead.Country + ', ' + lead.Name;
+            return lead.Street + ', ' + lead.City + ', ' + lead.State + ', ' + lead.PostalCode + ', ' + lead.Country;
         } else {
             return 'Address not available';
         }
     }
-
+    
     // Generate Email Content
     @AuraEnabled(cacheable=true)
     public static String generateEmailContent(Id leadId, String customPromptByUser) {
@@ -62,12 +61,13 @@ public with sharing class LeadInteractionHandler {
 
     private static List<String> prepareEmailPrompt(String customPromptByUser) {
         List<String> emailPromptParts = new List<String>{
-            'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead',
+            'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead, "I hope this email finds you well", Use other alternative statements in each response while creating or regenerating emails',
             'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
             'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
             'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
             'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
-            'There is also a prompt which is given by the user from the UI, Consider that prompt as well.'
+            'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
+            'Please use a greeting other than "I hope this email finds you well" to avoid predictability and ensure authenticity.'
         };
 
         if (!String.isBlank(customPromptByUser)) {
@@ -118,6 +118,48 @@ public with sharing class LeadInteractionHandler {
         return formatContent(openAiResponse);
     }
 
+
+
+// Generate Solar Data Summary
+@AuraEnabled(cacheable=true)
+public static String generateSolarDataSummary(Id leadId) {
+    CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+
+    if (coordinates == null) {
+        return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+    }
+
+    String latitude = coordinates.latitude;
+    String longitude = coordinates.longitude;
+
+    SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
+
+    if (forecastResponse == null) {
+        return 'Failed to retrieve solar energy data.';
+    }
+
+    String prompt = 'Generate a detailed and concise summary for the following solar energy data:\n\n'
+                    + 'Solar Energy Forecast Data:\n' + forecastResponse + '\n\n'
+                    + 'The summary should highlight key insights and potential benefits of the solar energy data provided, '
+                    + 'potential energy production, and any notable patterns or observations. '
+                    + 'The summary should be written in a professional and informative tone.\n\n'
+                    + 'Note: The summary should be between 100 to 150 words.';
+
+    // Debug log to see the prompt sent to OpenAI
+    System.debug('Prompt sent to OpenAI: ' + prompt);
+
+    String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+
+    if (openAiResponse == null) {
+        return 'Failed to retrieve OpenAI response.';
+    }
+
+    // Debug log to see the response from OpenAI
+    System.debug('OpenAI Response: ' + openAiResponse);
+
+    return formatContent(openAiResponse);
+}
+
     private static List<String> prepareCallPrompt(String customPromptByUser) {
         List<String> callPromptParts = new List<String>{
             'Note- Purpose of call script is to grab the attention of lead to grow our business by giving our services and showcasing our products to lead',
@@ -133,13 +175,6 @@ public with sharing class LeadInteractionHandler {
         }
 
         return callPromptParts;
-    }
-
-
-    @AuraEnabled(cacheable=true)
-    public static String getLeadResponse(Id leadId) {
-        Lead leadRecord = [SELECT Lead_Response__c FROM Lead WHERE Id = :leadId LIMIT 1];
-        return leadRecord.Lead_Response__c;
     }
 
     private static String getSolarPanelDataString() {
@@ -275,8 +310,8 @@ public with sharing class LeadInteractionHandler {
     }
 
     // Fetch Lead Address Coordinates
-    @TestVisible
-    private static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
+    @AuraEnabled(cacheable=true)
+    public static CoordinatesWrapper fetchLeadAddressByCoordinates(Id leadId) {
         CoordinatesWrapper coordinates = null;
         String errorMessage = '';
 
@@ -412,53 +447,6 @@ public with sharing class LeadInteractionHandler {
     }
 
 
-        @AuraEnabled(cacheable=true)
-        public static String generateSolarPanelDataSummary(Id leadId) {
-            try {
-                // Retrieve the lead's coordinates
-                CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-                if (coordinates == null) {
-                    return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
-                }
-    
-                String latitude = coordinates.latitude;
-                String longitude = coordinates.longitude;
-    
-                // Retrieve the solar energy data
-                SolarEnergyDataWrapper solarEnergyData = getSolarEnergyData(latitude, longitude);
-                if (solarEnergyData == null) {
-                    return 'Failed to retrieve solar energy data for the coordinates: ' + latitude + ', ' + longitude;
-                }
-    
-                // Prepare the prompt for solar panel data
-                List<String> solarPanelDataPromptParts = prepareSolarPanelDataPrompt();
-                solarPanelDataPromptParts.add('Solar Energy Data:\n' + solarEnergyData);
-    
-                String customPrompt = String.join(solarPanelDataPromptParts, '\n');
-    
-                // Retrieve OpenAI response for the solar panel data summary
-                String openAiResponse = getOpenAiResponse(customPrompt, 'assistant');
-                if (openAiResponse == null) {
-                    return 'Failed to retrieve OpenAI response.';
-                }
-    
-                return formatContent(openAiResponse);
-            } catch (Exception e) {
-                // Log the exception (optional: you can use a logging framework or System.debug)
-                System.debug('Exception occurred: ' + e.getMessage());
-                return 'An error occurred while generating the solar panel data summary.';
-            }
-        }
-    
-        private static List<String> prepareSolarPanelDataPrompt() {
-            List<String> solarPanelDataPromptParts = new List<String>{
-                'Note- The purpose of this summary is to provide a comprehensive overview of the solar panel data relevant to the lead\'s location.',
-                'Given the following solar energy data, generate a detailed summary that highlights the solar energy potential and forecast for the area.',
-                'Ensure the summary is clear, professional, and highlights the potential benefits of solar energy for the lead\'s specific location.'
-            };
-            return solarPanelDataPromptParts;
-        }
-    
 
     // Send Email
     @AuraEnabled(cacheable=true)
@@ -468,13 +456,13 @@ public with sharing class LeadInteractionHandler {
             return;
         }
         
-
         Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
         email.setToAddresses(toAddressEmail);
         email.setOrgWideEmailAddressId(orgwideEmailAddress);
         email.setSubject(subjectEmail);
         email.setHtmlBody(emailHtmlValue);
-        email.setReplyTo('email@k-wjll6vgoiazqxb5l3b6cf07p3n87hh32tfppsixjev9oqjso.72-2ywcdeaw.ind3s.apex.sandbox.salesforce.com');
+        email.setReplyTo('reply@alf63yf68apwk5pdprr7rda43debvkvh4q5mbco43rg3chly5.72-2ywcdeaw.ind3s.apex.sandbox.salesforce.com');
+        //email.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
 
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
@@ -500,6 +488,8 @@ public with sharing class LeadInteractionHandler {
             System.debug('Error sending email: ' + ex.getMessage());
         }
     }
+
+
     @future
     private static void updateLeadStatus(String[] toAddresses) {
         List<Lead> leadsToUpdate = [SELECT Id,Email, Lead_Response__c FROM Lead WHERE Email IN :toAddresses LIMIT 1];
@@ -515,7 +505,6 @@ public with sharing class LeadInteractionHandler {
             System.debug('Lead status updated to Open - Contacted');
         }
     }
-
 
     // Get Org-wide Email Address
     @AuraEnabled(cacheable=true)
@@ -580,7 +569,7 @@ public with sharing class LeadInteractionHandler {
         }
     }
     //weather data for graph
-    @RemoteAction
+    @AuraEnabled(cacheable=true)
     public static String getSolarDataJSON(Id leadId) {
         // Call methods to fetch and process weather data
         CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
@@ -673,6 +662,12 @@ public with sharing class LeadInteractionHandler {
          
          System.debug('Exiting getLatestEmailMessageForLead method');
          return emailMessages;
+     }
+
+     @AuraEnabled(cacheable=true)
+     public static String getLeadResponse(Id leadId) {
+         Lead leadRecord = [SELECT Lead_Response__c FROM Lead WHERE Id = :leadId LIMIT 1];
+         return leadRecord.Lead_Response__c;
      }
  
 }

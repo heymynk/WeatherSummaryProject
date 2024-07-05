@@ -1,26 +1,27 @@
-import { LightningElement, api,wire } from 'lwc';
-import generateSolarPanelDataSummary from '@salesforce/apex/LeadInteractionHandler.generateSolarPanelDataSummary';
+import { LightningElement, api } from 'lwc';
+import generateSolarDataSummary from '@salesforce/apex/LeadInteractionHandler.generateSolarDataSummary';
 
-export default class SolarPanelSummary extends LightningElement {
-        @api leadId;
-        solarPanelSummary;
-        hasError = false;
-        errorMessage = '';
-    
-        @wire(generateSolarPanelDataSummary, { leadId: '$leadId' })
-        wiredGenerateSolarPanelDataSummary({ error, data }) {
-            if (data) {
-                this.solarPanelSummary = data;
-                console.log('solarPanelSummary',this.solarPanelSummary);
-                this.hasError = false;
-            } else if (error) {
-                this.errorMessage = error.body ? error.body.message : 'Unknown error';
-                this.isLoading = false;
-                this.hasError = true;
-            }
-        }
-    
-        get isNoData() {
-            return !this.isLoading && !this.hasError && !this.solarPanelSummary;
-        }
+export default class SolarDataSummary extends LightningElement {
+    @api leadId;
+    summary;
+    error;
+
+    connectedCallback() {
+        this.fetchSummary();
+    }
+
+    fetchSummary() {
+        console.log('Fetching summary for Lead ID:', this.leadId);
+        generateSolarDataSummary({ leadId: this.leadId })
+            .then(result => {
+                console.log('Summary result:', result);
+                this.summary = result;
+                this.error = undefined;
+            })
+            .catch(error => {
+                console.error('Error fetching summary:', error);
+                this.error = error;
+                this.summary = undefined;
+            });
+    }
 }

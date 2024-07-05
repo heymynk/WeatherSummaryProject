@@ -3,24 +3,41 @@
     <apex:includeScript value="{!$Resource.chartJs}"/>
 
     <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
         canvas {
-            background-color: #f3f3f3; 
-            display: flex;
+            background-color: #f3f3f3;
             width: 100%;
             height: 100%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
 
-        .chart-legend {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            color: #333;
-            font-size: 8px;
+        .chart-container {
+            position: relative;
+            height: 80%;
+            overflow: hidden;
         }
 
-        /* Styles for the error message */
+        .description-container {
+            padding: 10px;
+            background-color: #f3f3f3;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 0;
+            font-size: 11px;
+            overflow: hidden;
+        }
+
+        .description-container p {
+            font-size: 11px;
+        }
+
         .error-message {
             color: red;
             font-size: 14px;
@@ -28,19 +45,35 @@
             margin-top: 20px;
         }
 
-        /* Spinner container styles */
+        /* Spinner styles */
         .spinner-container {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            display: none; /* Hidden by default */
+            z-index: 9999; /* Ensure it's on top of everything */
         }
     </style>
 
-<div class="slds-scope">
-    <div class="chart-container" style="position: relative; height: 400px;">
-            <canvas id="myChart" style="display: none;"></canvas>
+    <div class="description-container" id="descriptionContainer" style="display: none;">
+        <p><strong>POA (Plane of Array):</strong> This represents the solar energy received per unit area of the solar panel, measured in kWh/m2.</p>
+        <p><strong>AC Monthly (Kilowatt Alternating Current):</strong> This represents the AC power output from the solar inverter, measured in kilowatt-hours (kWhac).</p>
+        <p><strong>Solar Radiation Monthly:</strong> This represents the solar radiation received per unit area per day, measured in kWh/m2/day.</p>
+        <p><strong>DC Monthly:</strong> This represents the DC power output from the solar panels, measured in kWhdc.</p>
+    </div>
+
+    <div class="chart-container">
+        <div class="spinner-container" id="spinnerContainer">
+            <div class="slds-spinner_container">
+                <div role="status" class="slds-spinner slds-spinner_medium">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
         </div>
+        <canvas id="myChart" style="display: none;"></canvas>
         <div id="errorMessage" class="error-message" style="display: none;">
             No solar data found.
         </div>
@@ -56,21 +89,17 @@
                 return txt.value;
             }
 
+            // Show spinner initially
+            document.getElementById('spinnerContainer').style.display = 'block';
+
             LeadInteractionHandler.getSolarDataJSON(leadId, function(result, event) {
                 if (event.status && result) {
-                   // console.log('result', result);
                     var decodedResult = decodeHtml(result);
-                    //console.log('decoded result:', decodedResult);
                     var solarData = JSON.parse(decodedResult);
 
                     if (solarData && solarData.poaMonthly && solarData.poaMonthly.length > 0) {
-                        // console.log('AC Monthly:', solarData.acMonthly);
-                        // console.log('POA Monthly:', solarData.poaMonthly);
-                        // console.log('Solar Radiation Monthly:', solarData.solradMonthly);
-                        // console.log('DC Monthly:', solarData.dcMonthly);
-                        
-                        // Plot the data on a graph using Chart.js
                         plotSolarData(solarData);
+                        document.getElementById('descriptionContainer').style.display = 'block';
                     } else {
                         console.log('No data found.');
                         document.getElementById('errorMessage').style.display = 'block';
@@ -79,16 +108,18 @@
                     console.error('Error:', event.message);
                     document.getElementById('errorMessage').style.display = 'block';
                 }
-                document.getElementById('spinner').style.display = 'none'; // Hide the spinner after data retrieval
+
+                // Hide spinner after processing
+                document.getElementById('spinnerContainer').style.display = 'none';
             });
         };
-    
+
         function plotSolarData(solarData) {
             var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+
             var ctx = document.getElementById('myChart').getContext('2d');
             var myChart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: months,
                     datasets: [{
@@ -110,8 +141,8 @@
                     }, {
                         label: 'Solar Radiation Monthly(kWh/m2/day)',
                         data: solarData.solradMonthly,
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                        borderColor: 'rgba(0, 0, 0, 1)',
                         borderWidth: 1,
                         fill: true,
                         tension: 0.3
@@ -126,55 +157,51 @@
                     }]
                 },
                 options: {
-                                responsive: true, // Enable responsiveness
-                                devicePixelRatio: window.devicePixelRatio,
-                                animation: {
-                                    duration: 1000
-                                },
-                                legend: {
-                                    display: true,
-                                    labels: {
-                                        fontColor: 'black',
-                                        fontSize: 10
-                                    }
-                                },
-                                tooltips: {
-                                    mode: 'index',
-                                    intersect: false
-                                },
-                                hover: {
-                                    mode: 'nearest',
-                                    intersect: true
-                                },
-                                scales: {
-                                    xAxes: [{
-                                        display: true,
-                                        scaleLabel: {
-                                            display: true,
-                                            labelString: 'Month',
-                                            fontColor: 'black',
-                                            fontSize: 12
-                                        },
-                                        ticks: {
-                                            fontColor: 'black'
-                                        }
-                                    }],
-                                    yAxes: [{
-                                        display: true,
-                                        scaleLabel: {
-                                            display: true,
-                                            labelString: 'Value',
-                                            fontColor: 'black',
-                                            fontSize: 14
-                                        },
-                                        ticks: {
-                                            fontColor: 'black'
-                                        }
-                                    }]
-                                }
+                    responsive: true,
+                    devicePixelRatio: window.devicePixelRatio,
+                    animation: {
+                        duration: 1000
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            fontColor: 'black',
+                            fontSize: 9
+                        }
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Month',
+                                fontColor: 'black',
+                                fontSize: 12
+                            },
+                            ticks: {
+                                fontColor: 'black'
                             }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            ticks: {
+                                display: false 
+                            }
+                        }]
+                    }
+                }
             });
-            document.getElementById('myChart').style.display = 'block'; // Show the chart after it's been rendered
+
+            // Show chart after rendering
+            document.getElementById('myChart').style.display = 'block';
         }
     </script>
 </apex:page>
