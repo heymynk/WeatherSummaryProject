@@ -1,4 +1,11 @@
-import { LightningElement, api, track} from 'lwc';
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 07-05-2024
+ * @last modified by  : Mayank Singh
+**/
+import { LightningElement, api, track, wire } from 'lwc';
 import generateEmailContent from '@salesforce/apex/LeadInteractionHandler.generateEmailContent';
 import generateCallScript from '@salesforce/apex/LeadInteractionHandler.generateCallScript';
 import getCompanyData from '@salesforce/apex/LeadInteractionHandler.getCompanyData';
@@ -9,8 +16,8 @@ import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachme
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
 import getLeadResponse from '@salesforce/apex/LeadInteractionHandler.getLeadResponse';
-//import { getRecord } from 'lightning/uiRecordApi';
-//import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
+import { getRecord } from 'lightning/uiRecordApi';
+import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
 import { NavigationMixin } from 'lightning/navigation';
 
 
@@ -73,17 +80,17 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         return 'Enter additional instructions or information for generating personalized email...';
     }
 
-    // @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
-    // wiredRecord({ error, data }) {
-    //     if (data) {
-    //         if (data.fields.Reply_Received__c.value) {
-    //             this.showToast('Reply Notification', 'A reply has been received from the lead.', 'success');
-    //         }
-    //     } else if (error) {
-    //         console.error('Error fetching lead record:', error);
-    //     }
+    @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
+    wiredRecord({ error, data }) {
+        if (data) {
+            if (data.fields.Reply_Received__c.value) {
+                this.showToast('Reply Notification', 'A reply has been received from the lead.', 'success');
+            }
+        } else if (error) {
+            console.error('Error fetching lead record:', error);
+        }
         
-    // }
+    }
 
     // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
 

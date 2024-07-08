@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 07-05-2024
+ * @last modified by  : Mayank Singh
+**/
 public with sharing class LeadInteractionHandler {
 
     // Get Lead Address
@@ -362,6 +369,8 @@ public static String generateSolarDataSummary(Id leadId) {
                                 String latitude = String.valueOf(coordinatesList[1]);
                                 String longitude = String.valueOf(coordinatesList[0]);
                                 coordinates = new CoordinatesWrapper(latitude, longitude);
+                                System.debug('latitude' + latitude + ' longitude' + longitude);
+
                             }
                         }
                     }
@@ -462,6 +471,7 @@ public static String generateSolarDataSummary(Id leadId) {
         email.setSubject(subjectEmail);
         email.setHtmlBody(emailHtmlValue);
         email.setReplyTo('reply@alf63yf68apwk5pdprr7rda43debvkvh4q5mbco43rg3chly5.72-2ywcdeaw.ind3s.apex.sandbox.salesforce.com');
+        //email.setReplyTo('esolarcorp_email_service@2z44w6hzvpw0whp3369j44g37ghjwwreyv2w5ujftu5fq7wykk.c1-11nfdmaa.ind16s.apex.sandbox.salesforce.com');
         //email.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
 
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
@@ -569,33 +579,45 @@ public static String generateSolarDataSummary(Id leadId) {
         }
     }
     //weather data for graph
+
     @AuraEnabled(cacheable=true)
     public static String getSolarDataJSON(Id leadId) {
-        // Call methods to fetch and process weather data
-        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-        System.debug('coordinates getWeatherDataJSON'+coordinates);
-        // Check if coordinates are available
-        if (coordinates != null) {
-            String latitude = coordinates.latitude;
-            String longitude = coordinates.longitude;
-    
-            // Call method to fetch weather data
-            SolarEnergyDataWrapper forecastSolarData = getSolarEnergyData(latitude, longitude);
+        try {
+            // Call methods to fetch and process weather data
+            CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+            System.debug('Coordinates: ' + coordinates);
             
-    
-            // Process the response and convert to JSON
-            if (forecastSolarData != null) {
-    
-                // Serialize the SolarEnergyDataWrapper object to JSON
-                String jsonForecastSolarData = JSON.serialize(forecastSolarData);
-                return jsonForecastSolarData;
+            // Check if coordinates are available
+            if (coordinates != null) {
+                String latitude = coordinates.latitude;
+                String longitude = coordinates.longitude;
+
+                // Call method to fetch weather data
+                SolarEnergyDataWrapper forecastSolarData = getSolarEnergyData(latitude, longitude);
+
+                // Process the response and convert to JSON
+                if (forecastSolarData != null) {
+                    // Serialize the SolarEnergyDataWrapper object to JSON
+                    String jsonForecastSolarData = JSON.serialize(forecastSolarData);
+                    System.debug('JSON Forecast Solar Data: ' + jsonForecastSolarData);
+                    return jsonForecastSolarData;
+                } else {
+                    String errorMessage = '{"error": "Failed to retrieve weather data."}';
+                    System.debug('Error: ' + errorMessage);
+                    return errorMessage;
+                }
             } else {
-                return 'Failed to retrieve weather data.';
+                String errorMessage = '{"error": "Failed to retrieve coordinates for Lead with Id: ' + leadId + '"}';
+                System.debug('Error: ' + errorMessage);
+                return errorMessage;
             }
-        } else {
-            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        } catch (Exception e) {
+            String errorMessage = '{"error": "Exception occurred while fetching solar data: ' + e.getMessage() + '"}';
+            System.debug('Exception: ' + errorMessage);
+            return errorMessage;
         }
     }
+
 
     // Format content for display
     public static String formatContent(String rawText) {

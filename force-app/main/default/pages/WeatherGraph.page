@@ -56,22 +56,9 @@
         }
     </style>
 
-    <div class="description-container" id="descriptionContainer" style="display: none;">
-        <p><strong>POA (Plane of Array):</strong> This represents the solar energy received per unit area of the solar panel, measured in kWh/m2.</p>
-        <p><strong>AC Monthly (Kilowatt Alternating Current):</strong> This represents the AC power output from the solar inverter, measured in kilowatt-hours (kWhac).</p>
-        <p><strong>Solar Radiation Monthly:</strong> This represents the solar radiation received per unit area per day, measured in kWh/m2/day.</p>
-        <p><strong>DC Monthly:</strong> This represents the DC power output from the solar panels, measured in kWhdc.</p>
-    </div>
-
-    <div class="chart-container">
-        <div class="spinner-container" id="spinnerContainer">
-            <div class="slds-spinner_container">
-                <div role="status" class="slds-spinner slds-spinner_medium">
-                    <span class="slds-assistive-text">Loading</span>
-                    <div class="slds-spinner__dot-a"></div>
-                    <div class="slds-spinner__dot-b"></div>
-                </div>
-            </div>
+<div class="slds-scope">
+    <div class="chart-container" style="position: relative; height: 400px;">
+            <canvas id="myChart" style="display: none;"></canvas>
         </div>
         <canvas id="myChart" style="display: none;"></canvas>
         <div id="errorMessage" class="error-message" style="display: none;">
@@ -94,7 +81,9 @@
 
             LeadInteractionHandler.getSolarDataJSON(leadId, function(result, event) {
                 if (event.status && result) {
+                   // console.log('result', result);
                     var decodedResult = decodeHtml(result);
+                    //console.log('decoded result:', decodedResult);
                     var solarData = JSON.parse(decodedResult);
 
                     if (solarData && solarData.poaMonthly && solarData.poaMonthly.length > 0) {
