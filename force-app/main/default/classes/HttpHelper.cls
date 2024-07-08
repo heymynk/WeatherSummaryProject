@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 07-08-2024
+ * @last modified by  : Mayank Singh
+**/
 public class HttpHelper {
 
     public static HttpResponse sendGetRequestCompany(String endpoint, String apiKey) {
@@ -8,6 +15,7 @@ public class HttpHelper {
         request.setEndpoint(endpoint);
         request.setMethod('GET');
         request.setHeader('accept', 'application/json');
+        request.setTimeout(40000);
         request.setHeader('X-API-Key', apiKey);
 
         try {
@@ -28,6 +36,7 @@ public class HttpHelper {
         HttpRequest httpReq = new HttpRequest();
         httpReq.setTimeout(40000);
         httpReq.setMethod('GET');
+        httpReq.setTimeout(40000);
         httpReq.setEndpoint(endPoint);
         httpReq.setHeader('Content-Type', 'application/json');
 
@@ -47,8 +56,6 @@ public class HttpHelper {
     public static HttpResponse sendPostRequest(String endPoint, String body, String apiKey) {
         HttpRequest req = new HttpRequest();
         req.setEndpoint(endPoint);
-        req.setTimeout(40000);
-
         req.setMethod('POST');
         req.setHeader('Content-Type', 'application/json');
         req.setHeader('Authorization', 'Bearer ' + apiKey);

@@ -2,7 +2,7 @@
   @description       : 
   @author            : Mayank Singh
   @group             : 
-  @last modified on  : 07-05-2024
+  @last modified on  : 07-08-2024
   @last modified by  : Mayank Singh
 -->
 <template>
@@ -83,7 +83,7 @@
 
       <!-- Display loader while generating email or call script -->
       <template if:true={isLoading}>
-        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        <lightning-spinner alternative-text="Loading" class="loadingSpinner"></lightning-spinner>
       </template>
 
       <!-- Email fields -->
@@ -171,7 +171,7 @@
               <lightning-button
                 label="Back"
                 variant="neutral"
-                icon-name="utility:back"
+                icon-name="utility:chevronleft"
                 icon-position="left"
                 onclick={getBack}
                 class="slds-var-m-right_x-small slds-var-p-around_small"
@@ -212,7 +212,7 @@
                     <lightning-button
                         label="Back"
                         variant="neutral"
-                        icon-name="utility:back"
+                        icon-name="utility:chevronleft"
                         icon-position="left"
                         onclick={getBack}
                         class="slds-var-m-right_x-small slds-var-p-around_small"
@@ -265,7 +265,7 @@
             <div class="slds-col slds-size_1-of-2 slds-grid slds-grid_align-start">
                 <lightning-button label="Back"
                                   variant="neutral"
-                                  icon-name="utility:back"
+                                  icon-name="utility:chevronleft"
                                   icon-position="left"
                                   onclick={getBack}
                                   class="slds-var-m-right_x-small slds-var-p-around_small">

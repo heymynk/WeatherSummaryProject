@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 07-05-2024
+ * @last modified on  : 07-08-2024
  * @last modified by  : Mayank Singh
 **/
 import { LightningElement, api, track, wire } from 'lwc';
@@ -52,7 +52,6 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         this.fetchLeadResponse();
         this.fetchEmailMessages();
         
-
     }
 
     get dynamicTitle() {
@@ -382,7 +381,6 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
     regenerateEmail() {
     
         this.isLoading = true; // Show loading spinner
-        console.log('Loading state set to true:', this.isLoading);
     
         // Define the hard-coded prompt
         const hardCodedPrompt = 'Create a unique version of the email with different wording and approach compared to previous versions. Make it engaging, personalized, and fresh.';
