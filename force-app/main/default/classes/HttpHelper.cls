@@ -26,6 +26,7 @@ public class HttpHelper {
     public static HttpResponse sendGetRequest(String endPoint) {
         Http http = new Http();
         HttpRequest httpReq = new HttpRequest();
+        httpReq.setTimeout(40000);
         httpReq.setMethod('GET');
         httpReq.setEndpoint(endPoint);
         httpReq.setHeader('Content-Type', 'application/json');
@@ -46,6 +47,8 @@ public class HttpHelper {
     public static HttpResponse sendPostRequest(String endPoint, String body, String apiKey) {
         HttpRequest req = new HttpRequest();
         req.setEndpoint(endPoint);
+        req.setTimeout(40000);
+
         req.setMethod('POST');
         req.setHeader('Content-Type', 'application/json');
         req.setHeader('Authorization', 'Bearer ' + apiKey);

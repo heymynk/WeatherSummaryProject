@@ -13,28 +13,28 @@
         </div>
     </div>
 
-    <div class="description-container slds-p-left_medium slds-text-body_small" if:true={showDescription} style="background-color: #f3f3f3;">
-        <p><strong>POA (Plane of Array):</strong> This represents the solar energy received per unit area of the solar panel, measured in kWh/m².</p>
-        <p><strong>AC Monthly (Kilowatt Alternating Current):</strong> This represents the AC power output from the solar inverter, measured in kilowatt-hours (kWhac).</p>
-        <p><strong>Solar Radiation Monthly:</strong> This represents the solar radiation received per unit area per day, measured in kWh/m²/day.</p>
-        <p><strong>DC Monthly:</strong> This represents the DC power output from the solar panels, measured in kWhdc.</p>
+    <div class="description-container slds-p-left_medium slds-text-body_small slds-p-top_x-small" if:true={showDescription} style="background-color: #f3f3f3;">
+        <p><span class="slds-text-title">POA (Plane of Array):</span> This represents the solar energy received per unit area of the solar panel, measured in kWh/m².</p>
+        <p><span class="slds-text-title">AC Monthly (Kilowatt Alternating Current):</span> This represents the AC power output from the solar inverter, measured in kilowatt-hours (kWhac).</p>
+        <p><span class="slds-text-title">Solar Radiation Monthly:</span> This represents the solar radiation received per unit area per day, measured in kWh/m²/day.</p>
+        <p><span class="slds-text-title">DC Monthly:</span> This represents the DC power output from the solar panels, measured in kWhdc.</p>
     </div>
     
 
     <div class="chart-container" style="position: relative; width: 100%; height: 300px;">
     </div>
 </div>
+
 <div class="slds-p-around_medium">
     <template if:false={isLoading}>
     <template if:true={summaryText}>
-        <div><strong><h2>AI Generated Solar Potential</h2></strong> </div>
-        <p>{summaryText}</p>
+        <div class="slds-text-heading_small">AI Generated Solar Potential</div>
+        <p class="slds-p-top_x-small">{summaryText}</p>
     </template>
     <template if:false={summaryText}>
         <p>No summary available.</p>
     </template>
     </template>
 </div>
-
     </lightning-card>
 </template>

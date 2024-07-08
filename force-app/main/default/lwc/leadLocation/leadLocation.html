@@ -5,8 +5,8 @@
         </template>
 
         <template if:true={leadAddress}>
-            <div class="slds-p-around_medium slds-text-body_medium">
-                <p><strong> Address:</strong> {leadAddress}</p>
+            <div class="slds-p-around_medium slds-text-body_medium slds-p-top_x-small">
+                <p><span class="slds-text-heading_small">Address:</span> {leadAddress}</p>
             </div>
         </template>
         <template if:false={leadAddress}>
@@ -22,7 +22,9 @@
                     map-markers={mapMarkers}
                     markers-title={markersTitle}
                     onmarkerselect={callMarkerHandler}
-                    selected-marker-value={selectedMarker}>
+                    selected-marker-value={selectedMarker}
+                    zoom-level="15"
+                    >
                 </lightning-map>
             </template>
             <template if:false={mapLoading}>

@@ -168,7 +168,7 @@ export default class LeadSolarPotential extends LightningElement {
                 this.summaryText = 'Error fetching solar data summary.';
             })
             .finally(() => {
-                this.isLoading = false; // Set loading state to false after fetching data
+                this.isLoading = false; 
             });
     }
 }

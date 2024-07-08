@@ -19,7 +19,10 @@ export default class LeadLocation extends LightningElement {
         fetchLeadAddress({ leadId: this.recordId })
             .then(result => {
                 console.log('Lead Address:', result);
-                this.leadAddress = result;
+                // Split the address string by commas and join with new lines
+                const addressParts = result.split(', ');
+                const formattedAddress = addressParts.join(',\n');
+                this.leadAddress = formattedAddress;
             })
             .catch(error => {
                 console.error('Error fetching lead address:', error);
@@ -28,6 +31,7 @@ export default class LeadLocation extends LightningElement {
                 this.isLoading = false; // Set loading state to false once address is fetched
             });
     }
+    
 
     @wire(fetchLeadAddressByCoordinates, { leadId: '$recordId' })
     wiredLead({ error, data }) {
@@ -44,7 +48,7 @@ export default class LeadLocation extends LightningElement {
                         Latitude: latitude,
                         Longitude: longitude,
                     },
-                    icon: 'standard:account',
+                    icon: 'standard:location',
                     title: 'Lead Location',
                     description: 'This is the location of the Lead.'
                 }];
