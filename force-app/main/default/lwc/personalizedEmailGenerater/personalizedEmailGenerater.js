@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 07-08-2024
+ * @last modified on  : 07-09-2024
  * @last modified by  : Mayank Singh
 **/
 import { LightningElement, api, track, wire } from 'lwc';
@@ -14,11 +14,17 @@ import getOrgwideEmailAddress from '@salesforce/apex/LeadInteractionHandler.getO
 import sendEmailToController from '@salesforce/apex/LeadInteractionHandler.sendEmailToController';
 import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachment';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
+//import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
 import getLeadResponse from '@salesforce/apex/LeadInteractionHandler.getLeadResponse';
 import { getRecord } from 'lightning/uiRecordApi';
 import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
 import { NavigationMixin } from 'lightning/navigation';
+
+
+
+//New Functionality 
+import getLatestEmailDetails from '@salesforce/apex/HtmlEmailParser.getLatestEmailDetails';
+
 
 
 
@@ -45,12 +51,16 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
     @track emailMessages = { data: null, error: null };
     @track isWorkingContacted = true;
 
+
+    userReply;
+    originalEmail;
+
     connectedCallback() {
         this.fetchLeadEmailAddress();
         this.fetchOrgWideEmailAddress();
         this.fetchCompanyData();
         this.fetchLeadResponse();
-        this.fetchEmailMessages();
+        //this.fetchEmailMessages();
         
     }
 
@@ -93,25 +103,52 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
 
     // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
 
-    fetchEmailMessages() {
-        if (this.recordId) {
-            getEmailMessages({ leadId: this.recordId })
-                .then(result => {
-                    // Replace '>' with a newline in the TextBody of each email
-                    this.emailMessages.data = result.map(email => {
-                        return {
-                            ...email,
-                            TextBody: email.TextBody.replace(/[<>]/g, '\n')
-                        };
-                    });
-                    console.log('Email Messages:', JSON.stringify(this.emailMessages.data));
-                })
-                .catch(error => {
-                    this.emailMessages.error = error;
-                    this.handleError(error, 'Error fetching email messages');
-                });
+    // fetchEmailMessages() {
+    //     if (this.recordId) {
+    //         getEmailMessages({ leadId: this.recordId })
+    //             .then(result => {
+    //                 // Replace '>' with a newline in the TextBody of each email
+    //                 this.emailMessages.data = result.map(email => {
+    //                     return {
+    //                         ...email,
+    //                         TextBody: email.TextBody.replace(/[<>]/g, '\n')
+    //                     };
+    //                 });
+    //                 console.log('Email Messages:', JSON.stringify(this.emailMessages.data));
+    //             })
+    //             .catch(error => {
+    //                 this.emailMessages.error = error;
+    //                 this.handleError(error, 'Error fetching email messages');
+    //             });
+    //     }
+    // }
+
+
+    @wire(getLatestEmailDetails, { leadId: '$recordId' })
+    wiredEmailDetails({ error, data }) {
+        if (data) {
+            if (data.error) {
+                this.error = data.error;
+                this.userReply = null;
+                this.originalEmail = null;
+            } else {
+                this.userReply = data.userReply;
+                console.log( 'userReply'+ this.userReply);
+                this.originalEmail = data.originalEmail;
+                console.log( 'originalEmail'+ this.originalEmail);
+
+                this.error = null;
+            }
+        } else if (error) {
+            this.error = error;
+            this.userReply = null;
+            this.originalEmail = null;
         }
     }
+
+
+
+
 
     fetchLeadResponse() {
         if (this.recordId) {

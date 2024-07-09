@@ -2,7 +2,7 @@
   @description       : 
   @author            : Mayank Singh
   @group             : 
-  @last modified on  : 07-08-2024
+  @last modified on  : 07-09-2024
   @last modified by  : Mayank Singh
 -->
 <template>
@@ -26,7 +26,7 @@
         </template>
       </template>
 
-      <template if:true={showGenerateCallScriptButton}>
+      <!-- <template if:true={showGenerateCallScriptButton}>
         <template if:true={emailMessages.data}>
           <template for:each={emailMessages.data} for:item="email">
             <div
@@ -64,7 +64,25 @@
             <h2>{emailMessages.error.body.message}</h2>
           </div>
         </template>
-      </template>
+      </template> -->
+
+      <template if:true={showGenerateCallScriptButton}>
+        <template if:true={error}>
+            <div class="slds-text-color_error">
+                {error}
+            </div>
+        </template>
+        <template if:true={userReply}>
+            <lightning-card title="User Reply">
+                <p>{userReply}</p>
+            </lightning-card>
+        </template>
+        <template if:true={originalEmail}>
+            <lightning-card title="Original Email">
+                <p>{originalEmail}</p>
+            </lightning-card>
+        </template>
+    </template>
 
       <template if:true={isWorkingContacted}>
         <template if:true={companyData}>
