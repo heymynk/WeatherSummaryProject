@@ -1,0 +1,94 @@
+<!--
+  @description       : 
+  @author            : Mayank Singh
+  @group             : 
+  @last modified on  : 07-09-2024
+  @last modified by  : Mayank Singh
+-->
+<template>
+    <div>
+        <!-- Timeline Content -->
+        <ul class="slds-timeline">
+            <template if:true={emails}>
+                <template for:each={emails} for:item='email'>
+                    <li key={email.id}>
+                        <div class="slds-timeline__item_expandable slds-timeline__item_task">
+                            <span class="slds-assistive-text">Email</span>
+                            <div class="slds-media">
+                                <div class="slds-media__figure">
+                                    <button class="slds-button slds-button_icon" title="Toggle details for {email.subject}" onclick={toggleDetails} aria-controls={email.id}>
+                                        <svg class="slds-button__icon slds-timeline__details-action-icon" aria-hidden="true">
+                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Toggle details for {email.subject}</span>
+                                    </button>
+                                    <div class="slds-icon_container slds-icon-standard-task slds-timeline__icon" title="task">
+                                        <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                            <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#task"></use>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="slds-media__body">
+                                    <div class="slds-grid slds-grid_align-spread slds-timeline__trigger">
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-truncate_container_75 slds-no-space">
+                                            <h3 class="slds-truncate" title={email.subject}>
+                                                <a href="#" onclick={viewEmailDetails}>{email.subject}</a>
+                                            </h3>
+                                        </div>
+                                        <div class="slds-timeline__actions slds-timeline__actions_inline">
+                                            <p class="slds-timeline__date">{email.sentDate}</p>
+                                            <button class="slds-button slds-button_icon slds-button_icon-border-filled slds-button_icon-x-small" aria-haspopup="true" title="More Options for this item" onclick={showEmailOptions}>
+                                                <svg class="slds-button__icon" aria-hidden="true">
+                                                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#down"></use>
+                                                </svg>
+                                                <span class="slds-assistive-text">More Options for this item</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="slds-m-horizontal_xx-small">
+                                        <a href="#">{email.fromName}</a> sent an email to <a href="#">{email.toName}</a>
+                                    </p>
+                                    <article class="slds-box slds-timeline__item_details slds-theme_shade slds-m-top_x-small slds-m-horizontal_xx-small" hidden id={email.id}>
+                                        <ul class="slds-list_horizontal slds-wrap">
+                                            <li class="slds-grid slds-grid_vertical slds-size_1-of-2 slds-p-bottom_small">
+                                                <span class="slds-text-title slds-p-bottom_x-small">From</span>
+                                                <span class="slds-text-body_medium slds-truncate">{email.fromName} ({email.fromEmail})</span>
+                                            </li>
+                                            <li class="slds-grid slds-grid_vertical slds-size_1-of-2 slds-p-bottom_small">
+                                                <span class="slds-text-title slds-p-bottom_x-small">To</span>
+                                                <span class="slds-text-body_medium slds-truncate">{email.toName} ({email.toEmail})</span>
+                                            </li>
+                                        </ul>
+                                        <div>
+                                            <span class="slds-text-title">Message</span>
+                                            <p class="slds-p-top_x-small">{email.message}</p>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </template>
+            <template if:true={error}>
+                <li>
+                    <div class="slds-timeline__item_expandable slds-timeline__item_task">
+                        <div class="slds-media">
+                            <div class="slds-media__body">
+                                <div class="slds-grid slds-grid_align-spread slds-timeline__trigger">
+                                    <div class="slds-grid slds-grid_vertical-align-center slds-truncate_container_75 slds-no-space">
+                                        <h3 class="slds-truncate">Error</h3>
+                                    </div>
+                                    <div class="slds-timeline__actions slds-timeline__actions_inline">
+                                        <p class="slds-timeline__date">{error}</p>
+                                    </div>
+                                </div>
+                                <p class="slds-m-horizontal_xx-small">An error occurred while fetching email details.</p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </template>
+        </ul>
+    </div>
+</template>

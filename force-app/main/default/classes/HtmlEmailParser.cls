@@ -13,27 +13,45 @@ public class HtmlEmailParser {
         try {
             // Query the latest EmailMessage related to the Lead
             String leadEmail = getLeadEmailAddress(leadId);
-            EmailMessage latestEmail = [SELECT Id, HtmlBody FROM EmailMessage WHERE ToAddress = :leadEmail ORDER BY CreatedDate DESC LIMIT 1];
-
+            System.debug('Lead Email Address: ' + leadEmail);
+            
+            EmailMessage latestEmail = [SELECT Id, HtmlBody, Subject, FromAddress, ToAddress, CreatedDate 
+                                        FROM EmailMessage 
+                                        WHERE ToAddress = :leadEmail OR FromAddress = :leadEmail 
+                                        ORDER BY CreatedDate DESC 
+                                        LIMIT 1];
+            
             if (latestEmail != null) {
+                System.debug('Latest Email found: ' + latestEmail.Id);
+                
                 // Get the HTML body from the EmailMessage
                 String htmlBody = latestEmail.HtmlBody;
-
+                System.debug('HTML Body: ' + htmlBody);
+                
                 // Extract user reply and original email
                 String userReply = HtmlEmailParser.extractUserReply(htmlBody);
                 String originalEmail = HtmlEmailParser.extractOriginalEmail(htmlBody);
-
+                System.debug('User Reply: ' + userReply);
+                System.debug('Original Email: ' + originalEmail);
+                
                 // Add details to the map
                 emailDetails.put('userReply', userReply);
                 emailDetails.put('originalEmail', originalEmail);
+                emailDetails.put('subject', latestEmail.Subject);
+                emailDetails.put('fromAddress', latestEmail.FromAddress);
+                emailDetails.put('toAddress', latestEmail.ToAddress);
+                emailDetails.put('createdDate', latestEmail.CreatedDate.format());
             } else {
                 emailDetails.put('error', 'No EmailMessage found for the provided Lead ID.');
+                System.debug('No EmailMessage found for the provided Lead ID.');
             }
         } catch (Exception e) {
             emailDetails.put('error', 'Exception: ' + e.getMessage());
+            System.debug('Exception occurred: ' + e.getMessage());
         }
         return emailDetails;
     }
+    
 
     @AuraEnabled(cacheable=true)
     public static String getLeadEmailAddress(String leadRecordId) {
