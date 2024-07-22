@@ -1,4 +1,10 @@
-
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 07-08-2024
+ * @last modified by  : Mayank Singh
+**/
 import { LightningElement, api, track, wire } from 'lwc';
 import generateEmailContent from '@salesforce/apex/LeadInteractionHandler.generateEmailContent';
 import generateCallScript from '@salesforce/apex/LeadInteractionHandler.generateCallScript';
@@ -13,8 +19,8 @@ import getLeadResponse from '@salesforce/apex/LeadInteractionHandler.getLeadResp
 // import { getRecord } from 'lightning/uiRecordApi';
 // import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
 import { NavigationMixin } from 'lightning/navigation';
-import getLatestEmailMessageInActivityTimeline from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageInActivityTimeline';
-import replyWithEmail from '@salesforce/apex/LeadInteractionHandler.replyWithEmail';
+
+
 
 
 export default class PersonalizedEmailGenerator extends NavigationMixin(LightningElement) {
@@ -43,12 +49,17 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
 
     @track emails = { data: [], error: null };
 
+
+    userReply;
+    originalEmail;
+
     connectedCallback() {
         this.fetchLeadEmailAddress();
         this.fetchOrgWideEmailAddress();
         this.fetchCompanyData();
         this.fetchLeadResponse();
-        this.loadEmails();        
+        this.fetchEmailMessages();
+        
     }
 
     get dynamicTitle() {
@@ -90,112 +101,26 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
 
     // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
 
-    // fetchEmailMessages() {
-    //     if (this.recordId) {
-    //         getEmailMessages({ leadId: this.recordId })
-    //             .then(result => {
-    //                 // Replace '>' with a newline in the TextBody of each email
-    //                 this.emailMessages.data = result.map(email => {
-    //                     return {
-    //                         ...email,
-    //                         TextBody: email.TextBody.replace(/[<>]/g, '\n')
-    //                     };
-    //                 });
-    //                 console.log('Email Messages:', JSON.stringify(this.emailMessages.data));
-    //             })
-    //             .catch(error => {
-    //                 this.emailMessages.error = error;
-    //                 this.handleError(error, 'Error fetching email messages');
-    //             });
-    //     }
-    // }
-
-
-    loadEmails() {
-        getLatestEmailMessageInActivityTimeline({ leadId: this.recordId })
-            .then(data => {
-                console.log('Data received:', JSON.parse(JSON.stringify(data)));
-                this.emails.data = data.map(email => {
-                    const marker = 'class="gmail_attr">';
-                    const markerIndex = email.HtmlBody.indexOf(marker);
-                    //console.log('markerIndex',markerIndex);
-                    let emailReply = email.HtmlBody;
-                    emailReply = email.HtmlBody.replace(/<[^>]*>/g, '');
-                    //console.log('emailReply',emailReply);
-                    if (markerIndex !== -1) {
-                        // Split the HTML content based on the marker
-                        const part1 = email.HtmlBody.substring(0, markerIndex + marker.length);
-                        //console.log('part1',part1);
-
-                        // Remove HTML tags from part1
-                        emailReply = part1.replace(/<[^>]*>/g, '');
-                        // Log part1 for debugging
-                        //console.log('Part 1:', emailReply);
-
-                    }
-                    else{
-                        emailReply = email.HtmlBody.replace(/<[^>]*>/g, '');
-                        
-                    }
-    
-                    return {
-                        ...email,
-                        emailReply,
-                        formattedDate: this.formatDateToIST(email.CreatedDate),
-                        isExpanded: false,
-                        timelineItemClass: 'slds-timeline__item_expandable slds-timeline__item_email',
-                        ariaControls: `email-item-expanded-${email.Id}`,
-                        hiddenState: true
-                    };
+    fetchEmailMessages() {
+        if (this.recordId) {
+            getEmailMessages({ leadId: this.recordId })
+                .then(result => {
+                    // Replace '>' with a newline in the TextBody of each email
+                    this.emailMessages.data = result.map(email => {
+                        return {
+                            ...email,
+                            TextBody: email.TextBody.replace(/[<>]/g, '\n')
+                        };
+                    });
+                    console.log('Email Messages:', JSON.stringify(this.emailMessages.data));
+                })
+                .catch(error => {
+                    this.emailMessages.error = error;
+                    this.handleError(error, 'Error fetching email messages');
                 });
-            })
-            .catch(error => {
-                console.error('Error received:', error);
-                this.emails.error = error;
-            });
-    }
-    
-
-    formatDateToIST(dateString) {
-        const date = new Date(dateString);
-        const options = {
-            timeZone: 'Asia/Kolkata',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true,
-        };
-        return date.toLocaleString('en-US', options);
+        }
     }
 
-
-    toggleDetails(event) {
-        const emailId = event.currentTarget.dataset.emailId;
-        console.log('Toggle details for emailId:', emailId);
-
-
-        this.emails.data = this.emails.data.map(email => {
-            if (email.Id === emailId) {
-                console.log('Toggling expansion for email:', JSON.stringify(email));
-                const isExpanded = !email.isExpanded;
-                return {
-                    ...email,
-                    isExpanded,
-                    timelineItemClass: `slds-timeline__item_expandable slds-timeline__item_email${isExpanded ? ' slds-is-open' : ''}`,
-                    hiddenState: !isExpanded
-                };
-            }
-            return email;
-        });
-
-
-        console.log('Updated emails:', JSON.stringify(this.emails.data));
-    }
-
-
-    
     fetchLeadResponse() {
         if (this.recordId) {
             getLeadResponse({ leadId: this.recordId })

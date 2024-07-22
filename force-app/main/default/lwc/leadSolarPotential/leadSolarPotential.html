@@ -1,3 +1,10 @@
+<!--
+  @description       : 
+  @author            : Mayank Singh
+  @group             : 
+  @last modified on  : 07-09-2024
+  @last modified by  : Mayank Singh
+-->
 <template>
     <lightning-card title="Lead Land's Solar Potential">
         <div>
@@ -5,52 +12,36 @@
                 <c-lead-location record-id={recordId}></c-lead-location>
             </div>
 
-            <div class="slds-spinner_container" if:true={showSpinner}>
-                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
-            </div>
-
-            <div class="description-container slds-p-left_medium slds-p-right_medium slds-text-body_small slds-p-top_small slds-p-bottom_medium" if:true={showDescription}>
-                <p><span class="slds-text-title"><b>POA (Plane of Array):</b></span> This represents the solar energy received per unit area of the solar panel, measured in kWh/m².</p>
-                <p><span class="slds-text-title"><b>AC Monthly (Kilowatt Alternating Current):</b></span> This represents the AC power output from the solar inverter, measured in kilowatt-hours (kWhac).</p>
-                <p><span class="slds-text-title"><b>Solar Radiation Monthly:</b></span> This represents the solar radiation received per unit area per day, measured in kWh/m²/day.</p>
-                <p><span class="slds-text-title"><b>DC Monthly:</b></span> This represents the DC power output from the solar panels, measured in kWhdc.</p>
-            </div>
-
-            <div class="chart-container" style="position: relative; width: 100%; height: 300px;" onclick={openModal}>
-            </div>
-        </div>
-
-        <div class="slds-p-around_medium">
-            <template if:false={isLoading}>
-                <template if:true={summaryText}>
-                    <div class="slds-text-heading_small"><b>AI Generated Solar Potential</b></div>
-                    <p class="slds-p-top_x-small">{summaryText}</p>
-                </template>
-                <template if:false={summaryText}>
-                    <p>No summary available.</p>
-                </template>
-            </template>
-        </div>
-    </lightning-card>
-
-    <div class="modal" if:true={isModalOpen} onclick={closeModal}>
-        <div class="modal-content">
-            <span class="close" onclick={closeModal}>&times;</span>
-
-            <div class="description-container slds-p-left_medium slds-p-right_medium slds-text-body_small slds-p-top_small slds-p-bottom_medium">
-                <div>
-                    <p><span class="slds-text-title"><b>POA (Plane of Array):</b></span> This represents the solar energy received per unit area of the solar panel, measured in kWh/m².</p>
-                    <p><span class="slds-text-title"><b>AC Monthly (Kilowatt Alternating Current):</b></span> This represents the AC power output from the solar inverter,measured in kilowatt-hours (kWhac).</p>
-                </div>
-                <div>
-                    <p><span class="slds-text-title"><b>Solar Radiation Monthly:</b></span> This represents the solar radiation received per unit area per day, measured in kWh/m²/day.</p>
-                    <p><span class="slds-text-title"><b>DC Monthly:</b></span> This represents the DC power output from the solar panels, measured in kWhdc.</p>
-                </div>
-            </div>
-
-            <div class="modal-chart-container">
-                <canvas class="modal-chart"></canvas>
-            </div>
+    <div class="slds-spinner_container" if:true={showSpinner}>
+        <div role="status" class="slds-spinner slds-spinner_medium">
+            <span class="slds-assistive-text">Loading</span>
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
         </div>
     </div>
+
+    <div class="description-container slds-p-left_medium slds-text-body_small slds-p-top_x-small" if:true={showDescription} style="background-color: #f3f3f3;">
+        <p><span class="slds-text-title">POA (Plane of Array):</span> This represents the solar energy received per unit area of the solar panel, measured in kWh/m².</p>
+        <p><span class="slds-text-title">AC Monthly (Kilowatt Alternating Current):</span> This represents the AC power output from the solar inverter, measured in kilowatt-hours (kWhac).</p>
+        <p><span class="slds-text-title">Solar Radiation Monthly:</span> This represents the solar radiation received per unit area per day, measured in kWh/m²/day.</p>
+        <p><span class="slds-text-title">DC Monthly:</span> This represents the DC power output from the solar panels, measured in kWhdc.</p>
+    </div>
+    
+
+    <div class="chart-container" style="position: relative; width: 100%; height: 300px;">
+    </div>
+</div>
+
+<div class="slds-p-around_medium">
+    <template if:false={isLoading}>
+    <template if:true={summaryText}>
+        <div class="slds-text-heading_small">AI Generated Solar Potential</div>
+        <p class="slds-p-top_x-small">{summaryText}</p>
+    </template>
+    <template if:false={summaryText}>
+        <p>No summary available.</p>
+    </template>
+    </template>
+</div>
+    </lightning-card>
 </template>

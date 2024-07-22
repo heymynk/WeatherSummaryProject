@@ -538,6 +538,8 @@ public with sharing class LeadInteractionHandler {
         email.setSubject(subjectEmail);
         email.setHtmlBody(emailHtmlValue);
         email.setReplyTo('reply@alf63yf68apwk5pdprr7rda43debvkvh4q5mbco43rg3chly5.72-2ywcdeaw.ind3s.apex.sandbox.salesforce.com');
+        //email.setReplyTo('esolarcorp_email_service@2z44w6hzvpw0whp3369j44g37ghjwwreyv2w5ujftu5fq7wykk.c1-11nfdmaa.ind16s.apex.sandbox.salesforce.com');
+        //email.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
 
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
