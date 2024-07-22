@@ -1,0 +1,78 @@
+<template>
+    <lightning-card>
+        <ul class="slds-timeline">
+            <template if:true={emails.data}>
+                <template for:each={emails.data} for:item="email">
+                    <li key={email.Id}>
+                        <div class={email.timelineItemClass}>
+                            <span class="slds-assistive-text">email</span>
+                            <div class="slds-media">
+                                <div class="slds-media__figure">
+                                    <button class="slds-button slds-button_icon"
+                                            title={email.Subject}
+                                            onclick={toggleDetails}
+                                            data-email-id={email.Id}
+                                            aria-controls={email.ariaControls}
+                                            aria-expanded={email.isExpanded}>
+                                        <svg class="slds-button__icon slds-timeline__details-action-icon">
+                                            <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Toggle Details</span>
+                                    </button>
+                                    <div class="slds-icon_container slds-icon-standard-email slds-timeline__icon"
+                                         title="email">
+                                        <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                            <use xlink:href="/_slds/icons/standard-sprite/svg/symbols.svg#email"></use>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="slds-media__body">
+                                    <div class="slds-grid slds-grid_align-spread slds-timeline__trigger">
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-truncate_container_75 slds-no-space">
+                                            <h3 class="slds-truncate" title={email.Subject}>
+                                                <a href="#">
+                                                    <strong>{email.Subject}</strong>
+                                                   
+                                                </a>
+                                            </h3>
+                                        </div>
+                                        <div class="slds-timeline__actions slds-timeline__actions_inline">
+                                            <p class="slds-timeline__date">{email.formattedDate}</p>
+                                        </div>
+                                    </div>
+                                    <p class="slds-m-horizontal_xx-small">
+                                        <a href="#">You</a> emailed
+                                        <a href="#">{email.ToAddress}</a>
+                                    </p>
+                                    <article class="slds-box slds-timeline__item_details slds-theme_shade slds-m-top_x-small slds-m-horizontal_xx-small slds-p-around_medium"
+                                             id={email.ariaControls}
+                                             hidden={email.hiddenState}>
+                                        <ul class="slds-list_horizontal slds-wrap">
+                                            <li class="slds-grid slds-grid_vertical slds-size_1-of-2 slds-p-bottom_small">
+                                                <span class="slds-text-title slds-p-bottom_x-small">From Address</span>
+                                                <span class="slds-text-body_medium slds-truncate" title={email.FromAddress}>
+                                                    <a href="#">{email.FromAddress}</a>
+                                                </span>
+                                            </li>
+                                            <li class="slds-grid slds-grid_vertical slds-size_1-of-2 slds-p-bottom_small">
+                                                <span class="slds-text-title slds-p-bottom_x-small">To Address</span>
+                                                <span class="slds-text-body_medium slds-truncate" title={email.ToAddress}>
+                                                    <a href="#">{email.ToAddress}</a>
+                                                </span>
+                                            </li>
+                                        </ul>
+                                        <div>
+                                            <span class="slds-text-title">Text Body</span>
+                                            <p class="slds-p-top_x-small">{email.TextBody}</p>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </template>
+        </ul>
+    </lightning-card>
+</template>
+

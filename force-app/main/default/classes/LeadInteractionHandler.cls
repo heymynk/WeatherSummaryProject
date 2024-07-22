@@ -2,9 +2,10 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 07-08-2024
+ * @last modified on  : 07-09-2024
  * @last modified by  : Mayank Singh
 **/
+
 public with sharing class LeadInteractionHandler {
 
     // Get Lead Address
@@ -27,62 +28,99 @@ public with sharing class LeadInteractionHandler {
         }
     }
     
-    // Generate Email Content
-    @AuraEnabled(cacheable=true)
-    public static String generateEmailContent(Id leadId, String customPromptByUser) {
-        List<String> emailPromptParts = prepareEmailPrompt(customPromptByUser);
-
-        String leadAddress = getLeadAddress(leadId);
-        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-
-        if (coordinates == null) {
-            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+    public static String getLeadBasicInfo(String leadId) {
+        Lead lead = [SELECT Name, Phone, Email FROM Lead WHERE Id = :leadId LIMIT 1];
+        if(lead!=null) {
+            return lead.Name + ', ' + lead.Phone + ', ' + lead.Email;
+        } else {
+            return 'Basic information are not available';
         }
+    }
 
-        String latitude = coordinates.latitude;
-        String longitude = coordinates.longitude;
+    // Generate Email Content
+    // @AuraEnabled(cacheable=true)
+    // public static String generateEmailContent(Id leadId, String customPromptByUser) {
+    //     List<String> emailPromptParts = prepareEmailPrompt(customPromptByUser);
 
-        CompanyInfoWrapper companyData = getCompanyData(leadId);
+    //     String leadBasicInfo = getLeadBasicInfo(leadId); 
+    //     String leadAddress = getLeadAddress(leadId);
+
+    //     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+
+    //     if (coordinates == null) {
+    //         return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+    //     }
+
+    //     String latitude = coordinates.latitude;
+    //     String longitude = coordinates.longitude;
+
+    //     CompanyInfoWrapper companyData = getCompanyData(leadId);
       
         
-        String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
+    //     String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
 
-        SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
+    //     SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
 
-        if (forecastResponse == null || companyData == null) {
-            return 'Failed to retrieve weather data or company information.';
-        }
+    //     if (forecastResponse == null || companyData == null) {
+    //         return 'Failed to retrieve weather data or company information.';
+    //     }
 
-        emailPromptParts.add('Lead\'s Address: ' + leadAddress);
-        String customPrompt = String.join(emailPromptParts, '\n');
-        String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse + '\n\nCompany Information:\n' + companyData;
+    //     emailPromptParts.add('Lead\'s Basic Info: ' + leadBasicInfo);
+    //     emailPromptParts.add('Lead\'s Address: ' + leadAddress);
 
-        String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+    //     String customPrompt = String.join(emailPromptParts, '\n');
+    //     String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse + '\n\nCompany Information:\n' + companyData;
 
-        if (openAiResponse == null) {
-            return 'Failed to retrieve OpenAI response.';
-        }
+    //     String openAiResponse = getOpenAiResponse(prompt, 'assistant');
 
-        return formatContent(openAiResponse);
+    //     if (openAiResponse == null) {
+    //         return 'Failed to retrieve OpenAI response.';
+    //     }
+
+    //     return formatContent(openAiResponse);
+    // }
+
+
+    @AuraEnabled(cacheable=true)
+    public static String generateEmailContent(Id leadId, String customPromptByUser) {
+        // Construct the email content with HTML formatting
+        String emailContent = 
+            '<html><body>' +
+            'Subject: Solar potential energy' +
+            '<p>Hello Kundan Sharma,</p>' +
+            '<p>I trust this message finds you energized and ready to explore new possibilities with Concretio in Mountain View, CA. ' +
+            'At ESolarCorp, we specialize in maximizing solar energy efficiency tailored to your precise needs. ' +
+            'Our cutting-edge solutions are designed to elevate your solar power utilization to new heights. ' +
+            'With our state-of-the-art technology and unwavering commitment to sustainability, ESolarCorp is your go-to partner for harnessing the power of the sun. ' +
+            'Let\'s work together to unlock the full potential of solar energy at Concretio. Looking forward to discussing how ESolarCorp can revolutionize your solar initiatives. ' +
+            'Reach back to us to embark on this renewable energy journey!</p>' +
+            '<p>Warm Regards,<br/>' +
+            '[Your Name]<br/>' +
+            'ESolarCorp Team</p>' +
+            '</body></html>';
+    
+        return emailContent;
     }
+    
 
-    private static List<String> prepareEmailPrompt(String customPromptByUser) {
-        List<String> emailPromptParts = new List<String>{
-            'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead, "I hope this email finds you well", Use other alternative statements in each response while creating or regenerating emails',
-            'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
-            'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
-            'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
-            'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
-            'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
-            'Please use a greeting other than "I hope this email finds you well" to avoid predictability and ensure authenticity.'
-        };
+    // private static List<String> prepareEmailPrompt(String customPromptByUser) {
+    //     List<String> emailPromptParts = new List<String>{
+    //         'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead.',
+    //         'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
+    //         'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
+    //         'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
+    //         'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
+    //         'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
+    //         'Please do not use always this greeting "I hope this email finds you well", also use other alternative greeting or statements in each response while creating or regenerating emails to avoid predictability and ensure authenticity.',
+    //         'Note-Please do not use any suggestion or remarks after you have given Warms and Regards to the email.'
+    //     };
 
-        if (!String.isBlank(customPromptByUser)) {
-            emailPromptParts.add(customPromptByUser);  
-        }
+    //     if (!String.isBlank(customPromptByUser)) {
+    //         emailPromptParts.add(customPromptByUser);  
+    //     }
 
-        return emailPromptParts;
-    }
+    //     return emailPromptParts;
+    // }
 
     // Generate Call Script
     @AuraEnabled(cacheable=true)
@@ -90,6 +128,8 @@ public with sharing class LeadInteractionHandler {
         List<String> callPromptParts = prepareCallPrompt(customPromptByUser);
 
         String leadAddress = getLeadAddress(leadId);
+        String leadBasicInfo = getLeadBasicInfo(leadId);
+
         CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
 
         if (coordinates == null) {
@@ -105,13 +145,16 @@ public with sharing class LeadInteractionHandler {
         String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
         SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
 
-        String solarPanelDataString = getSolarPanelDataString();
+        String solarPanelDataString = getSolarPanelDataDetails();
 
         if (forecastResponse == null || companyData == null || solarPanelDataString == null) {
             return 'Failed to retrieve weather data, company information, or solar panel data.';
         }
 
         callPromptParts.add('Lead\'s Address: ' + leadAddress);
+        callPromptParts.add('Lead\'s basicInfo: ' + leadBasicInfo);
+
+
         String customPrompt = String.join(callPromptParts, '\n');
 
         String prompt = customPrompt + '\n\nWeather Data:\n' + forecastResponse + '\n\nSolar Panel Data:\n' + solarPanelDataString + '\n\nCompany Information:\n' + companyData;
@@ -126,51 +169,10 @@ public with sharing class LeadInteractionHandler {
     }
 
 
-
-// Generate Solar Data Summary
-@AuraEnabled(cacheable=true)
-public static String generateSolarDataSummary(Id leadId) {
-    CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-
-    if (coordinates == null) {
-        return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
-    }
-
-    String latitude = coordinates.latitude;
-    String longitude = coordinates.longitude;
-
-    SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
-
-    if (forecastResponse == null) {
-        return 'Failed to retrieve solar energy data.';
-    }
-
-    String prompt = 'Generate a detailed and concise summary for the following solar energy data:\n\n'
-                    + 'Solar Energy Forecast Data:\n' + forecastResponse + '\n\n'
-                    + 'The summary should highlight key insights and potential benefits of the solar energy data provided, '
-                    + 'potential energy production, and any notable patterns or observations. '
-                    + 'The summary should be written in a professional and informative tone.\n\n'
-                    + 'Note: The summary should be between 100 to 150 words.';
-
-    // Debug log to see the prompt sent to OpenAI
-    System.debug('Prompt sent to OpenAI: ' + prompt);
-
-    String openAiResponse = getOpenAiResponse(prompt, 'assistant');
-
-    if (openAiResponse == null) {
-        return 'Failed to retrieve OpenAI response.';
-    }
-
-    // Debug log to see the response from OpenAI
-    System.debug('OpenAI Response: ' + openAiResponse);
-
-    return formatContent(openAiResponse);
-}
-
     private static List<String> prepareCallPrompt(String customPromptByUser) {
         List<String> callPromptParts = new List<String>{
             'Note- Purpose of call script is to grab the attention of lead to grow our business by giving our services and showcasing our products to lead',
-            'Using the provided company information of lead, Solar Data of lead, Lead\'s address (city only), Name and product data write (n if applicable in user prompt) personalized, formatted call script for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information and showcasing the products',
+            'Using the provided company information of lead, Solar Data of lead, Lead\'s address (city only), Lead\'s Name and product data write (n if applicable in user prompt) personalized, formatted call script for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information and showcasing the products',
             'The script should be engaging, starting with an introduction of ESolarCorp, our company, followed by a discussion on how our solar panel products can benefit the lead considering the current weather conditions.',
             'Include key points about the advantages of our products and tailor the conversation to address the lead\'s specific needs.',
             'Ensure the script is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
@@ -184,7 +186,48 @@ public static String generateSolarDataSummary(Id leadId) {
         return callPromptParts;
     }
 
-    private static String getSolarPanelDataString() {
+// Generate Solar Data Summary
+    @AuraEnabled(cacheable=true)
+    public static String generateSolarDataSummary(Id leadId) {
+        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+
+        if (coordinates == null) {
+            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        }
+
+        String latitude = coordinates.latitude;
+        String longitude = coordinates.longitude;
+
+        SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
+
+        if (forecastResponse == null) {
+            return 'Failed to retrieve solar energy data.';
+        }
+
+        String prompt = 'Generate a detailed and concise summary for the following solar energy data:\n\n'
+                        + 'Solar Energy Forecast Data:\n' + forecastResponse + '\n\n'
+                        + 'The summary should highlight key insights and potential benefits of the solar energy data provided, '
+                        + 'potential energy production, and any notable patterns or observations. '
+                        + 'The summary should be written in a professional and informative tone.\n\n'
+                        + 'Note: The summary should be between 100 to 150 words.';
+
+        // Debug log to see the prompt sent to OpenAI
+        System.debug('Prompt sent to OpenAI: ' + prompt);
+
+        String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+
+        if (openAiResponse == null) {
+            return 'Failed to retrieve OpenAI response.';
+        }
+
+        // Debug log to see the response from OpenAI
+        System.debug('OpenAI Response: ' + openAiResponse);
+
+        return formatContent(openAiResponse);
+    }
+
+
+    private static String getSolarPanelDataDetails() {
         List<Solar_Panel__c> solarPanelData = getSolarPanelData();
         String solarPanelDataString = '';
         for (Solar_Panel__c panel : solarPanelData) {
@@ -303,6 +346,30 @@ public static String generateSolarDataSummary(Id leadId) {
             return null;
         }
     }
+
+
+
+    @AuraEnabled(cacheable=true)
+    public static List<EmailMessage> getLatestEmailMessageInActivityTimeline(String leadId) {
+        String leadEmail = getLeadEmailAddress(leadId);
+        OrgwideEmailAddress orgwideEmail = getOrgwideEmailAddress();
+        List<EmailMessage> emailMessages = new List<EmailMessage>();
+        
+        try {
+            emailMessages = [
+                SELECT Id, CreatedDate, ToAddress, FromAddress, HtmlBody, TextBody,Subject
+                FROM EmailMessage 
+                WHERE (ToAddress LIKE :('%' + leadEmail + '%') AND FromAddress LIKE :('%' + orgwideEmail.Address + '%'))
+
+                ORDER BY CreatedDate DESC LIMIT 3
+            ];
+        } catch (Exception e) {
+            System.debug('Error occurred while retrieving email messages: ' + e.getMessage());
+        }
+        
+        return emailMessages;
+    }
+
 
     // Get Solar Panel Data
     @AuraEnabled(cacheable=true)
@@ -471,8 +538,6 @@ public static String generateSolarDataSummary(Id leadId) {
         email.setSubject(subjectEmail);
         email.setHtmlBody(emailHtmlValue);
         email.setReplyTo('reply@alf63yf68apwk5pdprr7rda43debvkvh4q5mbco43rg3chly5.72-2ywcdeaw.ind3s.apex.sandbox.salesforce.com');
-        //email.setReplyTo('esolarcorp_email_service@2z44w6hzvpw0whp3369j44g37ghjwwreyv2w5ujftu5fq7wykk.c1-11nfdmaa.ind16s.apex.sandbox.salesforce.com');
-        //email.setReplyTo('email@c-d9gats9sb508kdd07nyv4dbsg0cdvcbxbgh4vo0tvfw7nwlpx.bi-lqwdmay.ind14s.apex.sandbox.salesforce.com');
 
         if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
             List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
@@ -504,17 +569,17 @@ public static String generateSolarDataSummary(Id leadId) {
     private static void updateLeadStatus(String[] toAddresses) {
         List<Lead> leadsToUpdate = [SELECT Id,Email, Lead_Response__c FROM Lead WHERE Email IN :toAddresses LIMIT 1];
         
-    for (Lead lead : leadsToUpdate) {
-        if (lead.Lead_Response__c == 'Open - Not Contacted') {
-            lead.Lead_Response__c = 'Working - Contacted';
+        for (Lead lead : leadsToUpdate) {
+            if (lead.Lead_Response__c == 'Open - Not Contacted') {
+                lead.Lead_Response__c = 'Working - Contacted';
+            }
         }
-    }
-        
-        if (!leadsToUpdate.isEmpty()) {
-            update leadsToUpdate;
-            System.debug('Lead status updated to Open - Contacted');
+            
+            if (!leadsToUpdate.isEmpty()) {
+                update leadsToUpdate;
+                System.debug('Lead status updated to Open - Contacted');
+            }
         }
-    }
 
     // Get Org-wide Email Address
     @AuraEnabled(cacheable=true)
@@ -652,6 +717,8 @@ public static String generateSolarDataSummary(Id leadId) {
      @AuraEnabled(cacheable=true)
      public static List<EmailMessage> getLatestEmailMessageForLead(Id leadId) {
          String leadEmail = getLeadEmailAddress(leadId);
+         OrgwideEmailAddress orgwideEmail = getOrgwideEmailAddress();
+
  
          System.debug('Entering getLatestEmailMessageForLead method');
          System.debug('Lead Id: ' + leadId);
@@ -660,9 +727,9 @@ public static String generateSolarDataSummary(Id leadId) {
          
          try {
              emailMessages = [
-                 SELECT Id, CreatedDate,ToAddress,FromAddress,TextBody
+                 SELECT Id, CreatedDate,ToAddress,FromAddress,HtmlBody,TextBody
                  FROM EmailMessage
-                 WHERE ToAddress LIKE :('%' + leadEmail + '%') OR FromAddress LIKE '%sha.kundan@concret.io%'
+                 WHERE (ToAddress LIKE :('%' + leadEmail + '%') OR FromAddress LIKE :('%' + orgwideEmail.Address + '%'))
                  ORDER BY CreatedDate DESC
                  LIMIT 1
              ];
@@ -673,8 +740,6 @@ public static String generateSolarDataSummary(Id leadId) {
                  System.debug('Latest Email Message CreatedDate: ' + emailMessages[0].CreatedDate);
                  System.debug('Latest Email Message FromAddress: ' + emailMessages[0].FromAddress);
                  System.debug('Latest Email Message ToAddress: ' + emailMessages[0].ToAddress);
-                 System.debug('Latest Email Message ReplyToEmailMessageId: ' + emailMessages[0].ReplyToEmailMessageId);
-                 System.debug('Latest Email Message TextBody: ' + emailMessages[0].TextBody);
              } else {
                  System.debug('No Email Messages found for the given Lead Id');
              }
@@ -692,4 +757,196 @@ public static String generateSolarDataSummary(Id leadId) {
          return leadRecord.Lead_Response__c;
      }
  
+
+     @AuraEnabled(cacheable=true)
+    public static String getEmailDetailsForReply(String leadId) {
+        try {
+            // Query the latest EmailMessage related to the Lead
+            String leadEmail = getLeadEmailAddress(leadId);
+            OrgwideEmailAddress orgwideEmail = getOrgwideEmailAddress();
+            System.debug('Lead Email Address: ' + leadEmail);
+            
+            EmailMessage latestEmail = [SELECT Id, HtmlBody, Subject, FromAddress, ToAddress, CreatedDate 
+                                        FROM EmailMessage 
+                                        WHERE (ToAddress LIKE :('%' + leadEmail + '%') AND FromAddress LIKE :('%' + orgwideEmail.Address + '%'))
+                                        ORDER BY CreatedDate DESC 
+                                        LIMIT 1];
+            
+            if (latestEmail != null) {
+                System.debug('Latest Email found: ' + latestEmail.Id);
+                
+                // Get the HTML body from the EmailMessage
+                String htmlBody = latestEmail.HtmlBody;
+                System.debug('HTML Body: ' + htmlBody);
+                
+                // Extract user reply and original email
+                String userReply = extractUserReply(htmlBody);
+                String originalEmail = extractOriginalEmail(htmlBody);
+                System.debug('User Reply: ' + userReply);
+                System.debug('Original Email: ' + originalEmail);
+
+                // Concatenate the user reply and original email
+                String emailDetails = 'User Reply:\n' + userReply + '\n\nOriginal Email:\n' + originalEmail;
+                return emailDetails;
+            } else {
+                return 'No EmailMessage found for the provided Lead ID.';
+            }
+        } catch (Exception e) {
+            return 'Exception: ' + e.getMessage();
+        }
+    }
+
+    public static String extractUserReply(String htmlBody) {
+        try {
+            // Define the marker for the start of the quoted email
+            String marker = '<div class="gmail_quote">';
+            
+            // Find the index of the marker
+            Integer markerIndex = htmlBody.indexOf(marker);
+            
+            if (markerIndex != -1) {
+                // Extract the user reply part before the quoted email
+                String userReply = htmlBody.substring(0, markerIndex);
+                return removeHtmlTags(userReply).trim();
+            }
+
+            // If no marker is found, return the entire HTML body without tags
+            return removeHtmlTags(htmlBody).trim();
+        } catch (Exception e) {
+            // Handle any exceptions and return an empty string
+            return '';
+        }
+    }
+
+    public static String extractOriginalEmail(String htmlBody) {
+        try {
+            // Define the marker for the start of the quoted email
+            String marker = '<div class="gmail_quote">';
+            
+            // Find the index of the marker
+            Integer markerIndex = htmlBody.indexOf(marker);
+            
+            if (markerIndex != -1) {
+                // Extract the original email part from the marker onward
+                String originalEmail = htmlBody.substring(markerIndex);
+                return removeHtmlTags(originalEmail).trim();
+            }
+
+            // If no marker is found, return an empty string
+            return '';
+        } catch (Exception e) {
+            // Handle any exceptions and return an empty string
+            return '';
+        }
+    }
+
+    private static String removeHtmlTags(String html) {
+        // Remove HTML tags from the string using regex
+        return html.replaceAll('<[^>]*>', '');
+    }
+
+    // @AuraEnabled(cacheable=true)
+    // public static String replyWithEmail(Id leadId, String customPromptByUser) {
+    //     List<String> emailReplyPromptParts = replyWithEmailPrompt(customPromptByUser);
+
+    //     String leadBasicInfo = getLeadBasicInfo(leadId);
+
+    // CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+
+    //     if (coordinates == null) {
+    //         return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+    //     }
+
+    // String latitude = coordinates.latitude;
+    // String longitude = coordinates.longitude;
+
+    // SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
+
+    //     if (forecastResponse == null) {
+    //         return 'Failed to retrieve solar energy data.';
+    //     }
+
+    //     emailReplyPromptParts.add('Lead\'s Basic Info: ' + leadBasicInfo);
+
+    //     // Fetch the latest email details
+    //     String emailDetails = getEmailDetailsForReply(leadId);
+
+    //     if (emailDetails.contains('error')) {
+    //         return emailDetails;
+    //     }
+
+        
+    //     // Get the latest email message
+    //     String userReply = extractUserReply(emailDetails);
+    //     System.debug('userReply'+userReply);
+    //     String originalEmail = extractOriginalEmail(emailDetails);
+    //     System.debug('originalEmail'+originalEmail);
+
+        
+    //     // Concatenate the user reply and original email
+    //     emailReplyPromptParts.add('User Reply: \n' + userReply);
+    //     emailReplyPromptParts.add('Original Email: \n' + originalEmail);
+    
+
+    //     String customPrompt = String.join(emailReplyPromptParts, '\n');
+        
+    //     System.debug('customPrompt'+customPrompt);
+    //     String prompt = customPrompt + '\n\nSolar Data:\n' + forecastResponse;
+        
+    //     System.debug('prompt'+prompt);
+    //     String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+
+    //     if (openAiResponse == null) {
+    //         return 'Failed to retrieve OpenAI response.';
+    //     }
+
+    //     return formatContent(openAiResponse);
+    // }
+
+
+    @AuraEnabled(cacheable=true)
+    public static String replyWithEmail(Id leadId, String customPromptByUser) {
+        // Construct the email content with HTML formatting
+        String emailContent = 
+        '<html><body>' +
+        '<h2>Subject: Solar potential energy</h2>' +
+        '<p>Hello Kundan Sharma,</p>' +
+        '<p>Thank you for showing interest in our product.</p>' +
+        '<p>I trust this message finds you energized and ready to explore new possibilities with Concretio in Mountain View, CA. ' +
+        'At ESolarCorp, we specialize in maximizing solar energy efficiency tailored to your precise needs. ' +
+        'Our cutting-edge solutions are designed to elevate your solar power utilization to new heights. ' +
+        'With our state-of-the-art technology and unwavering commitment to sustainability, ESolarCorp is your go-to partner for harnessing the power of the sun. ' +
+        'Let\'s work together to unlock the full potential of solar energy at Concretio. Looking forward to discussing how ESolarCorp can revolutionize your solar initiatives. ' +
+        'Reach back to us to embark on this renewable energy journey!</p>' +
+        '<p>Warm Regards,<br/>' +
+        '[Your Name]<br/>' +
+        'ESolarCorp Team</p>' +
+        '</body></html>';
+    
+    return emailContent;
+    
+    }
+
+
+    // private static List<String> replyWithEmailPrompt(String customPromptByUser) {
+    //     List<String> emailReplyPromptParts = new List<String>{
+    //         'Note- Purpose of email is to maintain the engagement with the lead and address their queries or concerns as mentioned in their reply.',
+    //         'Using the provided Solar Data of lead and Name, write a personalized, formatted email in response to the lead\'s latest interaction.',
+    //         'Ensure to acknowledge the lead\'s original email content and provide relevant responses to any questions or points they raised.',
+    //         'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
+    //         'The goal is to make a great impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
+    //         'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
+    //         'Please do not use a greeting everytime "I hope this email finds you well" also you can use other gretting to avoid predictability and ensure authenticity.',
+    //         'Note-Please do not use any suggestion after you have given Warms and Regards to the email.'
+
+    //     };
+    
+    //     if (!String.isBlank(customPromptByUser)) {
+    //         emailReplyPromptParts.add(customPromptByUser);  
+    //     }
+    
+    //     return emailReplyPromptParts;
+    // }
+    
+
 }

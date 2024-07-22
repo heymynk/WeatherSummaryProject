@@ -14,6 +14,8 @@ export default class LeadSolarPotential extends LightningElement {
     chart;
     summaryText;
     isLoading = true; 
+    isModalOpen = false;
+
 
 
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -43,7 +45,7 @@ export default class LeadSolarPotential extends LightningElement {
     fetchSolarData() {
         getSolarDataJSON({ leadId: this.recordId })
             .then(result => {
-                console.log('Solar Data Result:', result);
+               // console.log('Solar Data Result:', result);
                 if (result) {
                     const solarData = JSON.parse(result);
                     if (solarData && solarData.poaMonthly && solarData.poaMonthly.length > 0) {
@@ -170,5 +172,23 @@ export default class LeadSolarPotential extends LightningElement {
             .finally(() => {
                 this.isLoading = false; 
             });
+    }
+
+    openModal() {
+        this.isModalOpen = true;
+        setTimeout(() => {
+            const modalCanvas = this.template.querySelector('canvas.modal-chart').getContext('2d');
+            this.modalChart = new Chart(modalCanvas, this.chart.config);
+        }, 0);
+    }
+
+    closeModal(event) {
+        if (event.target.classList.contains('modal') || event.target.classList.contains('close')) {
+            this.isModalOpen = false;
+            if (this.modalChart) {
+                this.modalChart.destroy();
+                this.modalChart = null;
+            }
+        }
     }
 }

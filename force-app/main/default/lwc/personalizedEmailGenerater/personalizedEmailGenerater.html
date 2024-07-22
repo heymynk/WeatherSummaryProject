@@ -2,9 +2,10 @@
   @description       : 
   @author            : Mayank Singh
   @group             : 
-  @last modified on  : 07-08-2024
+  @last modified on  : 07-09-2024
   @last modified by  : Mayank Singh
 -->
+  
 <template>
   <lightning-card title={dynamicTitle} icon-name={dynamicIcon}>
     <div class="slds-var-p-around_medium" style="margin-top: -0.75rem">
@@ -27,25 +28,81 @@
       </template>
 
       <template if:true={showGenerateCallScriptButton}>
-        <template if:true={emailMessages.data}>
-          <template for:each={emailMessages.data} for:item="email">
-            <div
-              key={email.Id}
-              class="slds-var-m-around_small slds-text-body_regular"
-            >
-            <h1 class="slds-var-p-bottom_small slds-text-heading_small">REPLY RECEIVED FROM THE LEAD</h1>
-              <p class="slds-var-p-bottom_xx-small">
-                <strong>From:</strong> {email.FromAddress}
-              </p>
-              <p class="slds-var-p-bottom_xx-small">
-                <strong>Date:</strong> {email.CreatedDate}
-              </p>
-              <p class="slds-var-p-bottom_xx-small">
-                <strong>Body:</strong> {email.TextBody}
-              </p>
-            </div>
-          </template>
-        </template>
+        <lightning-card>
+          <ul class="slds-timeline">
+              <template if:true={emails.data}>
+                  <template for:each={emails.data} for:item="email">
+                      <li key={email.Id}>
+                          <div class={email.timelineItemClass}>
+                              <span class="slds-assistive-text">email</span>
+                              <div class="slds-media">
+                                  <div class="slds-media__figure">
+                                      <button class="slds-button slds-button_icon"
+                                              title={email.Subject}
+                                              onclick={toggleDetails}
+                                              data-email-id={email.Id}
+                                              aria-controls={email.ariaControls}
+                                              aria-expanded={email.isExpanded}>
+                                          <svg class="slds-button__icon slds-timeline__details-action-icon">
+                                              <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                                          </svg>
+                                          <span class="slds-assistive-text">Toggle Details</span>
+                                      </button>
+                                      <div class="slds-icon_container slds-icon-standard-email slds-timeline__icon"
+                                           title="email">
+                                          <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                              <use xlink:href="/_slds/icons/standard-sprite/svg/symbols.svg#email"></use>
+                                          </svg>
+                                      </div>
+                                  </div>
+                                  <div class="slds-media__body">
+                                      <div class="slds-grid slds-grid_align-spread slds-timeline__trigger">
+                                          <div class="slds-grid slds-grid_vertical-align-center slds-truncate_container_75 slds-no-space">
+                                              <h3 class="slds-truncate" title={email.Subject}>
+                                                  <a href="#">
+                                                      <strong>{email.Subject}</strong>
+                                                     
+                                                  </a>
+                                              </h3>
+                                          </div>
+                                          <div class="slds-timeline__actions slds-timeline__actions_inline">
+                                              <p class="slds-timeline__date">{email.formattedDate}</p>
+                                          </div>
+                                      </div>
+                                      <p class="slds-m-horizontal_xx-small">
+                                          <a href="#">You</a> emailed
+                                          <a href="#">{email.ToAddress}</a>
+                                      </p>
+                                      <article class="slds-box slds-timeline__item_details slds-theme_shade slds-m-top_x-small slds-m-horizontal_xx-small slds-p-around_medium"
+                                               id={email.ariaControls}
+                                               hidden={email.hiddenState}>
+                                          <ul class="slds-list_horizontal slds-wrap">
+                                              <li class="slds-grid slds-grid_vertical slds-size_1-of-2 slds-p-bottom_small">
+                                                  <span class="slds-text-title slds-p-bottom_x-small">From Address</span>
+                                                  <span class="slds-text-body_medium slds-truncate" title={email.FromAddress}>
+                                                      <a href="#">{email.FromAddress}</a>
+                                                  </span>
+                                              </li>
+                                              <li class="slds-grid slds-grid_vertical slds-size_1-of-2 slds-p-bottom_small">
+                                                  <span class="slds-text-title slds-p-bottom_x-small">To Address</span>
+                                                  <span class="slds-text-body_medium slds-truncate" title={email.ToAddress}>
+                                                      <a href="#">{email.ToAddress}</a>
+                                                  </span>
+                                              </li>
+                                          </ul>
+                                          <div>
+                                              <p class="slds-p-top_x-small">{email.emailReply}</p>
+
+                                          </div>
+                                      </article>
+                                  </div>
+                              </div>
+                          </div>
+                      </li>
+                  </template>
+              </template>
+          </ul>
+      </lightning-card>
         <template if:true={emailMessages.error}>
           <div
             class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error"
@@ -191,6 +248,9 @@
                 class="slds-var-m-right_x-small slds-var-p-around_small"
               >
               </lightning-button>
+
+              <template if:true={showRegenerateEmailButton}>
+
               <lightning-button
                 label="Regenerate Email"
                 variant="neutral"
@@ -200,6 +260,20 @@
                 class="slds-var-m-right_x-small slds-var-p-around_small"
               >
               </lightning-button>
+            </template>
+
+            <template if:true={showRegenerateReplyEmailButton}>
+              <lightning-button
+                  label="Regenerate Reply Email"
+                  variant="neutral"
+                  icon-name="utility:refresh"
+                  icon-position="left"
+                  onclick={regenerateReplyEmail}
+                  class="slds-var-m-right_x-small slds-var-p-around_small"
+              >
+              </lightning-button>
+          </template>
+
             </div>
           </div>
         </template>
@@ -239,6 +313,7 @@
                             class="slds-var-m-right_x-small slds-var-p-around_small"
                         >
                         </lightning-button>
+                        
                     </template>
                 </div>
             </div>
@@ -246,9 +321,9 @@
       </div>
 
       <template if:true={showCallScript}>
-        <div class="slds-form-element">
+        <div class="slds-form-element slds-m-bottom_none">
             <label class="slds-form-element__label" for="textarea-id-01">Generated Call Script</label>
-            <div class="slds-form-element__control">
+            <div class="slds-form-element__control slds-m-bottom_none">
                 <textarea id="textarea-id-01"
                           placeholder="Enter generated call script here..."
                           class="slds-textarea"

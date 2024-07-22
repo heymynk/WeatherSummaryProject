@@ -19,9 +19,10 @@ export default class LeadLocation extends LightningElement {
         fetchLeadAddress({ leadId: this.recordId })
             .then(result => {
                 console.log('Lead Address:', result);
-                // Split the address string by commas and join with new lines
+                // Split the address string by commas, filter out null values, and join with new lines
                 const addressParts = result.split(', ');
-                const formattedAddress = addressParts.join(',\n');
+                const filteredAddressParts = addressParts.filter(part => part && part.trim() !== 'null');
+                const formattedAddress = filteredAddressParts.join(',\n');
                 this.leadAddress = formattedAddress;
             })
             .catch(error => {
@@ -31,6 +32,7 @@ export default class LeadLocation extends LightningElement {
                 this.isLoading = false; // Set loading state to false once address is fetched
             });
     }
+    
     
 
     @wire(fetchLeadAddressByCoordinates, { leadId: '$recordId' })

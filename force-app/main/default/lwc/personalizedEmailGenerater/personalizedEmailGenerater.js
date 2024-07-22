@@ -1,10 +1,4 @@
-/**
- * @description       : 
- * @author            : Mayank Singh
- * @group             : 
- * @last modified on  : 07-08-2024
- * @last modified by  : Mayank Singh
-**/
+
 import { LightningElement, api, track, wire } from 'lwc';
 import generateEmailContent from '@salesforce/apex/LeadInteractionHandler.generateEmailContent';
 import generateCallScript from '@salesforce/apex/LeadInteractionHandler.generateCallScript';
@@ -14,13 +8,13 @@ import getOrgwideEmailAddress from '@salesforce/apex/LeadInteractionHandler.getO
 import sendEmailToController from '@salesforce/apex/LeadInteractionHandler.sendEmailToController';
 import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachment';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
+//import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
 import getLeadResponse from '@salesforce/apex/LeadInteractionHandler.getLeadResponse';
-import { getRecord } from 'lightning/uiRecordApi';
-import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
+// import { getRecord } from 'lightning/uiRecordApi';
+// import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
 import { NavigationMixin } from 'lightning/navigation';
-
-
+import getLatestEmailMessageInActivityTimeline from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageInActivityTimeline';
+import replyWithEmail from '@salesforce/apex/LeadInteractionHandler.replyWithEmail';
 
 
 export default class PersonalizedEmailGenerator extends NavigationMixin(LightningElement) {
@@ -44,14 +38,17 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
     @track customPromptByUser = '';
     @track emailMessages = { data: null, error: null };
     @track isWorkingContacted = true;
+    @track showRegenerateEmailButton = false;
+    @track showRegenerateReplyEmailButton = false; 
+
+    @track emails = { data: [], error: null };
 
     connectedCallback() {
         this.fetchLeadEmailAddress();
         this.fetchOrgWideEmailAddress();
         this.fetchCompanyData();
         this.fetchLeadResponse();
-        this.fetchEmailMessages();
-        
+        this.loadEmails();        
     }
 
     get dynamicTitle() {
@@ -79,40 +76,126 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         return 'Enter additional instructions or information for generating personalized email...';
     }
 
-    @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
-    wiredRecord({ error, data }) {
-        if (data) {
-            if (data.fields.Reply_Received__c.value) {
-                this.showToast('Reply Notification', 'A reply has been received from the lead.', 'success');
-            }
-        } else if (error) {
-            console.error('Error fetching lead record:', error);
-        }
+    // @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
+    // wiredRecord({ error, data }) {
+    //     if (data) {
+    //         if (data.fields.Reply_Received__c.value) {
+    //             this.showToast('Reply Notification', 'A reply has been received from the lead.', 'success');
+    //         }
+    //     } else if (error) {
+    //         console.error('Error fetching lead record:', error);
+    //     }
         
-    }
+    // }
 
     // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
 
-    fetchEmailMessages() {
-        if (this.recordId) {
-            getEmailMessages({ leadId: this.recordId })
-                .then(result => {
-                    // Replace '>' with a newline in the TextBody of each email
-                    this.emailMessages.data = result.map(email => {
-                        return {
-                            ...email,
-                            TextBody: email.TextBody.replace(/[<>]/g, '\n')
-                        };
-                    });
-                    console.log('Email Messages:', JSON.stringify(this.emailMessages.data));
-                })
-                .catch(error => {
-                    this.emailMessages.error = error;
-                    this.handleError(error, 'Error fetching email messages');
+    // fetchEmailMessages() {
+    //     if (this.recordId) {
+    //         getEmailMessages({ leadId: this.recordId })
+    //             .then(result => {
+    //                 // Replace '>' with a newline in the TextBody of each email
+    //                 this.emailMessages.data = result.map(email => {
+    //                     return {
+    //                         ...email,
+    //                         TextBody: email.TextBody.replace(/[<>]/g, '\n')
+    //                     };
+    //                 });
+    //                 console.log('Email Messages:', JSON.stringify(this.emailMessages.data));
+    //             })
+    //             .catch(error => {
+    //                 this.emailMessages.error = error;
+    //                 this.handleError(error, 'Error fetching email messages');
+    //             });
+    //     }
+    // }
+
+
+    loadEmails() {
+        getLatestEmailMessageInActivityTimeline({ leadId: this.recordId })
+            .then(data => {
+                console.log('Data received:', JSON.parse(JSON.stringify(data)));
+                this.emails.data = data.map(email => {
+                    const marker = 'class="gmail_attr">';
+                    const markerIndex = email.HtmlBody.indexOf(marker);
+                    //console.log('markerIndex',markerIndex);
+                    let emailReply = email.HtmlBody;
+                    emailReply = email.HtmlBody.replace(/<[^>]*>/g, '');
+                    //console.log('emailReply',emailReply);
+                    if (markerIndex !== -1) {
+                        // Split the HTML content based on the marker
+                        const part1 = email.HtmlBody.substring(0, markerIndex + marker.length);
+                        //console.log('part1',part1);
+
+                        // Remove HTML tags from part1
+                        emailReply = part1.replace(/<[^>]*>/g, '');
+                        // Log part1 for debugging
+                        //console.log('Part 1:', emailReply);
+
+                    }
+                    else{
+                        emailReply = email.HtmlBody.replace(/<[^>]*>/g, '');
+                        
+                    }
+    
+                    return {
+                        ...email,
+                        emailReply,
+                        formattedDate: this.formatDateToIST(email.CreatedDate),
+                        isExpanded: false,
+                        timelineItemClass: 'slds-timeline__item_expandable slds-timeline__item_email',
+                        ariaControls: `email-item-expanded-${email.Id}`,
+                        hiddenState: true
+                    };
                 });
-        }
+            })
+            .catch(error => {
+                console.error('Error received:', error);
+                this.emails.error = error;
+            });
+    }
+    
+
+    formatDateToIST(dateString) {
+        const date = new Date(dateString);
+        const options = {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+        };
+        return date.toLocaleString('en-US', options);
     }
 
+
+    toggleDetails(event) {
+        const emailId = event.currentTarget.dataset.emailId;
+        console.log('Toggle details for emailId:', emailId);
+
+
+        this.emails.data = this.emails.data.map(email => {
+            if (email.Id === emailId) {
+                console.log('Toggling expansion for email:', JSON.stringify(email));
+                const isExpanded = !email.isExpanded;
+                return {
+                    ...email,
+                    isExpanded,
+                    timelineItemClass: `slds-timeline__item_expandable slds-timeline__item_email${isExpanded ? ' slds-is-open' : ''}`,
+                    hiddenState: !isExpanded
+                };
+            }
+            return email;
+        });
+
+
+        console.log('Updated emails:', JSON.stringify(this.emails.data));
+    }
+
+
+    
     fetchLeadResponse() {
         if (this.recordId) {
             getLeadResponse({ leadId: this.recordId })
@@ -285,7 +368,7 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
             uploadedFiles: this.uploadFile.map(file => file.contentVersionId)
         })
         .then(() => {
-            this.showToast('Success', 'Email sent successfully', 'success');
+            this.showToast('Success', 'Email has been sent successfully!', 'success');
             this.isLoading = false; 
             this.showEmailFields = false;   
             this.showCallScript = false; 
@@ -302,7 +385,7 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
            // location.reload();
            setTimeout(() => {
             location.reload();
-        },4000); 
+        },3000); 
     })
            
         .catch(error => {
@@ -316,13 +399,15 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         console.log('Generating email...');
         generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
-                this.showToast('Success', 'Email successfully generated', 'success');
+                this.showToast('Success', 'Email has been generated successfully!', 'success');
                 console.log('Email generated successfully.');
-                console.log('Result:', result);
+               // console.log('Result:', result);
                 // Extract the subject from the generated email content
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
                 if (subjectMatch) {
+                    
                     this.subject = subjectMatch[1];
+                    console.log('Subject:', this.subject);
                     // Remove the subject line from the email content
                     this.HtmlValue = result.replace(subjectMatch[0], '').trim();
                 } else {
@@ -333,6 +418,8 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
                 this.showCallScript = false; 
                 this.isLoading = false; 
                 this.showGenerateEmailButton = false; 
+                this.showRegenerateEmailButton = true; 
+
                 this.customPromptByUser = '';
 
 
@@ -346,11 +433,11 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
 
     replyWithEmail() {
         this.isLoading = true; 
-        console.log('Generating email...');
-        generateEmailContent({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
+        console.log('Generating Reply email...');
+        replyWithEmail({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
-                this.showToast('Success', 'Email successfully generated', 'success');
-                console.log('Email generated successfully.');
+                this.showToast('Success', 'Email Reply has been generated successfully!', 'success');
+                console.log('Reply Email generated successfully.');
                 console.log('Result:', result);
                 // Extract the subject from the generated email content
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
@@ -365,7 +452,10 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
                 this.showEmailFields = true; 
                 // this.showCallScript = false; 
                 this.isLoading = false; 
-                this.showGenerateCallScriptButton = false
+                this.showGenerateCallScriptButton = false;
+                this.showRegenerateReplyEmailButton = true; // Show Regenerate Reply Email button
+                this.showRegenerateEmailButton = false; 
+                
                 // this.showGenerateEmailButton = false; 
                 // this.customPromptByUser = '';
 
@@ -405,7 +495,45 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
                     this.HtmlValue = result;
                 }
                 this.emailContent = this.HtmlValue;
-                this.showToast('Success', 'Email Successfully regenerated.', 'success');
+                this.showToast('Success', 'Email have been regenerated Successfully!', 'success');
+            })
+            .catch(error => {
+                this.handleError(error, 'Error regenerating email content');
+            })
+            .finally(() => {
+                this.isLoading = false; // Hide loading spinner
+                console.log('Loading state reset to false:', this.isLoading);
+            });
+    }
+
+    regenerateReplyEmail() {
+    
+        this.isLoading = true; // Show loading spinner
+    
+        // Define the hard-coded prompt
+        const hardCodedPrompt = 'Create a unique version of the reply email with different wording and approach compared to previous versions. Make it engaging, personalized, and fresh.';
+        
+        // Generate a random number or use a timestamp to make each prompt unique
+        const uniqueSuffix = ` (unique ID: ${Math.random().toString(36).substring(2)})`;
+        
+        // Append the hard-coded prompt and the unique suffix to the custom prompt
+        const combinedPrompt = hardCodedPrompt + ' ' + this.customPromptByUser + uniqueSuffix;
+        console.log('Combined Prompt:', combinedPrompt);
+    
+        // Call the Apex method with the combined prompt
+        replyWithEmail({ leadId: this.recordId, customPromptByUser: combinedPrompt })
+            .then(result => {
+                console.log('Email Reply have been regenerated successfully.');
+                // Handle result and update component state accordingly
+                const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
+                if (subjectMatch) {
+                    this.subject = subjectMatch[1];
+                    this.HtmlValue = result.replace(subjectMatch[0], '').trim();
+                } else {
+                    this.HtmlValue = result;
+                }
+                this.emailContent = this.HtmlValue;
+                this.showToast('Success', 'Email Reply have been regenerated successfully', 'success');
             })
             .catch(error => {
                 this.handleError(error, 'Error regenerating email content');
