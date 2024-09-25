@@ -1,15 +1,50 @@
-public with sharing class EmailMessageHandler {
-    @AuraEnabled(cacheable=true)
-    public static List<EmailMessage> getEmailMessages(String leadEmail) {
-        return [
-            SELECT Id, CreatedDate, FromAddress, ReplyToEmailMessageId, TextBody, ToAddress
-            FROM EmailMessage
-            WHERE ToAddress = :leadEmail
-            ORDER BY CreatedDate DESC
-            LIMIT 10
-        ];
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 09-25-2024
+ * @last modified by  : Mayank Singh
+**/
+public class EmailMessageHandler {
+
+    public static void updateLeadStatusOnEmailSent(List<EmailMessage> emailMessages) {
+        Set<String> emailAddressesToUpdate = new Set<String>();
+        System.debug('EmailMessages received: ' + emailMessages);
+
+        for (EmailMessage email : emailMessages) {
+            if (email != null) {
+                // Check if the email was sent and has a valid ToEmailAddress
+                System.debug('Processing EmailMessage Id: ' + email.Id + ', Status: ' + email.Status + ', ToEmailAddress: ' + email.ToAddress);
+
+                if (email.Status != null && email.Status == '3' && email.ToAddress != null) {
+                    System.debug('EmailMessage sent to: ' + email.ToAddress);
+                    emailAddressesToUpdate.add(email.ToAddress);
+                } else {
+                    System.debug('EmailMessage does not meet criteria for update. EmailMessage Id: ' + email.Id);
+                }
+            } else {
+                System.debug('EmailMessage is null.');
+            }
+        }
+
+        if (!emailAddressesToUpdate.isEmpty()) {
+            System.debug('Email addresses to update: ' + emailAddressesToUpdate);
+            List<Lead> leadsToUpdate = [SELECT Id, Lead_Response__c FROM Lead WHERE Email IN :emailAddressesToUpdate];
+            System.debug('Leads fetched for update: ' + leadsToUpdate);
+
+            for (Lead lead : leadsToUpdate) {
+                lead.Lead_Response__c = 'Working - Contacted'; // Update to your desired value
+                System.debug('Updating Lead Id: ' + lead.Id + ' to status: Working - Contacted');
+            }
+
+            try {
+                update leadsToUpdate;
+                System.debug('Leads updated successfully.');
+            } catch (DmlException e) {
+                System.debug('Error updating leads: ' + e.getMessage());
+            }
+        } else {
+            System.debug('No email addresses to update.');
+        }
     }
-    
-    
-    
 }
