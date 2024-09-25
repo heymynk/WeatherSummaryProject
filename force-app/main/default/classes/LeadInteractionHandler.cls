@@ -30,90 +30,90 @@ public with sharing class LeadInteractionHandler {
         }
     }
 
-    // Generate Email Content
-    // @AuraEnabled(cacheable=true)
-    // public static String generateEmailContent(Id leadId, String customPromptByUser) {
-    //     List<String> emailPromptParts = prepareEmailPrompt(customPromptByUser);
-
-    //     String leadBasicInfo = getLeadBasicInfo(leadId); 
-    //     String leadAddress = getLeadAddress(leadId);
-
-    //     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-
-    //     if (coordinates == null) {
-    //         return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
-    //     }
-
-    //     String latitude = coordinates.latitude;
-    //     String longitude = coordinates.longitude;
-
-    //     CompanyInfoWrapper companyData = getCompanyData(leadId);
-      
-        
-    //     String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
-
-    //     SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
-
-    //     if (forecastResponse == null || companyData == null) {
-    //         return 'Failed to retrieve weather data or company information.';
-    //     }
-
-    //     emailPromptParts.add('Lead\'s Basic Info: ' + leadBasicInfo);
-    //     emailPromptParts.add('Lead\'s Address: ' + leadAddress);
-
-    //     String customPrompt = String.join(emailPromptParts, '\n');
-    //     String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse + '\n\nCompany Information:\n' + companyData;
-
-    //     String openAiResponse = getOpenAiResponse(prompt, 'assistant');
-
-    //     if (openAiResponse == null) {
-    //         return 'Failed to retrieve OpenAI response.';
-    //     }
-
-    //     return formatContent(openAiResponse);
-    // }
-
-
+    //Generate Email Content
     @AuraEnabled(cacheable=true)
     public static String generateEmailContent(Id leadId, String customPromptByUser) {
-        // Construct the email content with HTML formatting
-        String emailContent = 
-            '<html><body>' +
-            'Subject: Solar potential energy' +
-            '<p>Hello Kundan Sharma,</p>' +
-            '<p>I trust this message finds you energized and ready to explore new possibilities with Concretio in Mountain View, CA. ' +
-            'At ESolarCorp, we specialize in maximizing solar energy efficiency tailored to your precise needs. ' +
-            'Our cutting-edge solutions are designed to elevate your solar power utilization to new heights. ' +
-            'With our state-of-the-art technology and unwavering commitment to sustainability, ESolarCorp is your go-to partner for harnessing the power of the sun. ' +
-            'Let\'s work together to unlock the full potential of solar energy at Concretio. Looking forward to discussing how ESolarCorp can revolutionize your solar initiatives. ' +
-            'Reach back to us to embark on this renewable energy journey!</p>' +
-            '<p>Warm Regards,<br/>' +
-            '[Your Name]<br/>' +
-            'ESolarCorp Team</p>' +
-            '</body></html>';
-    
-        return emailContent;
+        List<String> emailPromptParts = prepareEmailPrompt(customPromptByUser);
+
+        String leadBasicInfo = getLeadBasicInfo(leadId); 
+        String leadAddress = getLeadAddress(leadId);
+
+        CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+
+        if (coordinates == null) {
+            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        }
+
+        String latitude = coordinates.latitude;
+        String longitude = coordinates.longitude;
+
+        CompanyInfoWrapper companyData = getCompanyData(leadId);
+      
+        
+        String companyInfoString = companyData != null ? companyData.summary : 'No company information available';
+
+        SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
+
+        if (forecastResponse == null || companyData == null) {
+            return 'Failed to retrieve weather data or company information.';
+        }
+
+        emailPromptParts.add('Lead\'s Basic Info: ' + leadBasicInfo);
+        emailPromptParts.add('Lead\'s Address: ' + leadAddress);
+
+        String customPrompt = String.join(emailPromptParts, '\n');
+        String prompt = customPrompt + '\n\n Solar Data:\n' + forecastResponse + '\n\nCompany Information:\n' + companyData;
+
+        String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+
+        if (openAiResponse == null) {
+            return 'Failed to retrieve OpenAI response.';
+        }
+
+        return formatContent(openAiResponse);
     }
+
+
+    // @AuraEnabled(cacheable=true)
+    // public static String generateEmailContent(Id leadId, String customPromptByUser) {
+    //     // Construct the email content with HTML formatting
+    //     String emailContent = 
+    //         '<html><body>' +
+    //         'Subject: Solar potential energy' +
+    //         '<p>Hello Kundan Sharma,</p>' +
+    //         '<p>I trust this message finds you energized and ready to explore new possibilities with Concretio in Mountain View, CA. ' +
+    //         'At ESolarCorp, we specialize in maximizing solar energy efficiency tailored to your precise needs. ' +
+    //         'Our cutting-edge solutions are designed to elevate your solar power utilization to new heights. ' +
+    //         'With our state-of-the-art technology and unwavering commitment to sustainability, ESolarCorp is your go-to partner for harnessing the power of the sun. ' +
+    //         'Let\'s work together to unlock the full potential of solar energy at Concretio. Looking forward to discussing how ESolarCorp can revolutionize your solar initiatives. ' +
+    //         'Reach back to us to embark on this renewable energy journey!</p>' +
+    //         '<p>Warm Regards,<br/>' +
+    //         '[Your Name]<br/>' +
+    //         'ESolarCorp Team</p>' +
+    //         '</body></html>';
+    
+    //     return emailContent;
+    // }
     
 
-    // private static List<String> prepareEmailPrompt(String customPromptByUser) {
-    //     List<String> emailPromptParts = new List<String>{
-    //         'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead.',
-    //         'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
-    //         'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
-    //         'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
-    //         'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
-    //         'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
-    //         'Please do not use always this greeting "I hope this email finds you well", also use other alternative greeting or statements in each response while creating or regenerating emails to avoid predictability and ensure authenticity.',
-    //         'Note-Please do not use any suggestion or remarks after you have given Warms and Regards to the email.'
-    //     };
+    private static List<String> prepareEmailPrompt(String customPromptByUser) {
+        List<String> emailPromptParts = new List<String>{
+            'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead.',
+            'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
+            'The email should be engaging, give a short introduction of ESolarCorp, our company, and include only the necessary information.',
+            'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
+            'The goal is to make a great first impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
+            'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
+            'Please do not use always this greeting "I hope this email finds you well", also use other alternative greeting or statements in each response while creating or regenerating emails to avoid predictability and ensure authenticity.',
+            'Note-Please do not use any suggestion or remarks after you have given Warms and Regards to the email.'
+        };
 
-    //     if (!String.isBlank(customPromptByUser)) {
-    //         emailPromptParts.add(customPromptByUser);  
-    //     }
+        if (!String.isBlank(customPromptByUser)) {
+            emailPromptParts.add(customPromptByUser);  
+        }
 
-    //     return emailPromptParts;
-    // }
+        return emailPromptParts;
+    }
 
     // Generate Call Script
     @AuraEnabled(cacheable=true)
@@ -838,108 +838,108 @@ public with sharing class LeadInteractionHandler {
         return html.replaceAll('<[^>]*>', '');
     }
 
-    // @AuraEnabled(cacheable=true)
-    // public static String replyWithEmail(Id leadId, String customPromptByUser) {
-    //     List<String> emailReplyPromptParts = replyWithEmailPrompt(customPromptByUser);
-
-    //     String leadBasicInfo = getLeadBasicInfo(leadId);
-
-    // CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
-
-    //     if (coordinates == null) {
-    //         return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
-    //     }
-
-    // String latitude = coordinates.latitude;
-    // String longitude = coordinates.longitude;
-
-    // SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
-
-    //     if (forecastResponse == null) {
-    //         return 'Failed to retrieve solar energy data.';
-    //     }
-
-    //     emailReplyPromptParts.add('Lead\'s Basic Info: ' + leadBasicInfo);
-
-    //     // Fetch the latest email details
-    //     String emailDetails = getEmailDetailsForReply(leadId);
-
-    //     if (emailDetails.contains('error')) {
-    //         return emailDetails;
-    //     }
-
-        
-    //     // Get the latest email message
-    //     String userReply = extractUserReply(emailDetails);
-    //     System.debug('userReply'+userReply);
-    //     String originalEmail = extractOriginalEmail(emailDetails);
-    //     System.debug('originalEmail'+originalEmail);
-
-        
-    //     // Concatenate the user reply and original email
-    //     emailReplyPromptParts.add('User Reply: \n' + userReply);
-    //     emailReplyPromptParts.add('Original Email: \n' + originalEmail);
-    
-
-    //     String customPrompt = String.join(emailReplyPromptParts, '\n');
-        
-    //     System.debug('customPrompt'+customPrompt);
-    //     String prompt = customPrompt + '\n\nSolar Data:\n' + forecastResponse;
-        
-    //     System.debug('prompt'+prompt);
-    //     String openAiResponse = getOpenAiResponse(prompt, 'assistant');
-
-    //     if (openAiResponse == null) {
-    //         return 'Failed to retrieve OpenAI response.';
-    //     }
-
-    //     return formatContent(openAiResponse);
-    // }
-
-
     @AuraEnabled(cacheable=true)
     public static String replyWithEmail(Id leadId, String customPromptByUser) {
-        // Construct the email content with HTML formatting
-        String emailContent = 
-        '<html><body>' +
-        '<h2>Subject: Solar potential energy</h2>' +
-        '<p>Hello Kundan Sharma,</p>' +
-        '<p>Thank you for showing interest in our product.</p>' +
-        '<p>I trust this message finds you energized and ready to explore new possibilities with Concretio in Mountain View, CA. ' +
-        'At ESolarCorp, we specialize in maximizing solar energy efficiency tailored to your precise needs. ' +
-        'Our cutting-edge solutions are designed to elevate your solar power utilization to new heights. ' +
-        'With our state-of-the-art technology and unwavering commitment to sustainability, ESolarCorp is your go-to partner for harnessing the power of the sun. ' +
-        'Let\'s work together to unlock the full potential of solar energy at Concretio. Looking forward to discussing how ESolarCorp can revolutionize your solar initiatives. ' +
-        'Reach back to us to embark on this renewable energy journey!</p>' +
-        '<p>Warm Regards,<br/>' +
-        '[Your Name]<br/>' +
-        'ESolarCorp Team</p>' +
-        '</body></html>';
+        List<String> emailReplyPromptParts = replyWithEmailPrompt(customPromptByUser);
+
+        String leadBasicInfo = getLeadBasicInfo(leadId);
+
+    CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+
+        if (coordinates == null) {
+            return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
+        }
+
+    String latitude = coordinates.latitude;
+    String longitude = coordinates.longitude;
+
+    SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(latitude, longitude);
+
+        if (forecastResponse == null) {
+            return 'Failed to retrieve solar energy data.';
+        }
+
+        emailReplyPromptParts.add('Lead\'s Basic Info: ' + leadBasicInfo);
+
+        // Fetch the latest email details
+        String emailDetails = getEmailDetailsForReply(leadId);
+
+        if (emailDetails.contains('error')) {
+            return emailDetails;
+        }
+
+        
+        // Get the latest email message
+        String userReply = extractUserReply(emailDetails);
+        System.debug('userReply'+userReply);
+        String originalEmail = extractOriginalEmail(emailDetails);
+        System.debug('originalEmail'+originalEmail);
+
+        
+        // Concatenate the user reply and original email
+        emailReplyPromptParts.add('User Reply: \n' + userReply);
+        emailReplyPromptParts.add('Original Email: \n' + originalEmail);
     
-    return emailContent;
-    
+
+        String customPrompt = String.join(emailReplyPromptParts, '\n');
+        
+        System.debug('customPrompt'+customPrompt);
+        String prompt = customPrompt + '\n\nSolar Data:\n' + forecastResponse;
+        
+        System.debug('prompt'+prompt);
+        String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+
+        if (openAiResponse == null) {
+            return 'Failed to retrieve OpenAI response.';
+        }
+
+        return formatContent(openAiResponse);
     }
 
 
-    // private static List<String> replyWithEmailPrompt(String customPromptByUser) {
-    //     List<String> emailReplyPromptParts = new List<String>{
-    //         'Note- Purpose of email is to maintain the engagement with the lead and address their queries or concerns as mentioned in their reply.',
-    //         'Using the provided Solar Data of lead and Name, write a personalized, formatted email in response to the lead\'s latest interaction.',
-    //         'Ensure to acknowledge the lead\'s original email content and provide relevant responses to any questions or points they raised.',
-    //         'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
-    //         'The goal is to make a great impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
-    //         'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
-    //         'Please do not use a greeting everytime "I hope this email finds you well" also you can use other gretting to avoid predictability and ensure authenticity.',
-    //         'Note-Please do not use any suggestion after you have given Warms and Regards to the email.'
-
-    //     };
+    // @AuraEnabled(cacheable=true)
+    // public static String replyWithEmail(Id leadId, String customPromptByUser) {
+    //     // Construct the email content with HTML formatting
+    //     String emailContent = 
+    //     '<html><body>' +
+    //     '<h2>Subject: Solar potential energy</h2>' +
+    //     '<p>Hello Kundan Sharma,</p>' +
+    //     '<p>Thank you for showing interest in our product.</p>' +
+    //     '<p>I trust this message finds you energized and ready to explore new possibilities with Concretio in Mountain View, CA. ' +
+    //     'At ESolarCorp, we specialize in maximizing solar energy efficiency tailored to your precise needs. ' +
+    //     'Our cutting-edge solutions are designed to elevate your solar power utilization to new heights. ' +
+    //     'With our state-of-the-art technology and unwavering commitment to sustainability, ESolarCorp is your go-to partner for harnessing the power of the sun. ' +
+    //     'Let\'s work together to unlock the full potential of solar energy at Concretio. Looking forward to discussing how ESolarCorp can revolutionize your solar initiatives. ' +
+    //     'Reach back to us to embark on this renewable energy journey!</p>' +
+    //     '<p>Warm Regards,<br/>' +
+    //     '[Your Name]<br/>' +
+    //     'ESolarCorp Team</p>' +
+    //     '</body></html>';
     
-    //     if (!String.isBlank(customPromptByUser)) {
-    //         emailReplyPromptParts.add(customPromptByUser);  
-    //     }
+    // return emailContent;
     
-    //     return emailReplyPromptParts;
     // }
+
+
+    private static List<String> replyWithEmailPrompt(String customPromptByUser) {
+        List<String> emailReplyPromptParts = new List<String>{
+            'Note- Purpose of email is to maintain the engagement with the lead and address their queries or concerns as mentioned in their reply.',
+            'Using the provided Solar Data of lead and Name, write a personalized, formatted email in response to the lead\'s latest interaction.',
+            'Ensure to acknowledge the lead\'s original email content and provide relevant responses to any questions or points they raised.',
+            'Ensure the Email is clear, professional, and includes necessary information to make a strong case for choosing ESolarCorp.',
+            'The goal is to make a great impression and clearly convey our value proposition. Ensure the email is neat, clean, and professionally formatted.',
+            'There is also a prompt which is given by the user from the UI, Consider that prompt as well.',
+            'Please do not use a greeting everytime "I hope this email finds you well" also you can use other gretting to avoid predictability and ensure authenticity.',
+            'Note-Please do not use any suggestion after you have given Warms and Regards to the email.'
+
+        };
+    
+        if (!String.isBlank(customPromptByUser)) {
+            emailReplyPromptParts.add(customPromptByUser);  
+        }
+    
+        return emailReplyPromptParts;
+    }
     
 
 }

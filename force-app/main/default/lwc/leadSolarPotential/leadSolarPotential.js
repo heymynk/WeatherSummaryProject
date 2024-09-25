@@ -21,6 +21,8 @@ export default class LeadSolarPotential extends LightningElement {
     modalChart;
     summaryText;
     isLoading = true; 
+    isModalOpen = false;
+
 
 
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -190,6 +192,10 @@ export default class LeadSolarPotential extends LightningElement {
                 console.error('Error generating summary', error);
                 this.isLoading = false;
             });
+    }
+
+    get formattedSummaryText() {
+        return this.summaryText ? this.summaryText.replace(/^<p>|<\/p>$/g, '') : '';
     }
 
     openModal() {

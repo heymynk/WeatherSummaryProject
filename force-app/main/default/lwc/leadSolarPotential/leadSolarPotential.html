@@ -31,7 +31,7 @@
             <template if:false={isLoading}>
                 <template if:true={summaryText}>
                     <div class="slds-text-heading_small"><b>AI Generated Solar Potential</b></div>
-                    <p class="slds-p-top_x-small">{summaryText}</p>
+                    <p class="slds-p-top_x-small">{formattedSummaryText}</p>
                 </template>
                 <template if:false={summaryText}>
                     <p>No summary available.</p>

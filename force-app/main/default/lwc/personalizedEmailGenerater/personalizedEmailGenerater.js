@@ -17,7 +17,7 @@ import getLatestEmailMessageInActivityTimeline from '@salesforce/apex/LeadIntera
 import replyWithEmail from '@salesforce/apex/LeadInteractionHandler.replyWithEmail';
 
 //New Functionality 
-import getLatestEmailDetails from '@salesforce/apex/HtmlEmailParser.getLatestEmailDetails';
+//import getLatestEmailDetails from '@salesforce/apex/HtmlEmailParser.getLatestEmailDetails';
 
 
 
@@ -476,8 +476,9 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         replyWithEmail({ leadId: this.recordId, customPromptByUser: this.customPromptByUser })
             .then(result => {
                 this.showToast('Success', 'Email Reply has been generated successfully!', 'success');
-                console.log('Reply Email generated successfully.');
-                console.log('Result:', result);
+                //console.log('Reply Email generated successfully.');
+                //console.log('Result:', result);
+
                 // Extract the subject from the generated email content
                 const subjectMatch = result.match(/<p>Subject: (.*?)<\/p>/);
                 if (subjectMatch) {
