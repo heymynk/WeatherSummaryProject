@@ -113,7 +113,7 @@ global class CreateEmailActivity implements Messaging.InboundEmailHandler {
             email.setSubject(subject);
             email.setPlainTextBody(body);
             email.setSenderDisplayName('Salesforce Support');
-            email.setReplyTo('your-reply-to-email@example.com');
+            email.setReplyTo('esolarcorp_email_service@t-2tw8qj2trynxrvktpo2nzr0kdje70zfp2u66nzqnrh16ygu3ar.c1-1fdgbmak.ind16s.apex.sandbox.salesforce.com');
             
             // Send email
             Messaging.SendEmailResult[] results = Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });
