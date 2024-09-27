@@ -711,51 +711,102 @@ public with sharing class LeadInteractionHandler {
     return null;
   }
 
+  /*
+    public static void sendEmailToController(
+        String[] toAddressEmail,  // Accepts a single array of email addresses
+        Id orgwideEmailAddress,
+        String subjectEmail,
+        String emailHtmlValue,
+        List<Id> uploadedFiles
+    ) {
+        if (toAddressEmail.isEmpty()) {
+            System.debug('No "to" addresses provided');
+            return;
+        }
+
+        Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        email.setToAddresses(toAddressEmail); // Sets multiple email addresses at once
+        email.setOrgWideEmailAddressId(orgwideEmailAddress);
+        email.setSubject(subjectEmail);
+        email.setHtmlBody(emailHtmlValue);
+        email.setReplyTo('...');
+
+        if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
+            List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
+            for (Id contentDocumentId : uploadedFiles) {
+                ContentVersion contentVersion = getContentVersion(contentDocumentId);
+                if (contentVersion != null) {
+                    Messaging.EmailFileAttachment efa = new Messaging.EmailFileAttachment();
+                    efa.setFileName(contentVersion.Title + '.' + contentVersion.FileType);
+                    efa.setBody(contentVersion.VersionData);
+                    emailFileAttachments.add(efa);
+                } else {
+                    System.debug('ContentVersion not found for Id: ' + contentDocumentId);
+                }
+            }
+            email.setFileAttachments(emailFileAttachments);
+        }
+
+        try {
+            Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
+            System.debug('Email sent successfully');
+            // updateLeadStatus(email.getToAddresses()); // Commented out in this version
+        } catch (Exception ex) {
+            System.debug('Error sending email: ' + ex.getMessage());
+        }
+    }
+
+  */
+
   // Send Email
   @AuraEnabled(cacheable=true)
   public static void sendEmailToController(
-    String[] toAddressEmail,
+    List<String> toAddressEmails,
     Id orgwideEmailAddress,
     String subjectEmail,
     String emailHtmlValue,
     List<Id> uploadedFiles
   ) {
-    if (toAddressEmail.isEmpty()) {
-      System.debug('No "to" addresses provided');
-      return;
-    }
+    List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
 
-    Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
-    email.setToAddresses(toAddressEmail);
-    email.setOrgWideEmailAddressId(orgwideEmailAddress);
-    email.setSubject(subjectEmail);
-    email.setHtmlBody(emailHtmlValue);
-    email.setReplyTo(
-      'esolarcorp_email_service@t-2tw8qj2trynxrvktpo2nzr0kdje70zfp2u66nzqnrh16ygu3ar.c1-1fdgbmak.ind16s.apex.sandbox.salesforce.com'
-    );
+    for (String toAddressEmail : toAddressEmails) {
+      Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+      email.setToAddresses(new List<String>{ toAddressEmail });
+      email.setOrgWideEmailAddressId(orgwideEmailAddress);
+      email.setSubject(subjectEmail);
+      email.setHtmlBody(emailHtmlValue);
+      email.setReplyTo(
+        'esolarcorp_email_service@t-2tw8qj2trynxrvktpo2nzr0kdje70zfp2u66nzqnrh16ygu3ar.c1-1fdgbmak.ind16s.apex.sandbox.salesforce.com'
+      );
 
-    if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
-      List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
-      for (Id contentDocumentId : uploadedFiles) {
-        ContentVersion contentVersion = getContentVersion(contentDocumentId);
-        if (contentVersion != null) {
-          Messaging.EmailFileAttachment efa = new Messaging.EmailFileAttachment();
-          efa.setFileName(contentVersion.Title + '.' + contentVersion.FileType);
-          efa.setBody(contentVersion.VersionData);
-          emailFileAttachments.add(efa);
-        } else {
-          System.debug('ContentVersion not found for Id: ' + contentDocumentId);
+      if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
+        List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
+        for (Id contentDocumentId : uploadedFiles) {
+          ContentVersion contentVersion = getContentVersion(contentDocumentId);
+          if (contentVersion != null) {
+            Messaging.EmailFileAttachment efa = new Messaging.EmailFileAttachment();
+            efa.setFileName(
+              contentVersion.Title + '.' + contentVersion.FileType
+            );
+            efa.setBody(contentVersion.VersionData);
+            emailFileAttachments.add(efa);
+          } else {
+            System.debug(
+              'ContentVersion not found for Id: ' + contentDocumentId
+            );
+          }
         }
+        email.setFileAttachments(emailFileAttachments);
       }
-      email.setFileAttachments(emailFileAttachments);
+
+      emails.add(email);
     }
 
     try {
-      Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
-      System.debug('Email sent successfully');
-    //   updateLeadStatus(email.getToAddresses());
+      Messaging.sendEmail(emails);
+      System.debug('Emails sent successfully');
     } catch (Exception ex) {
-      System.debug('Error sending email: ' + ex.getMessage());
+      System.debug('Error sending emails: ' + ex.getMessage());
     }
   }
 
