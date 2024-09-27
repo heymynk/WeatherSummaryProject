@@ -1,14 +1,14 @@
 {
-  "plugins": ["prettier-plugin-apex"],
-  "trailingComma": "none",
-  "overrides": [
+    "plugins": ["prettier-plugin-apex"],
+    "trailingComma": "none",
+    "overrides": [
       {
-          "files": "**/lwc/**/*.html",
-          "options": { "parser": "lwc" }
+        "files": "**/lwc/**/*.html",
+        "options": { "parser": "lwc" }
       },
       {
-          "files": "*.{cmp,page,component}",
-          "options": { "parser": "html" }
+        "files": "*.{cmp,page,component}",
+        "options": { "parser": "html" }
       }
-  ]
-}
+    ]
+  }
