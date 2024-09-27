@@ -1,74 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Installation_Type__c</fullName>
-    <description>Installation method.</description>
     <externalId>false</externalId>
-    <label>Installation Type</label>
+    <label>Installation_Type</label>
     <required>false</required>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
-        <controllingField>Product_Type__c</controllingField>
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Integrated into the roof structure</fullName>
+                <fullName>1</fullName>
                 <default>false</default>
-                <label>Integrated into the roof structure</label>
+                <label>1</label>
             </value>
             <value>
-                <fullName>Roof-Mounted (Standard)</fullName>
+                <fullName>2</fullName>
                 <default>false</default>
-                <label>Roof-Mounted (Standard)</label>
+                <label>2</label>
             </value>
             <value>
-                <fullName>Ground-Mounted</fullName>
+                <fullName>3</fullName>
                 <default>false</default>
-                <label>Ground-Mounted</label>
-            </value>
-            <value>
-                <fullName>Carport/Canopy</fullName>
-                <default>false</default>
-                <label>Carport/Canopy</label>
-            </value>
-            <value>
-                <fullName>Floating Solar</fullName>
-                <default>false</default>
-                <label>Floating Solar</label>
-            </value>
-            <value>
-                <fullName>Pole-Mounted</fullName>
-                <default>false</default>
-                <label>Pole-Mounted</label>
+                <label>3</label>
             </value>
         </valueSetDefinition>
-        <valueSettings>
-            <controllingFieldValue>Other</controllingFieldValue>
-            <controllingFieldValue>Shingle</controllingFieldValue>
-            <controllingFieldValue>Tile</controllingFieldValue>
-            <valueName>Integrated into the roof structure</valueName>
-        </valueSettings>
-        <valueSettings>
-            <controllingFieldValue>Other</controllingFieldValue>
-            <controllingFieldValue>Panel</controllingFieldValue>
-            <valueName>Roof-Mounted (Standard)</valueName>
-        </valueSettings>
-        <valueSettings>
-            <controllingFieldValue>Other</controllingFieldValue>
-            <controllingFieldValue>Panel</controllingFieldValue>
-            <valueName>Carport/Canopy</valueName>
-        </valueSettings>
-        <valueSettings>
-            <controllingFieldValue>Other</controllingFieldValue>
-            <valueName>Floating Solar</valueName>
-        </valueSettings>
-        <valueSettings>
-            <controllingFieldValue>Panel</controllingFieldValue>
-            <valueName>Ground-Mounted</valueName>
-        </valueSettings>
-        <valueSettings>
-            <controllingFieldValue>Panel</controllingFieldValue>
-            <valueName>Pole-Mounted</valueName>
-        </valueSettings>
     </valueSet>
 </CustomField>

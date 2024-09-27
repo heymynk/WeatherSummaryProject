@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 09-25-2024
+ * @last modified on  : 09-27-2024
  * @last modified by  : Mayank Singh
 **/
 public class EmailMessageHandler {
@@ -46,5 +46,10 @@ public class EmailMessageHandler {
         } else {
             System.debug('No email addresses to update.');
         }
+    }
+
+    
+    public static void updateLeadStatusOnEmailReply(List<EmailMessage> emails) {
+        // Your logic here
     }
 }

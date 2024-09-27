@@ -2,8 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Warranty_Period_Years__c</fullName>
     <externalId>false</externalId>
-    <label>Warranty Period (Years)</label>
-    <precision>3</precision>
+    <label>Warranty_Period_Years</label>
+    <precision>18</precision>
     <required>false</required>
     <scale>0</scale>
     <trackTrending>false</trackTrending>
