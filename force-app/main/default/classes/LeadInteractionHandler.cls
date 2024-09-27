@@ -104,6 +104,7 @@ public with sharing class LeadInteractionHandler {
     System.debug('Lead Address: ' + leadAddress);
 
     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+    System.debug('Coordinates: ' + coordinates);
 
     if (coordinates == null) {
       return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
@@ -177,6 +178,9 @@ public with sharing class LeadInteractionHandler {
   // }
 
   private static List<String> prepareEmailPrompt(String customPromptByUser) {
+    System.debug('Entering prepareEmailPrompt method');
+    System.debug('Custom Prompt By User: ' + customPromptByUser);
+
     List<String> emailPromptParts = new List<String>{
       'Note- Purpose of email is to grab the attention of lead to grow our business by giving our services to lead.',
       'Using the provided company information of lead, Solar Data of lead, and Lead\'s address (city only) and Name, write (n if applicable in user prompt) personalized, formatted email for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information.',
@@ -192,6 +196,7 @@ public with sharing class LeadInteractionHandler {
       emailPromptParts.add(customPromptByUser);
     }
 
+    System.debug('Email Prompt Parts: ' + emailPromptParts);
     return emailPromptParts;
   }
 
@@ -201,12 +206,21 @@ public with sharing class LeadInteractionHandler {
     Id leadId,
     String customPromptByUser
   ) {
+    System.debug('Entering generateCallScript method');
+    System.debug('Lead Id: ' + leadId);
+    System.debug('Custom Prompt By User: ' + customPromptByUser);
+
     List<String> callPromptParts = prepareCallPrompt(customPromptByUser);
+    System.debug('Call Prompt Parts: ' + callPromptParts);
 
     String leadAddress = getLeadAddress(leadId);
+    System.debug('Lead Address: ' + leadAddress);
+
     String leadBasicInfo = getLeadBasicInfo(leadId);
+    System.debug('Lead Basic Info: ' + leadBasicInfo);
 
     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+    System.debug('Coordinates: ' + coordinates);
 
     if (coordinates == null) {
       return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
@@ -216,29 +230,32 @@ public with sharing class LeadInteractionHandler {
     String longitude = coordinates.longitude;
 
     CompanyInfoWrapper companyData = getCompanyData(leadId);
+    System.debug('Company Data: ' + companyData);
 
     String companyInfoString = companyData != null
       ? companyData.summary
       : 'No company information available';
+    System.debug('Company Info String: ' + companyInfoString);
+
     SolarEnergyDataWrapper forecastResponse = getSolarEnergyData(
       latitude,
       longitude
     );
 
-    String solarPanelDataString = getSolarPanelDataDetails();
-
-    if (
-      forecastResponse == null ||
-      companyData == null ||
-      solarPanelDataString == null
-    ) {
-      return 'Failed to retrieve weather data, company information, or solar panel data.';
+    if (forecastResponse == null || companyData == null) {
+      return 'Failed to retrieve weather data or company information.';
     }
+
+    System.debug('Solar Energy Data: ' + forecastResponse);
+
+    String solarPanelDataString = getSolarPanelDataDetails();
+    System.debug('Solar Panel Data: ' + solarPanelDataString);
 
     callPromptParts.add('Lead\'s Address: ' + leadAddress);
     callPromptParts.add('Lead\'s basicInfo: ' + leadBasicInfo);
 
     String customPrompt = String.join(callPromptParts, '\n');
+    System.debug('Custom Prompt: ' + customPrompt);
 
     String prompt =
       customPrompt +
@@ -248,8 +265,10 @@ public with sharing class LeadInteractionHandler {
       solarPanelDataString +
       '\n\nCompany Information:\n' +
       companyData;
+    System.debug('Final Prompt: ' + prompt);
 
     String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+    System.debug('OpenAI Response: ' + openAiResponse);
 
     if (openAiResponse == null) {
       return 'Failed to retrieve OpenAI response.';
@@ -259,6 +278,9 @@ public with sharing class LeadInteractionHandler {
   }
 
   private static List<String> prepareCallPrompt(String customPromptByUser) {
+    System.debug('Entering prepareCallPrompt method');
+    System.debug('Custom Prompt By User: ' + customPromptByUser);
+
     List<String> callPromptParts = new List<String>{
       'Note- Purpose of call script is to grab the attention of lead to grow our business by giving our services and showcasing our products to lead',
       'Using the provided company information of lead, Solar Data of lead, Lead\'s address (city only), Lead\'s Name and product data write (n if applicable in user prompt) personalized, formatted call script for the lead\'s first interaction. Grab the attention of the lead using the lead\'s company information and showcasing the products',
@@ -272,13 +294,18 @@ public with sharing class LeadInteractionHandler {
       callPromptParts.add(customPromptByUser);
     }
 
+    System.debug('Call Prompt Parts: ' + callPromptParts);
     return callPromptParts;
   }
 
   // Generate Solar Data Summary
   @AuraEnabled(cacheable=true)
   public static String generateSolarDataSummary(Id leadId) {
+    System.debug('Entering generateSolarDataSummary method');
+    System.debug('Lead Id: ' + leadId);
+
     CoordinatesWrapper coordinates = fetchLeadAddressByCoordinates(leadId);
+    System.debug('Coordinates: ' + coordinates);
 
     if (coordinates == null) {
       return 'Failed to retrieve coordinates for Lead with Id: ' + leadId;
@@ -296,6 +323,8 @@ public with sharing class LeadInteractionHandler {
       return 'Failed to retrieve solar energy data.';
     }
 
+    System.debug('Solar Energy Data: ' + forecastResponse);
+
     String prompt =
       'Generate a detailed and concise summary for the following solar energy data:\n\n' +
       'Solar Energy Forecast Data:\n' +
@@ -305,24 +334,24 @@ public with sharing class LeadInteractionHandler {
       'potential energy production, and any notable patterns or observations. ' +
       'The summary should be written in a professional and informative tone.\n\n' +
       'Note: The summary should be between 100 to 150 words.';
-
-    // Debug log to see the prompt sent to OpenAI
-    System.debug('Prompt sent to OpenAI: ' + prompt);
+    System.debug('Prompt: ' + prompt);
 
     String openAiResponse = getOpenAiResponse(prompt, 'assistant');
+    System.debug('OpenAI Response: ' + openAiResponse);
 
     if (openAiResponse == null) {
       return 'Failed to retrieve OpenAI response.';
     }
 
-    // Debug log to see the response from OpenAI
-    System.debug('OpenAI Response: ' + openAiResponse);
-
     return formatContent(openAiResponse);
   }
 
   private static String getSolarPanelDataDetails() {
+    System.debug('Entering getSolarPanelDataDetails method');
+
     List<Solar_Panel__c> solarPanelData = getSolarPanelData();
+    System.debug('Solar Panel Data: ' + solarPanelData);
+
     String solarPanelDataString = '';
     for (Solar_Panel__c panel : solarPanelData) {
       solarPanelDataString +=
@@ -332,6 +361,7 @@ public with sharing class LeadInteractionHandler {
         panel.Description__c +
         '\n';
     }
+    System.debug('Solar Panel Data String: ' + solarPanelDataString);
     return solarPanelDataString;
   }
 
@@ -342,7 +372,7 @@ public with sharing class LeadInteractionHandler {
 
     // Retrieve API Key
     String companyInfoApiKey = getCompanyInfoAPIKey();
-    System.debug('Company Info API Key retrieved');
+    System.debug('Company Info API Key: ' + companyInfoApiKey);
 
     // Fetch Lead details
     Lead lead = [SELECT Company FROM Lead WHERE Id = :leadId LIMIT 1];
@@ -408,8 +438,16 @@ public with sharing class LeadInteractionHandler {
   }
 
   private static CompanyInfoWrapper getHardcodedCompanyInfo() {
+    System.debug('Entering getHardcodedCompanyInfo method');
+
     String hardcodedDisplayName = 'Concretio';
     String hardcodedSummary = 'We are Salesforce certified PDO & ISV partner, doing amazing things with cloud computing and the Salesforce 360 platform. Concretio is founded by Abhinav - 8 times Salesforce MVP (Most Valuable Professional) with over a decade of IT experience, was first from India to get rewarded by the MVP title from Salesforce.com.\n\nHighlights:\n- Following latest and best practices using SFDX, GIT, Scratch Orgs, with CI/CD (via Jenkins, CircleCI, Bitbucket Pipelines, GitHub Actions etc).\n- Complex Integrations using REST/SOAP + JSON/XML + OAuth/JWT.\n- LWC, Aura components with amazing UX. - Lightning components and apps. We were among the first few partners to list an Aura component in 2015 in the AppExchange component marketplace.\n- AppExchange: Helped 15+ ISV partners take their ideas to a listing on AppExchange.\n- Salesforce Commerce Cloud(SFCC) - Helping largest e-commerce portals to succeed with Demandware, we are quite proud of the Javascript skills we bring on to the table.\n- Salesforce Marketing Cloud (SFMC).';
+    System.debug(
+      'Hardcoded Company Info: ' +
+        hardcodedDisplayName +
+        ', ' +
+        hardcodedSummary
+    );
     return new CompanyInfoWrapper(hardcodedDisplayName, hardcodedSummary);
   }
 
@@ -767,9 +805,16 @@ public with sharing class LeadInteractionHandler {
     String emailHtmlValue,
     List<Id> uploadedFiles
   ) {
+    System.debug('toAddressEmails: ' + toAddressEmails);
+    System.debug('orgwideEmailAddress: ' + orgwideEmailAddress);
+    System.debug('subjectEmail: ' + subjectEmail);
+    System.debug('emailHtmlValue: ' + emailHtmlValue);
+    System.debug('uploadedFiles: ' + uploadedFiles);
+
     List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
 
     for (String toAddressEmail : toAddressEmails) {
+      System.debug('Processing email for: ' + toAddressEmail);
       Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
       email.setToAddresses(new List<String>{ toAddressEmail });
       email.setOrgWideEmailAddressId(orgwideEmailAddress);
@@ -779,9 +824,13 @@ public with sharing class LeadInteractionHandler {
         'esolarcorp_email_service@t-2tw8qj2trynxrvktpo2nzr0kdje70zfp2u66nzqnrh16ygu3ar.c1-1fdgbmak.ind16s.apex.sandbox.salesforce.com'
       );
 
+      System.debug('Email initialized with To Address: ' + toAddressEmail);
+
       if (uploadedFiles != null && !uploadedFiles.isEmpty()) {
+        System.debug('Processing file attachments...');
         List<Messaging.EmailFileAttachment> emailFileAttachments = new List<Messaging.EmailFileAttachment>();
         for (Id contentDocumentId : uploadedFiles) {
+          System.debug('Processing ContentDocumentId: ' + contentDocumentId);
           ContentVersion contentVersion = getContentVersion(contentDocumentId);
           if (contentVersion != null) {
             Messaging.EmailFileAttachment efa = new Messaging.EmailFileAttachment();
@@ -790,6 +839,12 @@ public with sharing class LeadInteractionHandler {
             );
             efa.setBody(contentVersion.VersionData);
             emailFileAttachments.add(efa);
+            System.debug(
+              'Added attachment: ' +
+                contentVersion.Title +
+                '.' +
+                contentVersion.FileType
+            );
           } else {
             System.debug(
               'ContentVersion not found for Id: ' + contentDocumentId
@@ -800,11 +855,12 @@ public with sharing class LeadInteractionHandler {
       }
 
       emails.add(email);
+      System.debug('Email added to list: ' + email);
     }
 
     try {
       Messaging.sendEmail(emails);
-      System.debug('Emails sent successfully');
+      System.debug('Emails sent successfully: ' + emails);
     } catch (Exception ex) {
       System.debug('Error sending emails: ' + ex.getMessage());
     }
