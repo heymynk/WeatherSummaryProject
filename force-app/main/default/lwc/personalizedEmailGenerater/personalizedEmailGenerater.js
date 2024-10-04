@@ -15,16 +15,16 @@ import getOrgwideEmailAddress from '@salesforce/apex/LeadInteractionHandler.getO
 import sendEmailToController from '@salesforce/apex/LeadInteractionHandler.sendEmailToController';
 import fileAttachment from '@salesforce/apex/LeadInteractionHandler.fileAttachment';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-//import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
+// import getEmailMessages from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageForLead';
 import getLeadResponse from '@salesforce/apex/LeadInteractionHandler.getLeadResponse';
-// import { getRecord } from 'lightning/uiRecordApi';
-// import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
+import { getRecord } from 'lightning/uiRecordApi';
+import LEAD_REPLY_RECEIVED_FIELD from '@salesforce/schema/Lead.Reply_Received__c';
 import { NavigationMixin } from 'lightning/navigation';
 import getLatestEmailMessageInActivityTimeline from '@salesforce/apex/LeadInteractionHandler.getLatestEmailMessageInActivityTimeline';
 import replyWithEmail from '@salesforce/apex/LeadInteractionHandler.replyWithEmail';
 
 //New Functionality 
-//import getLatestEmailDetails from '@salesforce/apex/HtmlEmailParser.getLatestEmailDetails';
+import getLatestEmailDetails from '@salesforce/apex/HtmlEmailParser.getLatestEmailDetails';
 
 
 
@@ -95,17 +95,17 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         return 'Enter additional instructions or information for generating personalized email...';
     }
 
-    // @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
-    // wiredRecord({ error, data }) {
-    //     if (data) {
-    //         if (data.fields.Reply_Received__c.value) {
-    //             this.showToast('Reply Notification', 'A reply has been received from the lead.', 'success');
-    //         }
-    //     } else if (error) {
-    //         console.error('Error fetching lead record:', error);
-    //     }
+    @wire(getRecord, { recordId: '$recordId', fields: [LEAD_REPLY_RECEIVED_FIELD] })
+    wiredRecord({ error, data }) {
+        if (data) {
+            if (data.fields.Reply_Received__c.value) {
+                this.showToast('Reply Notification', 'A reply has been received from the lead.', 'success');
+            }
+        } else if (error) {
+            console.error('Error fetching lead record:', error);
+        }
         
-    // }
+    }
 
     // @wire(getEmailMessages, { leadId: '$recordId' }) emailMessages;
 
@@ -216,27 +216,27 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
 
 
     
-    // @wire(getLatestEmailDetails, { leadId: '$recordId' })
-    // wiredEmailDetails({ error, data }) {
-    //     if (data) {
-    //         if (data.error) {
-    //             this.error = data.error;
-    //             this.userReply = null;
-    //             this.originalEmail = null;
-    //         } else {
-    //             this.userReply = data.userReply;
-    //             console.log( 'userReply'+ this.userReply);
-    //             this.originalEmail = data.originalEmail;
-    //             console.log( 'originalEmail'+ this.originalEmail);
+    @wire(getLatestEmailDetails, { leadId: '$recordId' })
+    wiredEmailDetails({ error, data }) {
+        if (data) {
+            if (data.error) {
+                this.error = data.error;
+                this.userReply = null;
+                this.originalEmail = null;
+            } else {
+                this.userReply = data.userReply;
+                console.log( 'userReply'+ this.userReply);
+                this.originalEmail = data.originalEmail;
+                console.log( 'originalEmail'+ this.originalEmail);
 
-    //             this.error = null;
-    //         }
-    //     } else if (error) {
-    //         this.error = error;
-    //         this.userReply = null;
-    //         this.originalEmail = null;
-    //     }
-    // }
+                this.error = null;
+            }
+        } else if (error) {
+            this.error = error;
+            this.userReply = null;
+            this.originalEmail = null;
+        }
+    }
 
 
 
