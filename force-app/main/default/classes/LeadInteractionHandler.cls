@@ -2,7 +2,7 @@
  * @description       :
  * @author            : Mayank Singh
  * @group             :
- * @last modified on  : 09-27-2024
+ * @last modified on  : 10-04-2024
  * @last modified by  : Mayank Singh
  **/
 
@@ -797,7 +797,7 @@ public with sharing class LeadInteractionHandler {
   */
 
   // Send Email
-  @AuraEnabled(cacheable=true)
+  @AuraEnabled
   public static void sendEmailToController(
     List<String> toAddressEmails,
     Id orgwideEmailAddress,

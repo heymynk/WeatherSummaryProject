@@ -1,3 +1,10 @@
+/**
+ * @description       : 
+ * @author            : Mayank Singh
+ * @group             : 
+ * @last modified on  : 10-04-2024
+ * @last modified by  : Mayank Singh
+**/
 
 import { LightningElement, api, track, wire } from 'lwc';
 import generateEmailContent from '@salesforce/apex/LeadInteractionHandler.generateEmailContent';
@@ -400,7 +407,7 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
         console.log('Uploaded Files:', this.uploadFile.map(file => file.contentVersionId));
 
         sendEmailToController({
-            toAddressEmail: [this.toAddress],
+            toAddressEmails: [this.toAddress],
             orgwideEmailAddress: this.orgWideId,
             subjectEmail: this.subject,
             emailHtmlValue: this.HtmlValue,
@@ -412,7 +419,7 @@ export default class PersonalizedEmailGenerator extends NavigationMixin(Lightnin
             this.showEmailFields = false;   
             this.showCallScript = false; 
             this.showGenerateEmailButton = false; 
-            this.showGenerateCallScriptButton = false; // Show Generate Call Script button
+            this.showGenerateCallScriptButton = false; 
             this.companyData = false;      
             this.isWorkingContacted = false;      
             // Clear the form fields
