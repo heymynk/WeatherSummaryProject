@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Mayank Singh
  * @group             : 
- * @last modified on  : 09-27-2024
+ * @last modified on  : 11-01-2024
  * @last modified by  : Mayank Singh
 **/
 public class EmailMessageHandler {
@@ -55,14 +55,14 @@ public class EmailMessageHandler {
     
         for (EmailMessage email : emailMessages) {
             if (email != null) {
-                // Check if the email was a reply and has a valid ToEmailAddress
+                // Check if the email was a reply and has a valid FromEmailAddress
                 System.debug('Processing EmailMessage Id: ' + email.Id + ', Status: ' + email.Status + ', FromEmailAddress: ' + email.FromAddress);
     
                 if (email.Status != null && email.Status == '2' && email.FromAddress != null) { // Assuming Status '2' indicates a reply
                     System.debug('EmailMessage reply from: ' + email.FromAddress);
                     emailAddressesToUpdate.add(email.FromAddress);
                 } else {
-                    System.debug('EmailMessage does not meet criteria for reply update. EmailMessage Id: ' + email.Id);
+                    System.debug('EmailMessage does not meet criteria for reply update. EmailMessage Id: ' + email.Id + ', Status: ' + email.Status + ', FromEmailAddress: ' + email.FromAddress);
                 }
             } else {
                 System.debug('EmailMessage is null.');
