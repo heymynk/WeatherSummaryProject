@@ -2,7 +2,7 @@
  * @description       :
  * @author            : Mayank Singh
  * @group             :
- * @last modified on  : 10-04-2024
+ * @last modified on  : 11-01-2024
  * @last modified by  : Mayank Singh
  **/
 
@@ -821,7 +821,7 @@ public with sharing class LeadInteractionHandler {
       email.setSubject(subjectEmail);
       email.setHtmlBody(emailHtmlValue);
       email.setReplyTo(
-        'esolarcorp_email_service@t-2tw8qj2trynxrvktpo2nzr0kdje70zfp2u66nzqnrh16ygu3ar.c1-1fdgbmak.ind16s.apex.sandbox.salesforce.com'
+        'esolarcorp_email_service@2-130nr27qadzsqn9cm7kkx08ikl6egk19mvcplwh3ugan33r05k.c4-1hu4lmaw.ind22s.apex.sandbox.salesforce.com'
       );
 
       System.debug('Email initialized with To Address: ' + toAddressEmail);
